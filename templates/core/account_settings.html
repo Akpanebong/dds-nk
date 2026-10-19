@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Account Settings | DDS-NK THRIVE{% endblock %}
+{% block body %}
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="login-logo"><img src="{% static 'img/dds_nk.jpg' %}" alt="DDS-NK THRIVE logo"></div>
+        <p class="eyebrow">ACCOUNT SETTINGS</p>
+        <h1>Update your profile</h1>
+        <p class="muted">Change your username and the details you use to sign in.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary w-100 mt-2"><i class="bi bi-check2-circle me-2"></i>Save changes</button>
+        </form>
+        <div class="auth-footer"><a class="auth-link" href="{% url 'password_change' %}">Change password</a></div>
+    </div>
+</div>
+{% endblock %}

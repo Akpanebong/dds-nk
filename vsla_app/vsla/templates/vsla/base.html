@@ -1,0 +1,93 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+{% block title %}{{ title|default:"VSLA Management" }} | DDS-NK THRIVE{% endblock %}
+{% block nav %}{% include 'vsla/_sidebar.html' %}{% endblock %}
+{% block crumb %}
+<span class="module-label vsla-label"><i class="bi bi-piggy-bank me-1"></i> VSLA MANAGEMENT</span>
+<h1>{{ title|default:"VSLA Management" }}</h1>
+{% endblock %}
+{% block content %}
+<style>
+:root {
+  --vsla-brand: #d95f02;
+  --vsla-brand-dark: #a94600;
+  --vsla-navy: #14213d;
+  --vsla-ink: #1f2937;
+  --vsla-muted: #526174;
+  --vsla-line: #d8e0e8;
+  --vsla-surface: #ffffff;
+  --vsla-soft: #fff4e9;
+}
+
+.vsla-page { color: var(--vsla-ink); }
+.vsla-page h1, .vsla-page h2, .vsla-page h3, .vsla-page h4,
+.vsla-page strong, .vsla-page .section-title { color: var(--vsla-navy); }
+.vsla-page p, .vsla-page span, .vsla-page td, .vsla-page label { color: var(--vsla-ink); }
+.vsla-page .text-muted, .vsla-page small.text-muted,
+.vsla-page .page-intro p, .vsla-page .metric-label { color: var(--vsla-muted) !important; }
+.vsla-page a { color: var(--vsla-brand-dark); }
+.vsla-page a:hover { color: var(--vsla-brand); }
+
+.vsla-page .page-intro {
+  background: linear-gradient(120deg, var(--vsla-navy), var(--vsla-brand-dark));
+  color: #fff; border-radius: 18px; padding: 24px; margin-bottom: 22px;
+}
+.vsla-page .page-intro h2, .vsla-page .page-intro p,
+.vsla-page .page-intro span, .vsla-page .page-intro a { color: #fff; }
+.vsla-page .page-intro p { opacity: .92; }
+
+.vsla-page .panel, .vsla-page .metric-card {
+  background: var(--vsla-surface); border: 1px solid var(--vsla-line);
+  border-radius: 15px; padding: 20px; box-shadow: 0 5px 18px rgba(20,33,61,.06);
+}
+.vsla-page .metric-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
+.vsla-page .metric-value { color: var(--vsla-navy); font-size: 1.7rem; font-weight: 800; letter-spacing: -.04em; margin-top: 7px; }
+.vsla-page .metric-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--vsla-soft); color: var(--vsla-brand); display: grid; place-items: center; font-size: 1.2rem; }
+
+.vsla-page .btn-vsla { background: var(--vsla-brand); border-color: var(--vsla-brand); color: #fff !important; font-weight: 700; }
+.vsla-page .btn-vsla:hover, .vsla-page .btn-vsla:focus { background: var(--vsla-brand-dark); border-color: var(--vsla-brand-dark); color: #fff !important; }
+.vsla-page .btn-light { background: #fff; border: 1px solid rgba(255,255,255,.75); color: var(--vsla-navy) !important; font-weight: 700; }
+.vsla-page .btn-outline-secondary { color: var(--vsla-navy); border-color: #aeb9c7; }
+
+.vsla-page .table { --bs-table-color: var(--vsla-ink); --bs-table-hover-color: var(--vsla-navy); vertical-align: middle; }
+.vsla-page .table thead th { color: var(--vsla-navy); background: #fff8f1; border-bottom: 2px solid #f0c9a8; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+.vsla-page .table tbody td { color: var(--vsla-ink); border-bottom-color: #e8edf2; }
+.vsla-page .table tbody tr:hover { --bs-table-hover-bg: #fffaf5; }
+.vsla-page .table td strong, .vsla-page .table td a { color: var(--vsla-navy); }
+.vsla-page .table td small { color: var(--vsla-muted) !important; }
+.vsla-page .table-responsive { border-radius: 12px; }
+
+.vsla-page .status-pill { border-radius: 30px; padding: 5px 9px; font-size: .74rem; font-weight: 800; display: inline-block; }
+.vsla-page .status-active, .vsla-page .status-approved, .vsla-page .status-disbursed, .vsla-page .status-posted, .vsla-page .status-closed { background: #e3f7ed; color: #12633f !important; }
+.vsla-page .status-rejected, .vsla-page .status-defaulted, .vsla-page .status-void { background: #fff0ee; color: #9d2e27 !important; }
+.vsla-page .status-submitted, .vsla-page .status-forming, .vsla-page .status-draft { background: #fff1dc; color: #80520b !important; }
+
+.vsla-page .form-control, .vsla-page .form-select { color: var(--vsla-ink); background: #fff; border-color: #b9c6d3; border-radius: 9px; padding: .65rem .8rem; }
+.vsla-page .form-control:focus, .vsla-page .form-select:focus { color: var(--vsla-ink); border-color: var(--vsla-brand); box-shadow: 0 0 0 .2rem rgba(217,95,2,.15); }
+.vsla-page .form-control::placeholder { color: #718096; opacity: 1; }
+.vsla-page label { font-size: .86rem; font-weight: 700; margin-bottom: 6px; }
+.vsla-page .form-check-label { color: var(--vsla-ink); }
+.vsla-page .alert { color: var(--vsla-navy); border-width: 1px; }
+.vsla-page .badge.text-bg-light { color: var(--vsla-navy) !important; background: #fff4e9 !important; border: 1px solid #f0c9a8; }
+
+.vsla-sidebar { padding: 12px 10px; }
+.vsla-brand { display: flex; align-items: center; gap: 10px; padding: 13px 10px 20px; color: #fff; }
+.vsla-brand-icon { width: 38px; height: 38px; display: grid; place-items: center; background: var(--vsla-brand); color: #fff; border-radius: 12px; font-size: 1.2rem; }
+.vsla-brand strong { color: #fff; }
+.vsla-brand small { display: block; font-size: .62rem; letter-spacing: .12em; color: #dbe3ef; }
+.vsla-nav { display: grid; gap: 4px; }
+.vsla-nav a { padding: 10px 12px; border-radius: 9px; color: #d7dfeb; text-decoration: none; font-size: .9rem; display: flex; gap: 11px; align-items: center; }
+.vsla-nav a:hover, .vsla-nav a.active { background: rgba(217,95,2,.2); color: #fff; font-weight: 700; }
+.vsla-nav-label { padding: 15px 12px 5px; color: #aebbd0; font-size: .66rem; font-weight: 800; letter-spacing: .1em; }
+.vsla-sidebar-foot { font-size: .65rem; color: #aebbd0; padding: 25px 12px 10px; }
+
+@media (max-width: 767px) {
+  .vsla-page .page-intro { padding: 18px; }
+  .vsla-page .metric-value { font-size: 1.4rem; }
+}
+</style>
+<div class="vsla-page">
+  {% if messages %}<div class="mb-3">{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}</div>{% endif %}
+  {% block vsla_content %}{% endblock %}
+</div>
+{% endblock %}

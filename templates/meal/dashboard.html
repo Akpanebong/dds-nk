@@ -1,0 +1,2116 @@
+{% extends 'module_base.html' %}
+
+{% block title %}DDS-NK Performance Dashboard{% endblock %}
+
+{% block module_brand %}
+<i class="bi bi-bar-chart-line-fill"></i> DDS-NK
+{% endblock %}
+
+{% block nav %}
+
+<a class="active" href="{% url 'meal:dashboard' %}">
+    <i class="bi bi-speedometer2"></i>
+    Dashboard
+</a>
+
+<a href="{% url 'meal:activities' %}">
+    <i class="bi bi-diagram-3"></i>
+    Activities
+</a>
+
+<a href="{% url 'meal:records' %}">
+    <i class="bi bi-clipboard-data"></i>
+    Data Records
+</a>
+
+<a href="{% url 'meal:hierarchy' %}">
+    <i class="bi bi-diagram-2"></i>
+    Framework
+</a>
+
+{% endblock %}
+
+
+{% block crumb %}
+
+<span class="module-label meal-text">
+    DDS-NK
+</span>
+
+<h1>{{ period_label }} Performance Dashboard</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+
+:root {
+    --dds-primary: #087f7b;
+    --dds-primary-dark: #075c63;
+    --dds-dark: #18323a;
+    --dds-muted: #64748b;
+    --dds-border: #e5e7eb;
+    --dds-bg: #f6f9f9;
+    --dds-success: #16855b;
+    --dds-warning: #b7791f;
+    --dds-danger: #c53030;
+}
+
+
+/* ================================================================
+   DASHBOARD
+================================================================ */
+
+.dds-dashboard {
+    padding-bottom: 35px;
+}
+
+
+/* ================================================================
+   HEADER
+================================================================ */
+
+.dds-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.dds-eyebrow {
+    color: var(--dds-primary);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.dds-title {
+    color: var(--dds-dark);
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -.025em;
+    margin: 5px 0 0;
+}
+
+.dds-subtitle {
+    color: var(--dds-muted);
+    font-size: 13px;
+    margin: 6px 0 0;
+}
+
+.dds-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+/* ================================================================
+   FILTER BAR
+================================================================ */
+
+.dds-filter-card {
+    background: #fff;
+    border: 1px solid var(--dds-border);
+    border-radius: 14px;
+    padding: 15px;
+    margin-bottom: 16px;
+}
+
+.dds-filter-label {
+    color: var(--dds-muted);
+    display: block;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.dds-filter-card .form-select {
+    border-color: #dfe6e6;
+    border-radius: 9px;
+    font-size: 12px;
+    min-height: 38px;
+}
+
+.dds-filter-card .form-select:focus {
+    border-color: var(--dds-primary);
+    box-shadow: 0 0 0 .2rem rgba(8,127,123,.08);
+}
+
+
+/* ================================================================
+   CARDS
+================================================================ */
+
+.dds-card {
+    background: #fff;
+    border: 1px solid var(--dds-border);
+    border-radius: 15px;
+    box-shadow: 0 4px 18px rgba(15,23,42,.035);
+    height: 100%;
+}
+
+
+/* ================================================================
+   KPI
+================================================================ */
+
+.dds-kpi {
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dds-kpi::after {
+    content: "";
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    right: -35px;
+    bottom: -35px;
+    background: rgba(8,127,123,.055);
+    border-radius: 50%;
+}
+
+.dds-kpi-icon {
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    background: rgba(8,127,123,.09);
+    border-radius: 11px;
+    color: var(--dds-primary);
+    display: flex;
+    font-size: 18px;
+    justify-content: center;
+    margin-bottom: 13px;
+}
+
+.dds-kpi-label {
+    color: var(--dds-muted);
+    display: block;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.dds-kpi-value {
+    color: var(--dds-dark);
+    display: block;
+    font-size: 27px;
+    font-weight: 850;
+    line-height: 1.1;
+    margin-top: 4px;
+}
+
+.dds-kpi-meta {
+    color: #94a3b8;
+    font-size: 10px;
+    margin-top: 6px;
+}
+
+
+/* ================================================================
+   SECTIONS
+================================================================ */
+
+.dds-section {
+    padding: 19px;
+}
+
+.dds-section-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.dds-section-title {
+    color: var(--dds-dark);
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.dds-section-subtitle {
+    color: var(--dds-muted);
+    font-size: 10px;
+    margin-top: 3px;
+}
+
+
+/* ================================================================
+   CHARTS
+================================================================ */
+
+.dds-chart {
+    height: 290px;
+    position: relative;
+}
+
+.dds-chart-small {
+    height: 230px;
+    position: relative;
+}
+
+
+/* ================================================================
+   ACHIEVEMENT
+================================================================ */
+
+.dds-achievement-wrapper {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 18px;
+}
+
+.dds-achievement-ring {
+    align-items: center;
+    background:
+        conic-gradient(
+            var(--dds-primary)
+            calc({{ progress_display_percent }} * 1%),
+            #e8eeee 0
+        );
+    border-radius: 50%;
+    display: flex;
+    height: 145px;
+    justify-content: center;
+    position: relative;
+    width: 145px;
+}
+
+.dds-achievement-ring::before {
+    background: white;
+    border-radius: 50%;
+    content: "";
+    height: 108px;
+    position: absolute;
+    width: 108px;
+}
+
+.dds-achievement-value {
+    color: var(--dds-dark);
+    font-size: 24px;
+    font-weight: 850;
+    position: relative;
+    z-index: 2;
+}
+
+
+/* ================================================================
+   MINI STATS
+================================================================ */
+
+.dds-mini-stat {
+    align-items: center;
+    border-bottom: 1px solid #eef2f2;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.dds-mini-stat:last-child {
+    border-bottom: 0;
+}
+
+.dds-mini-label {
+    color: var(--dds-muted);
+    font-size: 11px;
+}
+
+.dds-mini-value {
+    color: var(--dds-dark);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* ================================================================
+   PERFORMANCE
+================================================================ */
+
+.dds-performance-row {
+    border-bottom: 1px solid #eef2f2;
+    padding: 12px 0;
+}
+
+.dds-performance-row:last-child {
+    border-bottom: 0;
+}
+
+.dds-performance-name {
+    color: var(--dds-dark);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.dds-performance-code {
+    color: var(--dds-primary);
+    font-size: 9px;
+    font-weight: 850;
+    margin-right: 5px;
+}
+
+.dds-progress {
+    background: #edf2f2;
+    border-radius: 99px;
+    height: 7px;
+    margin-top: 7px;
+    overflow: hidden;
+}
+
+.dds-progress-bar {
+    background: var(--dds-primary);
+    border-radius: inherit;
+    height: 100%;
+}
+
+.dds-performance-value {
+    color: var(--dds-dark);
+    font-size: 10px;
+    font-weight: 850;
+}
+
+
+/* ================================================================
+   STATUS
+================================================================ */
+
+.dds-status {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 9px;
+    font-weight: 800;
+    gap: 4px;
+    padding: 5px 8px;
+    white-space: nowrap;
+}
+
+.dds-status-track {
+    background: #e8f7ef;
+    color: #16794c;
+}
+
+.dds-status-attention {
+    background: #fff5df;
+    color: #9a6700;
+}
+
+.dds-status-risk {
+    background: #fdecec;
+    color: #b42318;
+}
+
+
+/* ================================================================
+   TABLE
+================================================================ */
+
+.dds-table {
+    margin-bottom: 0;
+}
+
+.dds-table th {
+    border-bottom: 1px solid var(--dds-border);
+    color: var(--dds-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.dds-table td {
+    color: #334155;
+    font-size: 11px;
+    padding-bottom: 12px;
+    padding-top: 12px;
+    vertical-align: middle;
+}
+
+.dds-activity-code {
+    color: var(--dds-dark);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.dds-activity-title {
+    color: #94a3b8;
+    display: block;
+    font-size: 9px;
+    margin-top: 2px;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ================================================================
+   EMPTY
+================================================================ */
+
+.dds-empty {
+    color: #94a3b8;
+    padding: 35px 15px;
+    text-align: center;
+}
+
+.dds-empty i {
+    display: block;
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+
+/* ================================================================
+   RESPONSIVE
+================================================================ */
+
+@media (max-width: 992px) {
+
+    .dds-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .dds-title {
+        font-size: 22px;
+    }
+
+    .dds-kpi-value {
+        font-size: 23px;
+    }
+
+    .dds-chart {
+        height: 250px;
+    }
+
+    .dds-chart-small {
+        height: 210px;
+    }
+
+}
+
+</style>
+
+
+<div class="dds-dashboard">
+
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <div class="dds-header">
+
+        <div>
+
+            <div class="dds-eyebrow">
+                DDS-NK • PERFORMANCE MANAGEMENT
+            </div>
+
+            <h2 class="dds-title">
+                {{ period_label }}
+                Performance Dashboard
+            </h2>
+
+            <p class="dds-subtitle">
+                Strategic objectives, outputs, activities and
+                indicator performance at a glance.
+            </p>
+
+        </div>
+
+
+        <div class="dds-actions">
+
+            <a href="{% url 'meal:records' %}"
+               class="btn btn-outline-secondary btn-sm">
+
+                <i class="bi bi-clipboard-data me-1"></i>
+                Data Records
+
+            </a>
+
+
+            <a href="{% url 'meal:activities' %}"
+               class="btn btn-primary btn-sm">
+
+                <i class="bi bi-plus-lg me-1"></i>
+                Capture Activity
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         FILTERS
+    =========================================================== -->
+
+    <form method="get"
+          class="dds-filter-card">
+
+        <div class="row g-2 align-items-end">
+
+
+            <div class="col-6 col-md-2">
+
+                <label class="dds-filter-label">
+                    Reporting Year
+                </label>
+
+                <select name="year"
+                        class="form-select">
+
+                    <option value="all"
+                        {% if not selected_year %}
+                            selected
+                        {% endif %}>
+                        All years
+                    </option>
+
+                    {% for year in years %}
+
+                    <option value="{{ year }}"
+                        {% if year == selected_year %}
+                            selected
+                        {% endif %}>
+                        {{ year }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="col-6 col-md-3">
+
+                <label class="dds-filter-label">
+                    Strategic Objective
+                </label>
+
+                <select name="objective"
+                        class="form-select">
+
+                    <option value="">
+                        All objectives
+                    </option>
+
+                    {% for objective in objectives %}
+
+                    <option value="{{ objective.id }}"
+                        {% if selected_objective|stringformat:"s" == objective.id|stringformat:"s" %}
+                            selected
+                        {% endif %}>
+
+                        {{ objective.code }} —
+                        {{ objective.title|truncatechars:45 }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="col-6 col-md-3">
+
+                <label class="dds-filter-label">
+                    Output
+                </label>
+
+                <select name="output"
+                        class="form-select">
+
+                    <option value="">
+                        All outputs
+                    </option>
+
+                    {% for output in outputs %}
+
+                    <option value="{{ output.id }}"
+                        {% if selected_output|stringformat:"s" == output.id|stringformat:"s" %}
+                            selected
+                        {% endif %}>
+
+                        {{ output.code }} —
+                        {{ output.title|truncatechars:45 }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="col-6 col-md-2">
+
+                <label class="dds-filter-label">
+                    Activity Type
+                </label>
+
+                <select name="activity_type"
+                        class="form-select">
+
+                    <option value="">
+                        All types
+                    </option>
+
+                    <option value="people"
+                        {% if selected_activity_type == "people" %}
+                            selected
+                        {% endif %}>
+                        People
+                    </option>
+
+                    <option value="non_people"
+                        {% if selected_activity_type == "non_people" %}
+                            selected
+                        {% endif %}>
+                        Non-people
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="col-6 col-md-2">
+
+                <label class="dds-filter-label">
+                    Status
+                </label>
+
+                <select name="status"
+                        class="form-select">
+
+                    <option value="">
+                        All statuses
+                    </option>
+
+                    <option value="pending"
+                        {% if selected_status == "pending" %}
+                            selected
+                        {% endif %}>
+                        Pending
+                    </option>
+
+                    <option value="in_progress"
+                        {% if selected_status == "in_progress" %}
+                            selected
+                        {% endif %}>
+                        In progress
+                    </option>
+
+                    <option value="completed"
+                        {% if selected_status == "completed" %}
+                            selected
+                        {% endif %}>
+                        Completed
+                    </option>
+
+                    <option value="on_hold"
+                        {% if selected_status == "on_hold" %}
+                            selected
+                        {% endif %}>
+                        On hold
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="col-12 col-md-auto">
+
+                <button type="submit"
+                        class="btn btn-primary btn-sm w-100">
+
+                    <i class="bi bi-funnel me-1"></i>
+                    Apply
+
+                </button>
+
+            </div>
+
+
+            <div class="col-12 col-md-auto">
+
+                <a href="{% url 'meal:dashboard' %}"
+                   class="btn btn-light btn-sm w-100">
+
+                    Reset
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    <!-- ==========================================================
+         PRIMARY KPIs
+    =========================================================== -->
+
+    <div class="row g-3">
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    Strategic Objectives
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ objective_count }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    {{ output_count }} outputs in framework
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    Active Activities
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ activity_count }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    {{ people_count }} people •
+                    {{ non_people_count }} non-people
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    People Reached
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ total_people|floatformat:0 }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    {{ total_youth|floatformat:0 }} youth •
+                    {{ total_pwd|floatformat:0 }} PWD
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    Target Achievement
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ overall_progress_percent }}%
+                </span>
+
+                <div class="dds-kpi-meta">
+                    {{ total_progress|floatformat:1 }}
+                    / {{ total_targets|floatformat:1 }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         PEOPLE DISAGGREGATION KPIs
+    =========================================================== -->
+
+    <div class="row g-3 mt-1">
+        {% for label,value,icon in people_kpis %}
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="dds-card dds-kpi">
+                <div class="dds-kpi-icon"><i class="bi {{ icon }}"></i></div>
+                <span class="dds-kpi-label">{{ label }}</span>
+                <span class="dds-kpi-value">{{ value|floatformat:0 }}</span>
+                <div class="dds-kpi-meta">{{ period_label }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <!-- ==========================================================
+         WORKFLOW KPIs
+    =========================================================== -->
+
+    <div class="row g-3 mt-1">
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    Pending Review
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ pending_count }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    Requires review
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    In Progress
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ in_progress_count }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    Active records
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    Completed
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ completed_count }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    {{ completion_rate }}% completion rate
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="dds-card dds-kpi">
+
+                <div class="dds-kpi-icon">
+                    <i class="bi bi-pause-circle"></i>
+                </div>
+
+                <span class="dds-kpi-label">
+                    On Hold
+                </span>
+
+                <span class="dds-kpi-value">
+                    {{ on_hold_count }}
+                </span>
+
+                <div class="dds-kpi-meta">
+                    Requires follow-up
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         PERFORMANCE TREND
+    =========================================================== -->
+
+    <div class="row g-3 mt-1">
+
+
+        <div class="col-xl-8">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            Monthly Reporting Performance
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            Monthly workflow status by report month
+                        </div>
+
+                    </div>
+
+                    <span class="badge rounded-pill text-bg-light">
+                        {{ selected_year_display }}
+                    </span>
+
+                </div>
+
+
+                <div class="dds-chart">
+
+                    <canvas id="monthlyPerformanceChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-4">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            Overall Achievement
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            Reported progress against target
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="dds-achievement-wrapper">
+
+                    <div class="dds-achievement-ring">
+
+                        <span class="dds-achievement-value">
+                            {{ overall_progress_percent }}%
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="dds-mini-stat">
+
+                    <span class="dds-mini-label">
+                        Reported progress
+                    </span>
+
+                    <span class="dds-mini-value">
+                        {{ total_progress|floatformat:1 }}
+                    </span>
+
+                </div>
+
+
+                <div class="dds-mini-stat">
+
+                    <span class="dds-mini-label">
+                        Planned target
+                    </span>
+
+                    <span class="dds-mini-value">
+                        {{ total_targets|floatformat:1 }}
+                    </span>
+
+                </div>
+
+
+                <div class="dds-mini-stat">
+
+                    <span class="dds-mini-label">
+                        Records
+                    </span>
+
+                    <span class="dds-mini-value">
+                        {{ record_count }}
+                    </span>
+
+                </div>
+
+
+                <div class="dds-mini-stat">
+
+                    <span class="dds-mini-label">
+                        Completion
+                    </span>
+
+                    <span class="dds-mini-value">
+                        {{ completion_rate }}%
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         ANALYTICS
+    =========================================================== -->
+
+    <div class="row g-3 mt-1">
+
+
+        <div class="col-lg-4">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            Activity Portfolio
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            Activity composition
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="dds-chart-small">
+
+                    <canvas id="activityTypeChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-lg-4">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            Reporting Status
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            {{ period_label }} workflow
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="dds-chart-small">
+
+                    <canvas id="statusChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-lg-4">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            People Reached
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            Key beneficiary disaggregation
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="dds-chart-small">
+
+                    <canvas id="peopleChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         STRATEGIC OBJECTIVE PERFORMANCE
+    =========================================================== -->
+
+    <div class="row g-3 mt-1">
+
+
+        <div class="col-xl-7">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            Strategic Objective Performance
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            Achievement against objective-level targets
+                        </div>
+
+                    </div>
+
+
+                    <a href="{% url 'meal:hierarchy' %}"
+                       class="small text-decoration-none">
+
+                        Framework
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+
+                {% for item in objective_performance %}
+
+                <div class="dds-performance-row">
+
+                    <div class="d-flex justify-content-between gap-3">
+
+                        <div class="dds-performance-name">
+
+                            <span class="dds-performance-code">
+                                {{ item.code }}
+                            </span>
+
+                            {{ item.title }}
+
+                        </div>
+
+                        <span class="dds-performance-value">
+                            {{ item.achievement }}%
+                        </span>
+
+                    </div>
+
+
+                    <div class="dds-progress">
+
+                        <div class="dds-progress-bar"
+                             style="width: {{ item.achievement }}%;">
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mt-1">
+
+                        <small class="text-muted">
+                            {{ item.activities }} activities
+                        </small>
+
+                        <small class="text-muted">
+                            {{ item.completed }}/{{ item.records }}
+                            completed
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="dds-empty">
+
+                    <i class="bi bi-bullseye"></i>
+
+                    No strategic objective performance data.
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ======================================================
+             TOP ACTIVITIES
+        ======================================================= -->
+
+        <div class="col-xl-5">
+
+            <div class="dds-card dds-section">
+
+                <div class="dds-section-header">
+
+                    <div>
+
+                        <h3 class="dds-section-title">
+                            Activity Performance
+                        </h3>
+
+                        <div class="dds-section-subtitle">
+                            Highest reported achievement
+                        </div>
+
+                    </div>
+
+
+                    <a href="{% url 'meal:activities' %}"
+                       class="small text-decoration-none">
+
+                        View all
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+
+                {% for item in top_activities %}
+
+                <div class="dds-performance-row">
+
+                    <div class="d-flex justify-content-between gap-2">
+
+                        <div style="min-width:0;">
+
+                            <div class="dds-performance-name">
+
+                                <span class="dds-performance-code">
+                                    {{ item.code }}
+                                </span>
+
+                                {{ item.title }}
+
+                            </div>
+
+                            <small class="text-muted">
+                                {{ item.type }}
+                            </small>
+
+                        </div>
+
+
+                        {% if item.is_non_people %}
+
+                        <span class="dds-status dds-status-track">
+                            <i class="bi bi-check-circle"></i>
+                            Recorded
+                        </span>
+
+                        {% elif item.status == "No target" %}
+
+                        <span class="dds-status dds-status-attention">
+                            <i class="bi bi-dash-circle"></i>
+                            No target
+                        </span>
+
+                        {% elif item.status == "On track" %}
+
+                        <span class="dds-status dds-status-track">
+                            <i class="bi bi-check-circle"></i>
+                            On track
+                        </span>
+
+                        {% elif item.status == "Needs attention" %}
+
+                        <span class="dds-status dds-status-attention">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Attention
+                        </span>
+
+                        {% else %}
+
+                        <span class="dds-status dds-status-risk">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            At risk
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="dds-progress">
+
+                        <div class="dds-progress-bar"
+                             style="width: {{ item.bar_width }}%;">
+                        </div>
+
+                    </div>
+
+
+                    <div class="text-end mt-1">
+
+                        <span class="dds-performance-value">
+                            {% if item.is_non_people %}
+                                {{ item.progress|floatformat:1 }} recorded
+                            {% else %}
+                                {{ item.progress|floatformat:1 }} / {{ item.target|floatformat:1 }}
+                                {% if item.status != "No target" %}({{ item.achievement }}%){% endif %}
+                            {% endif %}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="dds-empty">
+
+                    <i class="bi bi-graph-up"></i>
+
+                    No activity performance data.
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         RECENT SUBMISSIONS
+    =========================================================== -->
+
+    <div class="dds-card dds-section mt-3">
+
+        <div class="dds-section-header">
+
+            <div>
+
+                <h3 class="dds-section-title">
+                    Recent Submissions
+                </h3>
+
+                <div class="dds-section-subtitle">
+                    Latest records captured in the DDS-NK system
+                </div>
+
+            </div>
+
+
+            <a href="{% url 'meal:records' %}"
+               class="small text-decoration-none">
+
+                View all records
+                <i class="bi bi-arrow-right"></i>
+
+            </a>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table dds-table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Activity</th>
+                        <th>Type</th>
+                        <th>Period</th>
+                        <th>Result</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for r in recent_records %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="dds-activity-code">
+                                {{ r.indicator.code }}
+                            </div>
+
+                            <span class="dds-activity-title">
+                                {{ r.indicator.title }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if r.indicator.is_people %}
+
+                            <span class="badge rounded-pill text-bg-light">
+
+                                <i class="bi bi-people me-1"></i>
+                                People
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge rounded-pill text-bg-light">
+
+                                <i class="bi bi-box-seam me-1"></i>
+                                Non-people
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ r.reporting_year }}
+
+                            {% if r.reporting_month %}
+
+                            -{{ r.reporting_month|stringformat:"02d" }}
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if r.indicator.is_people %}
+
+                            <strong>
+                                {{ r.total_people|floatformat:0 }}
+                            </strong>
+
+                            <span class="text-muted">
+                                people
+                            </span>
+
+                            {% else %}
+
+                            <strong>
+                                {{ r.progress_value|floatformat:1 }}
+                            </strong>
+
+                            {% if r.indicator.unit %}
+                            <span class="text-muted">
+                                {{ r.indicator.unit }}
+                            </span>
+                            {% endif %}
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if r.status == "completed" %}
+
+                            <span class="dds-status dds-status-track">
+                                <i class="bi bi-check-circle"></i>
+                                Completed
+                            </span>
+
+                            {% elif r.status == "pending" %}
+
+                            <span class="dds-status dds-status-attention">
+                                <i class="bi bi-clock"></i>
+                                Pending
+                            </span>
+
+                            {% elif r.status == "on_hold" %}
+
+                            <span class="dds-status dds-status-risk">
+                                <i class="bi bi-pause-circle"></i>
+                                On hold
+                            </span>
+
+                            {% else %}
+
+                            <span class="dds-status dds-status-attention">
+                                <i class="bi bi-arrow-repeat"></i>
+                                In progress
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <small class="text-muted">
+
+                                {{ r.created_at|date:"d M Y" }}
+
+                            </small>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6">
+
+                            <div class="dds-empty">
+
+                                <i class="bi bi-inbox"></i>
+
+                                No submissions recorded for the
+                                selected filters.
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================================================
+     CHART DATA
+================================================================ -->
+
+{{ chart_data|json_script:"dds-chart-data" }}
+
+
+<!-- ==============================================================
+     CHART.JS
+================================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const dataElement =
+        document.getElementById("dds-chart-data");
+
+    if (!dataElement) {
+        return;
+    }
+
+    const data =
+        JSON.parse(dataElement.textContent);
+
+
+    /* ==========================================================
+       GLOBAL CONFIG
+    =========================================================== */
+
+    const textColor = "#64748b";
+
+    const gridColor =
+        "rgba(148, 163, 184, 0.15)";
+
+
+    const baseOptions = {
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        plugins: {
+
+            legend: {
+
+                position: "bottom",
+
+                labels: {
+
+                    usePointStyle: true,
+
+                    padding: 16,
+
+                    color: textColor,
+
+                    font: {
+                        size: 10
+                    }
+
+                }
+
+            }
+
+        }
+
+    };
+
+
+    /* ==========================================================
+       MONTHLY REPORTING
+    =========================================================== */
+
+    const monthlyCanvas =
+        document.getElementById(
+            "monthlyPerformanceChart"
+        );
+
+
+    if (monthlyCanvas) {
+
+        new Chart(
+            monthlyCanvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels:
+                        data.monthly_labels,
+
+                    datasets: [
+
+                        {
+                            label: "Pending",
+                            data: data.monthly_pending,
+                            borderColor: "#b7791f",
+                            borderWidth: 2,
+                            tension: .35,
+                            fill: false,
+                            pointRadius: 3
+                        },
+
+                        {
+                            label: "In progress",
+                            data: data.monthly_in_progress,
+                            borderColor: "#2563eb",
+                            borderWidth: 2,
+                            tension: .35,
+                            fill: false,
+                            pointRadius: 3
+                        },
+
+                        {
+                            label: "Completed",
+                            data: data.monthly_completed,
+                            borderColor: "#198754",
+                            borderWidth: 2,
+                            tension: .35,
+                            fill: false,
+                            pointRadius: 3
+                        },
+
+                        {
+                            label: "On hold",
+                            data: data.monthly_on_hold,
+                            borderColor: "#c53030",
+                            borderWidth: 2,
+                            tension: .35,
+                            fill: false,
+                            pointRadius: 3
+                        }
+
+                    ]
+
+                },
+
+
+                options: {
+
+                    ...baseOptions,
+
+                    scales: {
+
+                        x: {
+
+                            grid: {
+                                display: false
+                            },
+
+                            ticks: {
+                                color: textColor
+                            }
+
+                        },
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            grid: {
+                                color: gridColor
+                            },
+
+                            ticks: {
+                                color: textColor,
+                                precision: 0
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ==========================================================
+       ACTIVITY TYPE
+    =========================================================== */
+
+    const activityTypeCanvas =
+        document.getElementById(
+            "activityTypeChart"
+        );
+
+
+    if (activityTypeCanvas) {
+
+        new Chart(
+            activityTypeCanvas,
+            {
+
+                type: "doughnut",
+
+                data: {
+
+                    labels:
+                        data.activity_type_labels,
+
+                    datasets: [{
+
+                        data:
+                            data.activity_type_values,
+
+                        backgroundColor: [
+                            "#087f7b",
+                            "#8aacab"
+                        ],
+
+                        borderWidth: 0,
+
+                        hoverOffset: 5
+
+                    }]
+
+                },
+
+
+                options: {
+
+                    ...baseOptions,
+
+                    cutout: "70%"
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ==========================================================
+       STATUS
+    =========================================================== */
+
+    const statusCanvas =
+        document.getElementById(
+            "statusChart"
+        );
+
+
+    if (statusCanvas) {
+
+        new Chart(
+            statusCanvas,
+            {
+
+                type: "doughnut",
+
+                data: {
+
+                    labels:
+                        data.status_labels,
+
+                    datasets: [{
+
+                        data:
+                            data.status_values,
+
+                        backgroundColor: [
+                            "#b7791f",
+                            "#2563eb",
+                            "#198754",
+                            "#c53030"
+                        ],
+
+                        borderWidth: 0,
+
+                        hoverOffset: 5
+
+                    }]
+
+                },
+
+
+                options: {
+
+                    ...baseOptions,
+
+                    cutout: "70%"
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* ==========================================================
+       PEOPLE REACHED
+    =========================================================== */
+
+    const peopleCanvas =
+        document.getElementById(
+            "peopleChart"
+        );
+
+
+    if (peopleCanvas) {
+
+        new Chart(
+            peopleCanvas,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels:
+                        data.people_labels,
+
+                    datasets: [{
+
+                        label:
+                            "People reached",
+
+                        data:
+                            data.people_values,
+
+                        backgroundColor: [
+                            "#087f7b",
+                            "#075c63",
+                            "#4d9995",
+                            "#76aaa7",
+                            "#9bbab8"
+                        ],
+
+                        borderRadius: 6,
+
+                        borderSkipped: false
+
+                    }]
+
+                },
+
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+
+                            grid: {
+                                display: false
+                            },
+
+                            ticks: {
+                                color: textColor
+                            }
+
+                        },
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            grid: {
+                                color: gridColor
+                            },
+
+                            ticks: {
+                                color: textColor,
+                                precision: 0
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+});
+
+</script>
+
+{% include 'core/_audit_activity.html' %}
+{% endblock %}

@@ -1,0 +1,436 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Leave Approvals | DDS-NK THRIVE HR{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-people-fill"></i> Human Resources
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'hr:dashboard' %}">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{% url 'hr:staff' %}">
+        <i class="bi bi-person-vcard"></i> Staff Records
+    </a>
+    <a href="{% url 'hr:reviews' %}">
+        <i class="bi bi-clipboard2-check"></i> Performance
+    </a>
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label hr-text">HUMAN RESOURCES</span>
+    <h1>Leave approvals</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .leave-page {
+        --leave-primary: #e50078;
+        --leave-dark: #3b2938;
+        --leave-muted: #718096;
+        --leave-border: #e8eaf0;
+        --leave-surface: #ffffff;
+        --leave-bg: #f8f9fc;
+        color: var(--leave-dark);
+    }
+
+    .leave-page .leave-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .leave-page .leave-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: .9rem;
+    }
+
+    .leave-page .leave-heading-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(229, 0, 120, .09);
+        color: var(--leave-primary);
+        font-size: 1.35rem;
+    }
+
+    .leave-page .leave-heading h2 {
+        margin: 0 0 .35rem;
+        font-size: clamp(1.25rem, 2vw, 1.7rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        color: var(--leave-dark);
+    }
+
+    .leave-page .leave-heading p {
+        margin: 0;
+        color: var(--leave-muted);
+        font-size: .9rem;
+        line-height: 1.6;
+    }
+
+    .leave-page .leave-summary {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        padding: .7rem 1rem;
+        border: 1px solid var(--leave-border);
+        border-radius: 12px;
+        background: var(--leave-surface);
+        color: var(--leave-muted);
+        font-size: .82rem;
+    }
+
+    .leave-page .leave-summary strong {
+        color: var(--leave-dark);
+        font-size: 1.1rem;
+    }
+
+    .leave-page .leave-panel {
+        overflow: hidden;
+        border: 1px solid var(--leave-border);
+        border-radius: 16px;
+        background: var(--leave-surface);
+        box-shadow: 0 5px 22px rgba(35, 25, 45, .035);
+    }
+
+    .leave-page .leave-panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding: 1.15rem 1.35rem;
+        border-bottom: 1px solid var(--leave-border);
+    }
+
+    .leave-page .leave-panel-head h3 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+        font-weight: 750;
+        color: var(--leave-dark);
+    }
+
+    .leave-page .leave-panel-head p {
+        margin: 0;
+        color: var(--leave-muted);
+        font-size: .82rem;
+    }
+
+    .leave-page .leave-count {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .38rem .7rem;
+        border-radius: 999px;
+        background: #fff0f7;
+        color: #a50056;
+        font-size: .75rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .leave-page .leave-table {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    .leave-page .leave-table thead th {
+        padding: .9rem 1.1rem;
+        background: var(--leave-bg);
+        border-bottom: 1px solid var(--leave-border);
+        color: #697386;
+        font-size: .69rem;
+        font-weight: 800;
+        letter-spacing: .065em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .leave-page .leave-table tbody td {
+        padding: 1rem 1.1rem;
+        border-bottom: 1px solid #f0f1f5;
+        color: #4b5565;
+        font-size: .86rem;
+    }
+
+    .leave-page .leave-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .leave-page .leave-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .leave-page .leave-table tbody tr:hover {
+        background: #fffafd;
+    }
+
+    .leave-page .employee-cell {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        min-width: 175px;
+    }
+
+    .leave-page .employee-avatar {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #f4eaf1;
+        color: var(--leave-dark);
+        font-size: 1rem;
+    }
+
+    .leave-page .employee-name {
+        display: block;
+        color: var(--leave-dark);
+        font-weight: 750;
+        line-height: 1.4;
+    }
+
+    .leave-page .employee-caption {
+        display: block;
+        margin-top: .2rem;
+        color: var(--leave-muted);
+        font-size: .74rem;
+    }
+
+    .leave-page .leave-period {
+        min-width: 175px;
+        color: var(--leave-dark);
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .leave-page .leave-period i {
+        margin-right: .35rem;
+        color: var(--leave-muted);
+    }
+
+    .leave-page .leave-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .65rem;
+        border-radius: 999px;
+        background: #f0f2f6;
+        color: #596273;
+        font-size: .73rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .leave-page .leave-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .leave-page .leave-status.status-pending,
+    .leave-page .leave-status.status-submitted {
+        background: #fff5df;
+        color: #996500;
+    }
+
+    .leave-page .leave-status.status-approved {
+        background: #e6f7ed;
+        color: #197448;
+    }
+
+    .leave-page .leave-status.status-rejected,
+    .leave-page .leave-status.status-declined {
+        background: #fff0f0;
+        color: #b42332;
+    }
+
+    .leave-page .leave-status.status-cancelled,
+    .leave-page .leave-status.status-canceled {
+        background: #f0f2f6;
+        color: #697386;
+    }
+
+    .leave-page .leave-action {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: .45rem;
+        padding: .48rem .8rem;
+        border: 1px solid #f0c6dc;
+        border-radius: 9px;
+        background: #fff;
+        color: #b60060;
+        font-size: .8rem;
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background .15s ease, border-color .15s ease;
+    }
+
+    .leave-page .leave-action:hover {
+        border-color: var(--leave-primary);
+        background: #fff2f8;
+        color: #92004d;
+    }
+
+    .leave-page .leave-empty {
+        padding: 3.5rem 1.25rem !important;
+        text-align: center;
+    }
+
+    .leave-page .leave-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 1rem;
+        border-radius: 18px;
+        background: #eaf8ef;
+        color: #218452;
+        font-size: 1.65rem;
+    }
+
+    .leave-page .leave-empty h4 {
+        margin-bottom: .45rem;
+        color: var(--leave-dark);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .leave-page .leave-empty p {
+        margin: 0;
+        color: var(--leave-muted);
+        font-size: .85rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .leave-page .leave-hero {
+            align-items: flex-start;
+        }
+
+        .leave-page .leave-summary {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .leave-page .leave-panel-head {
+            padding: 1rem;
+        }
+
+        .leave-page .leave-table thead th,
+        .leave-page .leave-table tbody td {
+            padding: .85rem;
+        }
+    }
+</style>
+
+<div class="leave-page">
+    <section class="leave-hero">
+        <div class="leave-heading">
+            <div class="leave-heading-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+            <div>
+                <h2>Leave approvals</h2>
+                <p>Review staff leave requests and open individual records to inspect their details.</p>
+            </div>
+        </div>
+
+        <div class="leave-summary">
+            <span><i class="bi bi-inbox me-1"></i> Requests in this list</span>
+            <strong>{{ leaves|length }}</strong>
+        </div>
+    </section>
+
+    <section class="leave-panel">
+        <div class="leave-panel-head">
+            <div>
+                <h3>Leave request register</h3>
+                <p>Staff leave periods and current request status</p>
+            </div>
+            <span class="leave-count">
+                <i class="bi bi-shield-check"></i>
+                HR workflow
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table leave-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Employee</th>
+                        <th scope="col">Leave period</th>
+                        <th scope="col">Request status</th>
+                        <th scope="col" class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                        <tr>
+                            <td>
+                                <div class="employee-cell">
+                                    <div class="employee-avatar">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <div>
+                                        <span class="employee-name">
+                                            {{ leave.employee|default:"Employee not specified" }}
+                                        </span>
+                                        <span class="employee-caption">Leave request</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="leave-period">
+                                    <i class="bi bi-calendar3"></i>
+                                    {{ leave.start_date|date:"d M Y" }}
+                                    <span class="mx-1 text-muted">–</span>
+                                    {{ leave.end_date|date:"d M Y" }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="leave-status status-{{ leave.status|default:'unknown'|slugify }}">
+                                    {{ leave.get_status_display|default:leave.status|default:"Unknown" }}
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <a class="leave-action"
+                                   href="{% url 'hr:leave_detail' leave.slug %}">
+                                    <i class="bi bi-eye"></i>
+                                    Review
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="leave-empty">
+                                <div class="leave-empty-icon">
+                                    <i class="bi bi-check2-circle"></i>
+                                </div>
+                                <h4>No leave requests to display</h4>
+                                <p>There are currently no requests in this list. New requests will appear here when available.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

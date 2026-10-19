@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Performance Appraisal {{ appraisal.reference }}</title>
+    <style>
+        @page { size: A4; margin: 1.5cm; }
+        body { color: #3b2938; font-family: Helvetica, Arial, sans-serif; font-size: 10pt; }
+        h1 { color: #3b2938; font-size: 18pt; margin: 0 0 4px; }
+        h2 { border-bottom: 1px solid #d9dee7; color: #3b2938; font-size: 12pt; margin: 18px 0 8px; padding-bottom: 4px; }
+        h3 { color: #3b2938; font-size: 10pt; margin: 12px 0 4px; }
+        p { line-height: 1.45; margin: 4px 0 8px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #d9dee7; padding: 6px; text-align: left; vertical-align: top; }
+        th { background: #f6f2f5; width: 26%; }
+        .muted { color: #75808d; }
+        .status { color: #e50078; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>DDS-NK THRIVE</h1>
+    <p class="muted">Performance Appraisal Report</p>
+
+    <table>
+        <tr><th>Reference</th><td>{{ appraisal.reference|default:"Not assigned" }}</td></tr>
+        <tr><th>Employee</th><td>{{ appraisal.employee|default:"Not specified" }}</td></tr>
+        <tr><th>Supervisor</th><td>{{ appraisal.supervisor|default:"Not specified" }}</td></tr>
+        <tr><th>Year</th><td>{{ appraisal.year|default:"Not specified" }}</td></tr>
+        <tr><th>Status</th><td class="status">{{ appraisal.get_status_display|default:"Unknown" }}</td></tr>
+        <tr><th>Duty station</th><td>{{ appraisal.duty_station|default:"Not specified" }}</td></tr>
+        <tr><th>Years in organisation</th><td>{{ appraisal.years_in_org|default:"Not specified" }}</td></tr>
+    </table>
+
+    <h2>Employee submission</h2>
+    <h3>Significant event</h3>
+    <p>{{ appraisal.significant_event|default:"No response provided."|linebreaksbr }}</p>
+    <h3>Staff opinion</h3>
+    <p>{{ appraisal.staff_opinion|default:"No response provided."|linebreaksbr }}</p>
+    <h3>Strengths</h3>
+    <p>{{ appraisal.strengths|default:"No response provided."|linebreaksbr }}</p>
+    <h3>Weaknesses</h3>
+    <p>{{ appraisal.weaknesses|default:"No response provided."|linebreaksbr }}</p>
+    <h3>Capacity gaps</h3>
+    <p>{{ appraisal.capacity_gaps|default:"No response provided."|linebreaksbr }}</p>
+
+    <h2>Assessment scores</h2>
+    <table>
+        <tr><th>Job description score</th><td>{{ appraisal.job_description_score|default:"Not scored" }}</td></tr>
+        <tr><th>Job description interpretation</th><td>{{ appraisal.job_description_interpretation|default:"Not provided" }}</td></tr>
+        <tr><th>Service score</th><td>{{ appraisal.service_score|default:"Not scored" }}</td></tr>
+        <tr><th>Service interpretation</th><td>{{ appraisal.service_interpretation|default:"Not provided" }}</td></tr>
+    </table>
+
+    <h2>Reviews</h2>
+    <h3>Supervisor review</h3>
+    <p>{{ appraisal.supervisor_comment|default:"No supervisor review provided."|linebreaksbr }}</p>
+    <h3>HR review</h3>
+    <p>{{ appraisal.hr_comment|default:"No HR review provided."|linebreaksbr }}</p>
+    <h3>Executive review</h3>
+    <p>{{ appraisal.cmt_comment|default:"No executive review provided."|linebreaksbr }}</p>
+    <h3>Verdict</h3>
+    <p>{{ appraisal.verdict|default:"No verdict provided."|linebreaksbr }}</p>
+</body>
+</html>

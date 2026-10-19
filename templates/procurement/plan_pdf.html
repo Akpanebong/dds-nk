@@ -1,0 +1,920 @@
+
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Approved Procurement Plan ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â {{ plan.number }}</title>
+
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0.8cm 0.9cm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9px;
+            line-height: 1.4;
+            color: #352735;
+            background: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        td,
+        th {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        /* ==================================================
+           DOCUMENT HEADER
+        ================================================== */
+
+        .header {
+            margin-bottom: 8px;
+            border-bottom: 2px solid #e50078;
+        }
+
+        .header td {
+            padding: 0 0 8px;
+            vertical-align: middle;
+        }
+
+        .logo-cell {
+            width: 46px;
+        }
+
+        .logo {
+            display: block;
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .brand-cell {
+            padding-left: 8px !important;
+        }
+
+        .brand {
+            color: #3b2938;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+        }
+
+        .brand-sub {
+            margin-top: 3px;
+            color: #806b7a;
+            font-size: 6.5px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .document-cell {
+            width: 37%;
+            text-align: right;
+        }
+
+        .document-label {
+            color: #bd005f;
+            font-size: 7px;
+            font-weight: bold;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .document-number {
+            margin: 4px 0 5px;
+            color: #3b2938;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .approved {
+            display: inline-block;
+            padding: 4px 7px;
+            border: 1px solid #b8ddc7;
+            border-radius: 3px;
+            background: #edf8f0;
+            color: #17663c;
+            font-size: 6.5px;
+            font-weight: bold;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+        }
+
+        /* ==================================================
+           SECTION HEADINGS
+        ================================================== */
+
+        .section-title {
+            margin: 9px 0 0;
+            padding: 6px 8px;
+            background: #3b2938;
+            color: #fff;
+            font-size: 7.5px;
+            font-weight: bold;
+            letter-spacing: 0.55px;
+            text-transform: uppercase;
+        }
+
+        /* ==================================================
+           PLAN INFORMATION
+        ================================================== */
+
+        .meta {
+            border: 1px solid #ead8e2;
+            border-top: 0;
+        }
+
+        .meta td {
+            width: 25%;
+            padding: 6px 7px;
+            border-right: 1px solid #f0e3ea;
+            border-bottom: 1px solid #f0e3ea;
+            vertical-align: top;
+        }
+
+        .meta tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .meta td:last-child {
+            border-right: 0;
+        }
+
+        .meta-label {
+            display: block;
+            margin-bottom: 3px;
+            color: #806b7a;
+            font-size: 6.5px;
+            font-weight: bold;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            display: block;
+            color: #352735;
+            font-size: 8px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        /* ==================================================
+           PROCUREMENT ITEMS
+        ================================================== */
+
+        .items {
+            margin-top: 5px;
+        }
+
+        .items thead {
+            display: table-header-group;
+        }
+
+        .items tr {
+            page-break-inside: avoid;
+        }
+
+        .items th {
+            padding: 6px 5px;
+            border-bottom: 1.5px solid #e50078;
+            background: #fff0f6;
+            color: #493244;
+            font-size: 6.8px;
+            font-weight: bold;
+            text-align: left;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+
+        .items td {
+            padding: 5px;
+            border-bottom: 1px solid #eedfe7;
+            font-size: 7.8px;
+            vertical-align: top;
+        }
+
+        .items tbody tr:nth-child(even) td {
+            background: #fffafd;
+        }
+
+        .items .num {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .items .product {
+            color: #352735;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            padding: 12px !important;
+            color: #806b7a;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .money {
+            white-space: nowrap;
+        }
+
+        /* ==================================================
+           FINANCIAL SUMMARY
+        ================================================== */
+
+        .totals {
+            width: 48%;
+            margin: 7px 0 0 auto;
+            page-break-inside: avoid;
+        }
+
+        .totals td {
+            padding: 5px 7px;
+            border-bottom: 1px solid #ead8e2;
+            font-size: 8px;
+        }
+
+        .totals .label {
+            color: #806b7a;
+            text-align: right;
+        }
+
+        .totals .num {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .totals .grand td {
+            padding: 7px;
+            border: 0;
+            background: #3b2938;
+            color: #fff;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .totals .grand .label {
+            color: #fff;
+        }
+
+        /* ==================================================
+           PROFESSIONAL APPROVAL CARDS
+        ================================================== */
+
+        .approval-section {
+            margin-top: 12px;
+            page-break-inside: avoid;
+        }
+
+        .approval {
+            width: 100%;
+            margin-top: 7px;
+            border-collapse: separate;
+            border-spacing: 7px 0;
+            table-layout: fixed;
+            page-break-inside: avoid;
+        }
+
+        .approval td {
+            width: 33.333%;
+            padding: 0;
+            vertical-align: top;
+            border: 0;
+        }
+
+        .approval-card {
+            min-height: 153px;
+            border: 1px solid #e7dce3;
+            border-radius: 4px;
+            background: #fffafd;
+            page-break-inside: avoid;
+        }
+
+        .approval-card.requester {
+            border-top: 3px solid #ff7900;
+        }
+
+        .approval-card.reviewer {
+            border-top: 3px solid #bd005f;
+        }
+
+        .approval-card.approver {
+            border-top: 3px solid #3b2938;
+        }
+
+        .approval-card-header {
+            padding: 8px 8px 7px;
+            border-bottom: 1px solid #f0e3ea;
+            background: #fff5f9;
+        }
+
+        .approval-step {
+            margin-bottom: 3px;
+            color: #806b7a;
+            font-size: 6px;
+            font-weight: bold;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .approval-role {
+            color: #493244;
+            font-size: 8px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .approval-card-body {
+            padding: 8px;
+        }
+
+        .approval-name {
+            min-height: 13px;
+            color: #352735;
+            font-size: 8.5px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .approval-title {
+            min-height: 19px;
+            margin-top: 3px;
+            color: #806b7a;
+            font-size: 7px;
+            line-height: 1.4;
+        }
+
+        .signature-caption {
+            margin-top: 7px;
+            color: #806b7a;
+            font-size: 6px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /*
+         * Fixed signature area:
+         * all three cards use the same height and alignment.
+         */
+
+        .signature-box {
+            display: block;
+            width: 100%;
+            height: 36px;
+            margin-top: 3px;
+            padding: 2px 0 3px;
+            border-bottom: 1px solid #b8a6b1;
+            overflow: hidden;
+        }
+
+        .signature-image {
+            display: block;
+            max-width: 100%;
+            max-height: 30px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            object-position: left bottom;
+        }
+
+        .signature-placeholder {
+            height: 29px;
+            width: 100%;
+        }
+
+        .signature-hint {
+            margin-top: 2px;
+            color: #a18f9a;
+            font-size: 5.5px;
+        }
+
+        .approval-date {
+            margin-top: 7px;
+            padding-top: 5px;
+            border-top: 1px solid #f0e3ea;
+            color: #806b7a;
+            font-size: 6.5px;
+            line-height: 1.4;
+        }
+
+        .approval-date strong {
+            color: #493244;
+        }
+
+        .approval-stamp {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 3px 5px;
+            border: 1px solid #b8ddc7;
+            border-radius: 2px;
+            background: #edf8f0;
+            color: #17663c;
+            font-size: 5.8px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .approval-stamp.pending {
+            border-color: #ead8e2;
+            background: #f7f2f5;
+            color: #806b7a;
+        }
+
+        /* ==================================================
+           DOCUMENT-CONTROL FOOTER
+        ================================================== */
+
+
+        /* Document-control footer ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no orange horizontal line */
+        .footer {
+            margin-top: 22px;
+            padding-top: 8px;
+            border-top: none;
+            color: #806b7a;
+            font-size: 7px;
+            line-height: 1.5;
+            page-break-inside: avoid;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .footer-table td {
+            padding: 0;
+            vertical-align: top;
+            overflow-wrap: break-word;
+        }
+
+        .footer-table td:first-child {
+            width: 64%;
+            padding-right: 14px;
+        }
+
+        .footer-table td:last-child {
+            width: 36%;
+            padding-left: 8px;
+        }
+
+        .footer strong {
+            display: inline-block;
+            margin-bottom: 3px;
+            padding-top: 2px;
+            color: #bd005f;
+            font-size: 7px;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .footer-note {
+            margin-top: 7px;
+            padding-top: 5px;
+            border-top: 1px solid #f0e3ea;
+            color: #a18f9a;
+            font-size: 6px;
+            text-align: center;
+        }
+
+        /* ==================================================
+           PRINT / PDF
+        ================================================== */
+
+        @media print {
+            html,
+            body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .header,
+            .meta,
+            .totals,
+            .approval-section,
+            .approval,
+            .approval-card,
+            .footer {
+                page-break-inside: avoid;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- DOCUMENT IDENTITY -->
+    <table class="header">
+        <tr>
+            <td class="logo-cell">
+                {% if logo_path %}
+                    <img class="logo"
+                         src="{{ logo_path }}"
+                         alt="DDS-NK THRIVE">
+                {% endif %}
+            </td>
+
+            <td class="brand-cell">
+                <div class="brand">DDS-NK THRIVE</div>
+                <div class="brand-sub">
+                    Integrated Management System
+                </div>
+            </td>
+
+            <td class="document-cell">
+                <div class="document-label">
+                    Approved Procurement Plan
+                </div>
+
+                <div class="document-number">
+                    {{ plan.number|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                </div>
+
+                <span class="approved">
+                    ED Approved
+                    {% if plan.approved_at %}
+                        &middot; {{ plan.approved_at|date:"d M Y" }}
+                    {% endif %}
+                </span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- 01: PLAN INFORMATION -->
+    <div class="section-title">
+        01 &nbsp; Plan Information
+    </div>
+
+    <table class="meta">
+        <tr>
+            <td>
+                <span class="meta-label">Project</span>
+                <span class="meta-value">
+                    {{ plan.project.name|default:"Not specified" }}
+                </span>
+            </td>
+
+            <td>
+                <span class="meta-label">Donor</span>
+                <span class="meta-value">
+                    {{ plan.donor|default:"Not specified" }}
+                </span>
+            </td>
+
+            <td>
+                <span class="meta-label">Fiscal Year</span>
+                <span class="meta-value">
+                    {{ plan.fiscal_year|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                </span>
+            </td>
+
+            <td>
+                <span class="meta-label">Budget Period</span>
+                <span class="meta-value">
+                    {{ plan.get_budget_period_display|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                </span>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span class="meta-label">Requester</span>
+                <span class="meta-value">
+                    {{ plan.requester.get_full_name|default:plan.requester.username|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                </span>
+            </td>
+
+            <td>
+                <span class="meta-label">Project Head</span>
+                <span class="meta-value">
+                    {{ plan.project_head|default:"Not assigned" }}
+                </span>
+            </td>
+
+            <td>
+                <span class="meta-label">Approved Budget</span>
+                <span class="meta-value money">
+                    UGX {{ plan.budget|floatformat:2|intcomma }}
+                </span>
+            </td>
+
+            <td>
+                <span class="meta-label">Status</span>
+                <span class="meta-value">Final Approved</span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- 02: PROCUREMENT ITEMS -->
+    <div class="section-title">
+        02 &nbsp; Approved Procurement Items
+    </div>
+
+    <table class="items">
+        <colgroup>
+            <col style="width:4%">
+            <col style="width:18%">
+            <col style="width:25%">
+            <col style="width:10%">
+            <col style="width:13%">
+            <col style="width:13%">
+            <col style="width:17%">
+        </colgroup>
+
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th>Description</th>
+                <th class="num">Quantity</th>
+                <th class="num">Unit Price</th>
+                <th>Delivery Date</th>
+                <th class="num">Line Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in plan.items.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+
+                    <td class="product">
+                        {{ item.product.name|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                    </td>
+
+                    <td>
+                        {{ item.description|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                    </td>
+
+                    <td class="num">
+                        {{ item.qty|floatformat:2 }}
+                        {% if item.unit_measure %}
+                            {{ item.unit_measure }}
+                        {% endif %}
+                    </td>
+
+                    <td class="num">
+                        UGX {{ item.est_unit_cost|floatformat:2|intcomma }}
+                    </td>
+
+                    <td>
+                        {{ item.delivery_date|date:"d M Y"|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                    </td>
+
+                    <td class="num">
+                        UGX {{ item.line_total|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        No procurement items are recorded for this plan.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- FINANCIAL RECONCILIATION -->
+    <table class="totals">
+        <tr>
+            <td class="label">Approved Budget</td>
+            <td class="num">
+                UGX {{ plan.budget|floatformat:2|intcomma }}
+            </td>
+        </tr>
+
+        <tr class="grand">
+            <td class="label">Approved Plan Total</td>
+            <td class="num">
+                UGX {{ plan.total_amount|floatformat:2|intcomma }}
+            </td>
+        </tr>
+    </table>
+
+    <!-- 03: APPROVAL AND SIGNATURE RECORD -->
+    <div class="approval-section">
+        <div class="section-title">
+            03 &nbsp; Approval Record
+        </div>
+
+        <table class="approval">
+            <tr>
+                <!-- REQUESTER -->
+                <td>
+                    <div class="approval-card requester">
+                        <div class="approval-card-header">
+                            <div class="approval-step">Stage 01</div>
+                            <div class="approval-role">Requested By:
+                            {{ plan.requester.get_full_name|default:plan.requester.username|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                                ({{ plan.requester.job_title|default:"Staff Member" }})
+                            </div>
+                        </div>
+
+                        <div class="approval-card-body">
+<!--                            <div class="approval-name">-->
+<!--                                {{ plan.requester.get_full_name|default:plan.requester.username|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}-->
+<!--                            </div>-->
+
+<!--                            <div class="approval-title">-->
+<!--                                {{ plan.requester.job_title|default:"Staff Member" }}-->
+<!--                            </div>-->
+
+                            <div class="signature-caption">
+                                Authorised Signature
+                            </div>
+
+                            <div class="signature-box">
+                                {% if requester_signature %}
+                                    <img
+                                        class="signature-image"
+                                        src="{{ requester_signature }}"
+                                        alt="Requester signature">
+                                {% else %}
+                                    <div class="signature-placeholder"></div>
+                                {% endif %}
+                            </div>
+
+                            <div class="approval-date">
+                                <strong>Date:</strong>
+                                {{ plan.created_at|date:"d M Y"|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                            </div>
+
+                            <span class="approval-stamp">
+                                Submitted
+                            </span>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- REVIEWER -->
+                <td>
+                    <div class="approval-card reviewer">
+                        <div class="approval-card-header">
+                            <div class="approval-step">Stage 02</div>
+                            <div class="approval-role">Reviewed By:
+                            {{ plan.reviewed_by.get_full_name|default:"Recorded Reviewer" }}
+                            ( {{ plan.reviewed_by.job_title|default:"Review Team Member" }})
+                            </div>
+                        </div>
+
+                        <div class="approval-card-body">
+<!--                            <div class="approval-name">-->
+<!--                                {{ plan.reviewed_by.get_full_name|default:"Recorded Reviewer" }}-->
+<!--                            </div>-->
+
+<!--                            <div class="approval-title">-->
+<!--                                {{ plan.reviewed_by.job_title|default:"Review Team Member" }}-->
+<!--                            </div>-->
+
+                            <div class="signature-caption">
+                                Authorised Signature
+                            </div>
+
+                            <div class="signature-box">
+                                {% if reviewer_signature %}
+                                    <img
+                                        class="signature-image"
+                                        src="{{ reviewer_signature }}"
+                                        alt="Reviewer signature">
+                                {% else %}
+                                    <div class="signature-placeholder"></div>
+                                {% endif %}
+                            </div>
+
+                            <div class="approval-date">
+                                <strong>Date:</strong>
+                                {{ plan.reviewed_at|date:"d M Y"|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                            </div>
+
+                            {% if plan.reviewed_at %}
+                                <span class="approval-stamp">
+                                    Reviewed
+                                </span>
+                            {% else %}
+                                <span class="approval-stamp pending">
+                                    Review Record Pending
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+
+                <!-- EXECUTIVE DIRECTOR / APPROVER -->
+                <td>
+                    <div class="approval-card approver">
+                        <div class="approval-card-header">
+                            <div class="approval-step">Stage 03</div>
+                            <div class="approval-role">Approved By:
+                                {{ plan.approved_by.get_full_name|default:"Executive Director" }}
+                            ({{ plan.approved_by.job_title|default:"Executive Director" }})
+                            </div>
+                        </div>
+
+                        <div class="approval-card-body">
+<!--                            <div class="approval-name">-->
+<!--                                {{ plan.approved_by.get_full_name|default:"Executive Director" }}-->
+<!--                            </div>-->
+
+<!--                            <div class="approval-title">-->
+<!--                                {{ plan.approved_by.job_title|default:"Executive Director" }}-->
+<!--                            </div>-->
+
+                            <div class="signature-caption">
+                                Authorised Signature
+                            </div>
+
+                            <div class="signature-box">
+                                {% if approver_signature %}
+                                    <img
+                                        class="signature-image"
+                                        src="{{ approver_signature }}"
+                                        alt="Approver signature">
+                                {% else %}
+                                    <div class="signature-placeholder"></div>
+                                {% endif %}
+                            </div>
+
+                            <div class="approval-date">
+                                <strong>Date:</strong>
+                                {{ plan.approved_at|date:"d M Y"|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                            </div>
+
+                            {% if plan.approved_at %}
+                                <span class="approval-stamp">
+                                    Approved
+                                </span>
+                            {% else %}
+                                <span class="approval-stamp pending">
+                                    Approval Record Pending
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- CONTROLLED DOCUMENT FOOTER -->
+    <div class="footer">
+        <table class="footer-table">
+            <tr>
+                <td>
+                    <strong>CONTROLLED DOCUMENT</strong><br>
+                    Generated from the DDS-NK THRIVE Integrated Management
+                    System. This document records the procurement plan
+                    approval details held by the system.
+                </td>
+
+                <td class="footer-right">
+                    <strong>DOCUMENT REFERENCE</strong><br>
+                    {{ plan.number|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}<br>
+                    Generated:
+                    {{ generated_at|date:"d M Y, H:i"|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer-note">
+            DDS-NK THRIVE &nbsp;|&nbsp;
+            Official System-Generated Procurement Record
+        </div>
+    </div>
+
+</body>
+</html>

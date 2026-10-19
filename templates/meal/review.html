@@ -1,0 +1,334 @@
+{% extends 'module_base.html' %}
+
+{% block title %}Review Record | DDS-NK MEAL{% endblock %}
+
+{% block module_brand %}
+<i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+<a href="{% url 'meal:records' %}" class="active">
+    <i class="bi bi-clipboard-data"></i> Data records
+</a>
+{% endblock %}
+
+{% block crumb %}
+<span class="module-label meal-text">MEAL</span>
+<h1>Review Record</h1>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                    <i class="bi bi-shield-check me-1"></i> Data Quality Assurance
+                </span>
+
+                {% if record.activity.is_people %}
+                    <span class="badge bg-success-subtle text-success px-3 py-2">
+                        <i class="bi bi-people-fill me-1"></i> People Data
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary px-3 py-2">
+                        <i class="bi bi-bar-chart-fill me-1"></i> Activity Data
+                    </span>
+                {% endif %}
+            </div>
+
+            <h2 class="fw-bold mb-1">Review MEAL Record</h2>
+            <p class="text-muted mb-0">
+                Verify the submitted data before approving or changing its review status.
+            </p>
+        </div>
+
+        <a href="{% url 'meal:records' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Records
+        </a>
+    </div>
+
+
+    <!-- Record Identity -->
+    <div class="panel mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+            <div>
+                <div class="text-uppercase small fw-semibold text-muted mb-1">
+                    Activity
+                </div>
+
+                <h3 class="fw-bold mb-1">
+                    {{ record.activity.code }}
+                    <span class="text-muted fw-normal">—</span>
+                    {{ record.activity.title }}
+                </h3>
+
+                <div class="text-muted small">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    Reporting period:
+                    <strong>{{ record.reporting_month }}/{{ record.reporting_year }}</strong>
+                </div>
+            </div>
+
+            <div class="text-md-end">
+                <div class="text-uppercase small fw-semibold text-muted mb-1">
+                    Current Status
+                </div>
+
+                {% if record.status == 'completed' %}
+                    <span class="badge bg-success-subtle text-success fs-6 px-3 py-2">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        {{ record.get_status_display }}
+                    </span>
+                {% elif record.status == 'in_progress' %}
+                    <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">
+                        <i class="bi bi-arrow-repeat me-1"></i>
+                        {{ record.get_status_display }}
+                    </span>
+                {% elif record.status == 'on_hold' %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis fs-6 px-3 py-2">
+                        <i class="bi bi-pause-circle-fill me-1"></i>
+                        {{ record.get_status_display }}
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary fs-6 px-3 py-2">
+                        <i class="bi bi-clock-history me-1"></i>
+                        {{ record.get_status_display }}
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Record Summary -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+            <div class="panel h-100 mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-primary-subtle text-primary p-3">
+                        <i class="bi bi-person-check-fill fs-4"></i>
+                    </div>
+
+                    <div>
+                        <div class="small text-muted text-uppercase fw-semibold">
+                            Submitted By
+                        </div>
+                        <div class="fw-semibold">
+                            {{ record.submitted_by|default:"Not specified" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-4">
+            <div class="panel h-100 mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-success-subtle text-success p-3">
+                        <i class="bi bi-graph-up-arrow fs-4"></i>
+                    </div>
+
+                    <div>
+                        <div class="small text-muted text-uppercase fw-semibold">
+                            Result / Progress
+                        </div>
+                        <div class="fw-bold fs-5">
+                            {{ record.progress_value|default:"—" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-4">
+            <div class="panel h-100 mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-info-subtle text-info p-3">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+
+                    <div>
+                        <div class="small text-muted text-uppercase fw-semibold">
+                            People Reached
+                        </div>
+                        <div class="fw-bold fs-5">
+                            {{ record.total_people|default:"—" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Activity / Indicator Information -->
+    <div class="panel mb-4">
+
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <div class="rounded-3 bg-success-subtle text-success p-2">
+                <i class="bi bi-info-circle-fill"></i>
+            </div>
+
+            <div>
+                <h5 class="fw-bold mb-0">Activity Information</h5>
+                <small class="text-muted">
+                    Reference information for the reviewer
+                </small>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-12 col-lg-6">
+                <div class="small text-uppercase text-muted fw-semibold mb-1">
+                    Activity Code
+                </div>
+                <div class="fw-semibold">
+                    {{ record.activity.code }}
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="small text-uppercase text-muted fw-semibold mb-1">
+                    Activity
+                </div>
+                <div class="fw-semibold">
+                    {{ record.activity.title }}
+                </div>
+            </div>
+
+            {% if record.activity.indicator_text %}
+            <div class="col-12">
+                <div class="small text-uppercase text-muted fw-semibold mb-1">
+                    Indicator
+                </div>
+                <div class="p-3 bg-light rounded-3 border">
+                    {{ record.activity.indicator_text }}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Submitted Comments -->
+    <div class="panel mb-4">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="rounded-3 bg-warning-subtle text-warning-emphasis p-2">
+                <i class="bi bi-chat-left-text-fill"></i>
+            </div>
+
+            <div>
+                <h5 class="fw-bold mb-0">Submission Comments</h5>
+                <small class="text-muted">
+                    Notes provided with the submitted record
+                </small>
+            </div>
+        </div>
+
+        <div class="p-3 rounded-3 border bg-light">
+            {% if record.comments %}
+                <div class="text-body">
+                    {{ record.comments|linebreaksbr }}
+                </div>
+            {% else %}
+                <div class="text-muted fst-italic">
+                    <i class="bi bi-chat-left-dots me-1"></i>
+                    No comments were provided with this submission.
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+
+    <!-- Review Guidance -->
+    <div class="alert alert-info border-0 rounded-3 d-flex gap-3 align-items-start mb-4">
+        <i class="bi bi-shield-check fs-4"></i>
+
+        <div>
+            <div class="fw-bold mb-1">Reviewer Check</div>
+            <div class="small">
+                Confirm that the submitted result is complete, consistent with the
+                activity indicator, and sufficiently supported before marking the
+                record as completed.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Review Actions -->
+    <div class="panel">
+
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+            <div>
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-check2-square me-2 text-success"></i>
+                    Review Decision
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Select the appropriate status for this record.
+                </p>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row gap-2">
+
+                <button
+                    type="submit"
+                    form="reviewRecordForm"
+                    name="status"
+                    value="in_progress"
+                    class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    Mark In Progress
+                </button>
+
+                <button
+                    type="submit"
+                    form="reviewRecordForm"
+                    name="status"
+                    value="on_hold"
+                    class="btn btn-warning">
+                    <i class="bi bi-pause-circle me-1"></i>
+                    Put On Hold
+                </button>
+
+                <button
+                    type="submit"
+                    form="reviewRecordForm"
+                    name="status"
+                    value="completed"
+                    class="btn btn-success">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    Approve &amp; Complete
+                </button>
+
+            </div>
+
+        </div>
+
+        <form id="reviewRecordForm" method="post" class="d-none">
+            {% csrf_token %}
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

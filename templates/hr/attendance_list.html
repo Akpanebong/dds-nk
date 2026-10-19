@@ -1,0 +1,946 @@
+﻿{% extends 'module_base.html' %}
+{% load group_tags %}
+
+{% block title %}Attendance Management | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-attendance-page">
+
+    <!-- Page heading -->
+    <div class="attendance-page-header">
+        <div class="attendance-heading">
+            <div class="attendance-heading-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+            <div>
+                <span class="attendance-eyebrow">HUMAN RESOURCES</span>
+                <h1>Attendance Management</h1>
+                <p>Monitor employee attendance records and daily workforce activity.</p>
+            </div>
+        </div>
+
+            {% if request.user.is_superuser or request.user.is_staff %}
+        <a href="{% url 'hr:staff_mark_attendance' %}" class="attendance-primary-btn">
+            <i class="bi bi-person-check"></i>
+            Mark my attendance
+        </a>
+        <a href="{% url 'hr:mark_attendance' %}" class="attendance-primary-btn">
+            <i class="bi bi-plus-lg"></i>
+            Record Attendance
+        </a>
+        <a href="{% url 'hr:export_attendance_pdf' %}?export_all=1" class="btn btn-outline-secondary">Export PDF</a>
+        <a href="{% url 'hr:export_attendance_excel' %}?export_all=1" class="btn btn-outline-success">Export Excel</a>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Summary cards -->
+    <div class="attendance-stats-grid">
+        <div class="attendance-stat-card">
+            <div class="attendance-stat-top">
+                <span>Total Records</span>
+                <div class="attendance-stat-icon icon-plum">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+            </div>
+            <div class="attendance-stat-value" id="totalRecords">{{ records|length }}</div>
+            <div class="attendance-stat-caption">Records currently listed</div>
+        </div>
+
+        <div class="attendance-stat-card">
+            <div class="attendance-stat-top">
+                <span>Present</span>
+                <div class="attendance-stat-icon icon-green">
+                    <i class="bi bi-person-check"></i>
+                </div>
+            </div>
+            <div class="attendance-stat-value" id="presentRecords">0</div>
+            <div class="attendance-stat-caption">Marked present</div>
+        </div>
+
+        <div class="attendance-stat-card">
+            <div class="attendance-stat-top">
+                <span>Absent</span>
+                <div class="attendance-stat-icon icon-red">
+                    <i class="bi bi-person-x"></i>
+                </div>
+            </div>
+            <div class="attendance-stat-value" id="absentRecords">0</div>
+            <div class="attendance-stat-caption">Marked absent</div>
+        </div>
+
+        <div class="attendance-stat-card">
+            <div class="attendance-stat-top">
+                <span>Other Statuses</span>
+                <div class="attendance-stat-icon icon-pink">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+            </div>
+            <div class="attendance-stat-value" id="otherRecords">0</div>
+            <div class="attendance-stat-caption">Leave, late, or other statuses</div>
+        </div>
+    </div>
+
+    <!-- Attendance table -->
+    <div class="attendance-panel">
+
+        <div class="attendance-panel-header">
+            <div>
+                <h2>Attendance Register</h2>
+                <p>Review recorded employee attendance and locations.</p>
+            </div>
+            <span class="attendance-record-count">
+                <i class="bi bi-list-ul"></i>
+                <span id="visibleCount">{{ records|length }}</span> records shown
+            </span>
+        </div>
+
+        <!-- Search and filter -->
+        <div class="attendance-toolbar">
+            <div class="attendance-search">
+                <i class="bi bi-search"></i>
+                <input
+                    type="search"
+                    id="attendanceSearch"
+                    placeholder="Search employee, date, status or location..."
+                    aria-label="Search attendance records"
+                >
+            </div>
+
+            <div class="attendance-filter">
+                <i class="bi bi-funnel"></i>
+                <select id="attendanceStatusFilter" aria-label="Filter by attendance status">
+                    <option value="">All statuses</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="attendance-table-wrapper">
+            <table class="table attendance-table">
+                <thead>
+                    <tr>
+                        <th>EMPLOYEE</th>
+                        <th>DATE</th>
+                        <th>ATTENDANCE STATUS</th>
+                        <th>LOCATION</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    {% for record in records %}
+                    <tr class="attendance-row"
+                        data-employee="{{ record.employee|default:'Unknown employee'|striptags|escape }}"
+                        data-date="{{ record.date|date:'Y-m-d' }}"
+                        data-status="{{ record.get_status_display|default:'Unknown'|striptags|escape }}"
+                        data-location="{{ record.address|default:'Not provided'|striptags|escape }}">
+
+                        <td>
+                            <div class="attendance-employee-cell">
+                                <div class="attendance-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div>
+                                    <span class="attendance-employee-name">
+                                        {{ record.employee|default:"Unknown employee" }}
+                                    </span>
+                                    <span class="attendance-employee-label">Employee record</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="attendance-date-cell">
+                                <i class="bi bi-calendar3"></i>
+                                <span>{{ record.date|date:"d M Y" }}</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="attendance-status"
+                                  data-status-label="{{ record.get_status_display|default:'Unknown'|lower }}">
+                                <span class="attendance-status-dot"></span>
+                                {{ record.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="attendance-location-cell">
+                                <i class="bi bi-geo-alt"></i>
+                                {% if record.latitude is not None and record.longitude is not None %}
+                                <a
+                                    href="https://www.google.com/maps?q={{ record.latitude }},{{ record.longitude }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Open this attendance location in GPS maps"
+                                >
+                                    <span>{{ record.address|default:"GPS coordinates" }}</span>
+                                    <small>Open map <i class="bi bi-box-arrow-up-right"></i></small>
+                                </a>
+                                {% else %}
+                                <span>{{ record.address|default:"—" }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="attendanceEmptyRow">
+                        <td colspan="4">
+                            <div class="attendance-empty-state">
+                                <div class="attendance-empty-icon">
+                                    <i class="bi bi-calendar2-x"></i>
+                                </div>
+                                <h3>No attendance records yet</h3>
+                                <p>Attendance records will appear here after they have been recorded.</p>
+                                <a href="{% url 'hr:mark_attendance' %}" class="attendance-empty-btn">
+                                    <i class="bi bi-plus-lg"></i>
+                                    Record Attendance
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr id="attendanceNoResults" style="display:none;">
+                        <td colspan="4">
+                            <div class="attendance-empty-state compact-empty">
+                                <i class="bi bi-search"></i>
+                                <h3>No matching records</h3>
+                                <p>Try another search term or change the status filter.</p>
+                                <button type="button" id="clearAttendanceFilters" class="attendance-clear-btn">
+                                    Clear filters
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="attendance-panel-footer">
+            <span>
+                <i class="bi bi-shield-check"></i>
+                Attendance register
+            </span>
+            <span id="attendanceFooterCount">
+                {{ records|length }} total records
+            </span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hr-attendance-page {
+        --att-primary: #e50078;
+        --att-primary-dark: #b80060;
+        --att-plum: #3b2938;
+        --att-muted: #77717a;
+        --att-border: #e9e4e9;
+        --att-background: #faf8fa;
+        --att-pink-soft: #fff0f7;
+        color: var(--att-plum);
+        padding: 8px 0 30px;
+    }
+
+    .hr-attendance-page,
+    .hr-attendance-page * {
+        box-sizing: border-box;
+    }
+
+    .attendance-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .attendance-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .attendance-heading-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        background: var(--att-pink-soft);
+        color: var(--att-primary);
+        font-size: 25px;
+    }
+
+    .attendance-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--att-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .attendance-heading h1 {
+        margin: 0;
+        color: var(--att-plum);
+        font-size: clamp(23px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -.7px;
+    }
+
+    .attendance-heading p {
+        margin: 6px 0 0;
+        color: var(--att-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .attendance-primary-btn,
+    .attendance-empty-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 11px 17px;
+        border: 1px solid var(--att-primary);
+        border-radius: 9px;
+        background: var(--att-primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .attendance-primary-btn:hover,
+    .attendance-empty-btn:hover {
+        background: var(--att-primary-dark);
+        border-color: var(--att-primary-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .attendance-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 23px;
+    }
+
+    .attendance-stat-card {
+        min-width: 0;
+        padding: 19px;
+        border: 1px solid var(--att-border);
+        border-radius: 13px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(59, 41, 56, .035);
+    }
+
+    .attendance-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--att-muted);
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .attendance-stat-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        font-size: 18px;
+    }
+
+    .icon-plum {
+        color: var(--att-plum);
+        background: #f3eef3;
+    }
+
+    .icon-green {
+        color: #18794e;
+        background: #eaf7ef;
+    }
+
+    .icon-red {
+        color: #bd3048;
+        background: #fff0f1;
+    }
+
+    .icon-pink {
+        color: var(--att-primary);
+        background: var(--att-pink-soft);
+    }
+
+    .attendance-stat-value {
+        margin-top: 13px;
+        color: var(--att-plum);
+        font-size: 30px;
+        font-weight: 850;
+        line-height: 1.1;
+        letter-spacing: -.8px;
+    }
+
+    .attendance-stat-caption {
+        margin-top: 7px;
+        color: var(--att-muted);
+        font-size: 11px;
+    }
+
+    .attendance-panel {
+        overflow: hidden;
+        border: 1px solid var(--att-border);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+    }
+
+    .attendance-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--att-border);
+    }
+
+    .attendance-panel-header h2 {
+        margin: 0 0 5px;
+        color: var(--att-plum);
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .attendance-panel-header p {
+        margin: 0;
+        color: var(--att-muted);
+        font-size: 12px;
+    }
+
+    .attendance-record-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border: 1px solid var(--att-border);
+        border-radius: 8px;
+        background: var(--att-background);
+        color: var(--att-muted);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .attendance-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 17px 24px;
+        border-bottom: 1px solid var(--att-border);
+        background: #fdfbfd;
+    }
+
+    .attendance-search,
+    .attendance-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 42px;
+        padding: 0 12px;
+        border: 1px solid #e4dce4;
+        border-radius: 9px;
+        background: #fff;
+        color: #938793;
+    }
+
+    .attendance-search {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .attendance-search input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--att-plum);
+        font-size: 12px;
+    }
+
+    .attendance-search input::placeholder {
+        color: #a49aa4;
+    }
+
+    .attendance-filter {
+        flex: 0 0 190px;
+    }
+
+    .attendance-filter select {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--att-plum);
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .attendance-search:focus-within,
+    .attendance-filter:focus-within {
+        border-color: var(--att-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .08);
+    }
+
+    .attendance-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .attendance-table {
+        width: 100%;
+        min-width: 690px;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .attendance-table thead th {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--att-border);
+        background: #faf8fa;
+        color: #817783;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .7px;
+        white-space: nowrap;
+    }
+
+    .attendance-table tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0ecf0;
+        color: var(--att-plum);
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .attendance-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .attendance-table tbody tr.attendance-row {
+        transition: background .15s ease;
+    }
+
+    .attendance-table tbody tr.attendance-row:hover {
+        background: #fff9fc;
+    }
+
+    .attendance-employee-cell {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 180px;
+    }
+
+    .attendance-avatar {
+        display: grid;
+        place-items: center;
+        flex: 0 0 37px;
+        width: 37px;
+        height: 37px;
+        border-radius: 11px;
+        background: var(--att-pink-soft);
+        color: var(--att-primary);
+        font-size: 17px;
+    }
+
+    .attendance-employee-name {
+        display: block;
+        color: var(--att-plum);
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .attendance-employee-label {
+        display: block;
+        margin-top: 4px;
+        color: #968b96;
+        font-size: 10px;
+    }
+
+    .attendance-date-cell,
+    .attendance-location-cell {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        line-height: 1.6;
+    }
+
+    .attendance-date-cell i,
+    .attendance-location-cell i {
+        margin-top: 1px;
+        color: var(--att-primary);
+        font-size: 14px;
+    }
+
+    .attendance-location-cell {
+        max-width: 230px;
+        overflow-wrap: anywhere;
+        color: #625963;
+    }
+
+    .attendance-location-cell a {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        color: #625963;
+        text-decoration: none;
+    }
+
+    .attendance-location-cell a:hover {
+        color: var(--att-primary);
+        text-decoration: underline;
+    }
+
+    .attendance-location-cell a small {
+        color: var(--att-primary);
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .attendance-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        border: 1px solid #e8e1e8;
+        border-radius: 20px;
+        background: #f7f4f7;
+        color: var(--att-plum);
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .attendance-status-dot {
+        width: 7px;
+        height: 7px;
+        flex: 0 0 7px;
+        border-radius: 50%;
+        background: #8c7d8c;
+    }
+
+    .attendance-status[data-status-label*="present"] {
+        border-color: #c9ead6;
+        background: #eef9f2;
+        color: #18794e;
+    }
+
+    .attendance-status[data-status-label*="present"] .attendance-status-dot {
+        background: #20965e;
+    }
+
+    .attendance-status[data-status-label*="absent"] {
+        border-color: #f3cbd2;
+        background: #fff1f3;
+        color: #b4233e;
+    }
+
+    .attendance-status[data-status-label*="absent"] .attendance-status-dot {
+        background: #cf334e;
+    }
+
+    .attendance-status[data-status-label*="late"],
+    .attendance-status[data-status-label*="pending"] {
+        border-color: #f1dfb6;
+        background: #fff8e8;
+        color: #91630b;
+    }
+
+    .attendance-status[data-status-label*="late"] .attendance-status-dot,
+    .attendance-status[data-status-label*="pending"] .attendance-status-dot {
+        background: #d49a1c;
+    }
+
+    .attendance-status[data-status-label*="leave"] {
+        border-color: #e6d8f5;
+        background: #f7f0ff;
+        color: #7444a2;
+    }
+
+    .attendance-status[data-status-label*="leave"] .attendance-status-dot {
+        background: #8955bd;
+    }
+
+    .attendance-panel-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 14px 24px;
+        border-top: 1px solid var(--att-border);
+        background: #fdfbfd;
+        color: var(--att-muted);
+        font-size: 11px;
+    }
+
+    .attendance-panel-footer span:first-child {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .attendance-panel-footer i {
+        color: var(--att-primary);
+    }
+
+    .attendance-empty-state {
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .attendance-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 15px;
+        border-radius: 17px;
+        background: var(--att-pink-soft);
+        color: var(--att-primary);
+        font-size: 25px;
+    }
+
+    .attendance-empty-state h3 {
+        margin: 0 0 7px;
+        color: var(--att-plum);
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .attendance-empty-state p {
+        margin: 0 0 18px;
+        color: var(--att-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .compact-empty {
+        padding: 30px 20px;
+    }
+
+    .compact-empty > i {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--att-primary);
+        font-size: 25px;
+    }
+
+    .attendance-clear-btn {
+        padding: 8px 12px;
+        border: 1px solid var(--att-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--att-primary);
+        font-size: 11px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .attendance-clear-btn:hover {
+        background: var(--att-pink-soft);
+        border-color: var(--att-primary);
+    }
+
+    @media (max-width: 1100px) {
+        .attendance-stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 650px) {
+        .hr-attendance-page {
+            padding-top: 2px;
+        }
+
+        .attendance-page-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .attendance-heading {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .attendance-heading-icon {
+            flex-basis: 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            font-size: 22px;
+        }
+
+        .attendance-primary-btn {
+            width: 100%;
+        }
+
+        .attendance-stats-grid {
+            gap: 10px;
+        }
+
+        .attendance-stat-card {
+            padding: 14px;
+        }
+
+        .attendance-stat-value {
+            font-size: 26px;
+        }
+
+        .attendance-stat-icon {
+            flex-basis: 32px;
+            width: 32px;
+            height: 32px;
+            font-size: 15px;
+        }
+
+        .attendance-panel-header,
+        .attendance-toolbar {
+            padding: 16px;
+        }
+
+        .attendance-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .attendance-filter {
+            flex-basis: auto;
+            min-height: 42px;
+        }
+
+        .attendance-panel-footer {
+            padding: 13px 16px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .attendance-stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const page = document.querySelector('.hr-attendance-page');
+    if (!page) return;
+
+    const rows = Array.from(page.querySelectorAll('.attendance-row'));
+    const searchInput = page.querySelector('#attendanceSearch');
+    const statusFilter = page.querySelector('#attendanceStatusFilter');
+    const noResults = page.querySelector('#attendanceNoResults');
+    const visibleCount = page.querySelector('#visibleCount');
+    const footerCount = page.querySelector('#attendanceFooterCount');
+    const clearButton = page.querySelector('#clearAttendanceFilters');
+    const emptyRow = page.querySelector('#attendanceEmptyRow');
+
+    const normalize = value => (value || '').trim().toLowerCase();
+
+    // Build filter options from the statuses actually present in the records.
+    const statuses = [...new Set(
+        rows.map(row => row.dataset.status || 'Unknown')
+    )].sort((a, b) => a.localeCompare(b));
+
+    statuses.forEach(status => {
+        const option = document.createElement('option');
+        option.value = normalize(status);
+        option.textContent = status;
+        statusFilter.appendChild(option);
+    });
+
+    // Calculate summary metrics from the complete set of rendered records.
+    let present = 0;
+    let absent = 0;
+    let other = 0;
+
+    rows.forEach(row => {
+        const status = normalize(row.dataset.status);
+
+        if (status.includes('present')) {
+            present++;
+        } else if (status.includes('absent')) {
+            absent++;
+        } else {
+            other++;
+        }
+    });
+
+    page.querySelector('#presentRecords').textContent = present;
+    page.querySelector('#absentRecords').textContent = absent;
+    page.querySelector('#otherRecords').textContent = other;
+
+    function applyFilters() {
+        const query = normalize(searchInput.value);
+        const selectedStatus = statusFilter.value;
+        let visible = 0;
+
+        rows.forEach(row => {
+            const searchableText = normalize([
+                row.dataset.employee,
+                row.dataset.date,
+                row.dataset.status,
+                row.dataset.location
+            ].join(' '));
+
+            const matchesSearch = searchableText.includes(query);
+            const matchesStatus = !selectedStatus ||
+                normalize(row.dataset.status) === selectedStatus;
+            const matches = matchesSearch && matchesStatus;
+
+            row.style.display = matches ? '' : 'none';
+
+            if (matches) visible++;
+        });
+
+        if (visibleCount) visibleCount.textContent = visible;
+
+        if (footerCount) {
+            footerCount.textContent = visible + ' of ' + rows.length + ' records';
+        }
+
+        if (noResults) {
+            noResults.style.display = rows.length > 0 && visible === 0 ? '' : 'none';
+        }
+
+        if (emptyRow && rows.length > 0) {
+            emptyRow.style.display = 'none';
+        }
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+
+    if (clearButton) {
+        clearButton.addEventListener('click', function () {
+            searchInput.value = '';
+            statusFilter.value = '';
+            applyFilters();
+            searchInput.focus();
+        });
+    }
+
+    applyFilters();
+});
+</script>
+{% endblock %}

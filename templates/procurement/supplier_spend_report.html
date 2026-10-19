@@ -1,0 +1,853 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Supplier Spend Report | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-bar-chart-line me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1 class="mb-0">Supplier Spend Report</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --sp-primary: #e50078;
+        --sp-primary-dark: #b90060;
+        --sp-ink: #3b2938;
+        --sp-muted: #7d7580;
+        --sp-border: #ece6eb;
+        --sp-surface: #ffffff;
+        --sp-bg: #faf8fa;
+        --sp-success: #16845b;
+        --sp-radius: 16px;
+    }
+
+    .sp-report {
+        color: var(--sp-ink);
+        padding-bottom: 2rem;
+    }
+
+    .sp-hero {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--sp-border);
+        border-radius: var(--sp-radius);
+        background: linear-gradient(120deg, #fff 0%, #fff6fa 100%);
+    }
+
+    .sp-hero::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 12%;
+        top: -125px;
+        border: 25px solid rgba(229, 0, 120, .045);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .sp-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        color: var(--sp-primary);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .65rem;
+    }
+
+    .sp-hero h2 {
+        margin: 0 0 .55rem;
+        color: var(--sp-ink);
+        font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .sp-hero p {
+        max-width: 620px;
+        margin: 0;
+        color: var(--sp-muted);
+        font-size: .91rem;
+        line-height: 1.7;
+    }
+
+    .sp-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    .sp-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 42px;
+        padding: .65rem 1rem;
+        border: 1px solid var(--sp-border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--sp-ink);
+        font-size: .84rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background .2s ease, border-color .2s ease,
+                    transform .2s ease;
+    }
+
+    .sp-btn:hover {
+        border-color: var(--sp-primary);
+        color: var(--sp-primary-dark);
+        transform: translateY(-1px);
+    }
+
+    .sp-btn-primary {
+        border-color: var(--sp-primary);
+        background: var(--sp-primary);
+        color: #fff;
+    }
+
+    .sp-btn-primary:hover {
+        border-color: var(--sp-primary-dark);
+        background: var(--sp-primary-dark);
+        color: #fff;
+    }
+
+    .sp-panel {
+        overflow: hidden;
+        border: 1px solid var(--sp-border);
+        border-radius: var(--sp-radius);
+        background: var(--sp-surface);
+        box-shadow: 0 3px 14px rgba(59, 41, 56, .035);
+    }
+
+    .sp-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.15rem 1.35rem;
+        border-bottom: 1px solid var(--sp-border);
+    }
+
+    .sp-panel-head h3 {
+        margin: 0;
+        color: var(--sp-ink);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .sp-panel-head p {
+        margin: .3rem 0 0;
+        color: var(--sp-muted);
+        font-size: .82rem;
+    }
+
+    .sp-filter-body {
+        padding: 1.35rem;
+    }
+
+    .sp-label {
+        display: block;
+        margin-bottom: .5rem;
+        color: var(--sp-ink);
+        font-size: .78rem;
+        font-weight: 750;
+    }
+
+    .sp-control {
+        min-height: 45px;
+        border: 1px solid #e5dce4;
+        border-radius: 10px;
+        background-color: #fff;
+        color: var(--sp-ink);
+        font-size: .88rem;
+    }
+
+    .sp-control:focus {
+        border-color: var(--sp-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .sp-kpi {
+        position: relative;
+        height: 100%;
+        min-height: 145px;
+        padding: 1.35rem;
+        overflow: hidden;
+        border: 1px solid var(--sp-border);
+        border-radius: var(--sp-radius);
+        background: #fff;
+    }
+
+    .sp-kpi::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -48px;
+        width: 125px;
+        height: 125px;
+        border-radius: 50%;
+        background: rgba(229, 0, 120, .045);
+    }
+
+    .sp-kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .sp-kpi-label {
+        color: var(--sp-muted);
+        font-size: .73rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+    }
+
+    .sp-kpi-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 43px;
+        height: 43px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: #fff0f7;
+        color: var(--sp-primary);
+        font-size: 1.2rem;
+    }
+
+    .sp-kpi-value {
+        position: relative;
+        z-index: 1;
+        display: block;
+        color: var(--sp-ink);
+        font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+        font-weight: 850;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+        letter-spacing: -.035em;
+    }
+
+    .sp-kpi-note {
+        display: block;
+        margin-top: .5rem;
+        color: var(--sp-muted);
+        font-size: .78rem;
+    }
+
+    .sp-supplier {
+        margin-bottom: 1.25rem;
+    }
+
+    .sp-supplier:last-child {
+        margin-bottom: 0;
+    }
+
+    .sp-supplier-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.25rem 1.35rem;
+        background: linear-gradient(100deg, #fff 0%, #fff9fc 100%);
+        border-bottom: 1px solid var(--sp-border);
+    }
+
+    .sp-supplier-identity {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        min-width: 0;
+    }
+
+    .sp-supplier-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: #fff0f7;
+        color: var(--sp-primary);
+        font-size: 1.2rem;
+    }
+
+    .sp-supplier-heading h3 {
+        margin: 0;
+        color: var(--sp-ink);
+        font-size: 1rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .sp-supplier-meta {
+        display: block;
+        margin-top: .3rem;
+        color: var(--sp-muted);
+        font-size: .78rem;
+    }
+
+    .sp-total-label {
+        display: block;
+        margin-bottom: .25rem;
+        color: var(--sp-muted);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .sp-total-value {
+        color: var(--sp-success);
+        font-size: 1.1rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .sp-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .sp-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        white-space: nowrap;
+        font-size: .83rem;
+    }
+
+    .sp-table thead th {
+        padding: .95rem 1rem;
+        border-bottom: 1px solid var(--sp-border);
+        background: #faf8fa;
+        color: #756774;
+        font-size: .69rem;
+        font-weight: 850;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+        vertical-align: middle;
+    }
+
+    .sp-table tbody td {
+        padding: .95rem 1rem;
+        border-bottom: 1px solid #f1edf1;
+        color: var(--sp-ink);
+        vertical-align: middle;
+    }
+
+    .sp-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .sp-table tbody tr:hover td {
+        background: #fffafd;
+    }
+
+    .sp-product {
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 700;
+    }
+
+    .sp-po {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .35rem .6rem;
+        border: 1px solid #eee3ec;
+        border-radius: 7px;
+        background: #fcf8fb;
+        color: var(--sp-ink);
+        font-size: .77rem;
+        font-weight: 750;
+    }
+
+    .sp-money {
+        font-variant-numeric: tabular-nums;
+        font-weight: 650;
+    }
+
+    .sp-money-strong {
+        color: var(--sp-success) !important;
+        font-weight: 850;
+    }
+
+    .sp-empty {
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+    }
+
+    .sp-empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1rem;
+        border-radius: 18px;
+        background: #fff0f7;
+        color: var(--sp-primary);
+        font-size: 1.7rem;
+    }
+
+    .sp-empty h3 {
+        margin-bottom: .5rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .sp-empty p {
+        max-width: 420px;
+        margin: 0 auto;
+        color: var(--sp-muted);
+        font-size: .86rem;
+        line-height: 1.7;
+    }
+
+    .sp-report-footer {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding: 1rem 0 0;
+        color: var(--sp-muted);
+        font-size: .76rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .sp-hero {
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 1.25rem;
+        }
+
+        .sp-actions {
+            width: 100%;
+        }
+
+        .sp-actions .sp-btn {
+            flex: 1;
+        }
+
+        .sp-filter-body {
+            padding: 1rem;
+        }
+
+        .sp-panel-head,
+        .sp-supplier-heading {
+            padding: 1rem;
+        }
+
+        .sp-supplier-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .sp-total-value {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        .sp-table thead th,
+        .sp-table tbody td {
+            padding: .8rem;
+        }
+    }
+
+    @media print {
+        .sp-no-print,
+        .sp-hero::after {
+            display: none !important;
+        }
+
+        .sp-hero,
+        .sp-panel,
+        .sp-kpi {
+            box-shadow: none !important;
+            break-inside: avoid;
+        }
+
+        .sp-report {
+            padding: 0;
+        }
+
+        .sp-table-wrap {
+            overflow: visible;
+        }
+
+        .sp-table {
+            font-size: 9pt;
+        }
+
+        .sp-table thead th,
+        .sp-table tbody td {
+            white-space: normal;
+        }
+
+        body {
+            background: #fff !important;
+        }
+    }
+</style>
+
+<div class="sp-report">
+
+    <!-- Report header -->
+    <section class="sp-hero">
+        <div>
+            <span class="sp-eyebrow">
+                <i class="bi bi-graph-up-arrow"></i>
+                DDS-NK THRIVE · FINANCIAL INTELLIGENCE
+            </span>
+
+            <h2>Supplier Spend Analysis</h2>
+
+            <p>
+                Review issued purchase-order expenditure by supplier, product
+                and reporting year. Use the filters to narrow the report and
+                assess procurement spending across your organization.
+            </p>
+        </div>
+
+        <div class="sp-actions sp-no-print">
+            <a href="{% url 'procurement:purchase_order_list' %}"
+               class="sp-btn">
+                <i class="bi bi-receipt"></i>
+                Purchase orders
+            </a>
+
+            <button type="button"
+                    class="sp-btn sp-btn-primary"
+                    onclick="window.print()">
+                <i class="bi bi-printer"></i>
+                Print report
+            </button>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="sp-panel mb-4 sp-no-print">
+        <div class="sp-panel-head">
+            <div>
+                <h3>
+                    <i class="bi bi-sliders2 me-2"
+                       style="color: var(--sp-primary);"></i>
+                    Report filters
+                </h3>
+                <p>Choose a reporting year and optionally a specific supplier.</p>
+            </div>
+
+            <span class="small text-muted">
+                <i class="bi bi-funnel me-1"></i>
+                GET report
+            </span>
+        </div>
+
+        <div class="sp-filter-body">
+            <form method="get"
+                  action=""
+                  class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-4">
+                    <label class="sp-label" for="year">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        Reporting year
+                    </label>
+
+                    <select class="form-select sp-control"
+                            id="year"
+                            name="year">
+                        {% for year in years %}
+                            <option value="{{ year }}"
+                                {% if year|stringformat:'s' == selected_year|stringformat:'s' %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                        {% empty %}
+                            <option value="{{ selected_year }}" selected>
+                                {{ selected_year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-5">
+                    <label class="sp-label" for="supplier">
+                        <i class="bi bi-building me-1"></i>
+                        Supplier
+                    </label>
+
+                    <select class="form-select sp-control"
+                            id="supplier"
+                            name="supplier">
+                        <option value="">All suppliers</option>
+
+                        {% for supplier in suppliers %}
+                            <option value="{{ supplier.pk }}"
+                                {% if selected_supplier == supplier.pk|stringformat:'s' %}selected{% endif %}>
+                                {{ supplier.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit"
+                                class="sp-btn sp-btn-primary flex-grow-1">
+                            <i class="bi bi-search"></i>
+                            Apply filters
+                        </button>
+
+                        <a href="{% url 'procurement:supplier_spend_report' %}"
+                           class="sp-btn"
+                           title="Reset filters"
+                           aria-label="Reset filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- KPI summary -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-7">
+            <article class="sp-kpi">
+                <div class="sp-kpi-top">
+                    <span class="sp-kpi-label">
+                        Organization expenditure · {{ selected_year }}
+                    </span>
+
+                    <span class="sp-kpi-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </span>
+                </div>
+
+                <strong class="sp-kpi-value">
+                    UGX {{ organization_total|floatformat:2|intcomma }}
+                </strong>
+
+                <span class="sp-kpi-note">
+                    Total issued purchase-order spend for the selected filters.
+                </span>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-5">
+            <article class="sp-kpi">
+                <div class="sp-kpi-top">
+                    <span class="sp-kpi-label">Suppliers reported</span>
+
+                    <span class="sp-kpi-icon">
+                        <i class="bi bi-buildings"></i>
+                    </span>
+                </div>
+
+                <strong class="sp-kpi-value">
+                    {{ supplier_rows|length|intcomma }}
+                </strong>
+
+                <span class="sp-kpi-note">
+                    Suppliers with spend entries in the current report.
+                </span>
+            </article>
+        </div>
+
+    </div>
+
+    <!-- Supplier breakdown -->
+    <section aria-label="Supplier spending details">
+
+        <div class="d-flex align-items-center justify-content-between
+                    flex-wrap gap-2 mb-3">
+            <div>
+                <h3 class="h5 fw-bold mb-1">Supplier breakdown</h3>
+                <p class="small text-muted mb-0">
+                    Purchase-order line items and supplier totals for {{ selected_year }}.
+                </p>
+            </div>
+
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:#fff0f7;color:#b90060;">
+                <i class="bi bi-file-earmark-bar-graph me-1"></i>
+                {{ supplier_rows|length }} supplier{{ supplier_rows|length|pluralize }}
+            </span>
+        </div>
+
+        {% for supplier_row in supplier_rows %}
+
+            <article class="sp-panel sp-supplier">
+
+                <!-- Supplier heading -->
+                <header class="sp-supplier-heading">
+                    <div class="sp-supplier-identity">
+                        <span class="sp-supplier-icon">
+                            <i class="bi bi-building-check"></i>
+                        </span>
+
+                        <div>
+                            <h3>{{ supplier_row.supplier.name|default:"Unnamed supplier" }}</h3>
+                            <span class="sp-supplier-meta">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                {{ selected_year }} reporting period
+                                <span class="mx-1">·</span>
+                                {{ supplier_row.rows|length }}
+                                transaction{{ supplier_row.rows|length|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="sp-total-label">Supplier grand total</span>
+                        <strong class="sp-total-value">
+                            UGX {{ supplier_row.grand_total|floatformat:2|intcomma }}
+                        </strong>
+                    </div>
+                </header>
+
+                <!-- Purchase-order detail table -->
+                <div class="sp-table-wrap">
+                    <table class="sp-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Product / description</th>
+                                <th scope="col">Purchase order</th>
+                                <th scope="col" class="text-end">Quantity</th>
+                                <th scope="col" class="text-end">Awarded amount</th>
+                                <th scope="col" class="text-end">Line total</th>
+                                <th scope="col" class="text-end">Grand total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for row in supplier_row.rows %}
+                                <tr>
+                                    <td class="text-muted">
+                                        {{ forloop.counter }}
+                                    </td>
+
+                                    <td>
+                                        <div class="sp-product"
+                                             title="{{ row.product.name|default:row.requisition_item.description }}">
+                                            {{ row.product.name|default:row.requisition_item.description|default:"Unspecified item" }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="sp-po">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                            {{ row.purchase_order.po_number|default:"—" }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end sp-money">
+                                        {{ row.qty|floatformat:2|intcomma }}
+                                    </td>
+
+                                    <td class="text-end sp-money">
+                                        UGX {{ row.awarded_amount|floatformat:2|intcomma }}
+                                    </td>
+
+                                    <td class="text-end sp-money">
+                                        UGX {{ row.line_total|floatformat:2|intcomma }}
+                                    </td>
+
+                                    <td class="text-end sp-money sp-money-strong">
+                                        UGX {{ row.grand_total|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+
+                            {% empty %}
+                                <tr>
+                                    <td colspan="7"
+                                        class="text-center text-muted py-4">
+                                        No transaction details are available for this supplier.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </article>
+
+        {% empty %}
+
+            <!-- Empty report state -->
+            <div class="sp-panel">
+                <div class="sp-empty">
+                    <div class="sp-empty-icon">
+                        <i class="bi bi-bar-chart-line"></i>
+                    </div>
+
+                    <h3>No supplier spending found</h3>
+
+                    <p>
+                        There are no issued purchase-order spending records
+                        matching the selected reporting year and supplier.
+                        Try another reporting year or clear the supplier filter.
+                    </p>
+
+                    <div class="mt-3 sp-no-print">
+                        <a href="{% url 'procurement:supplier_spend_report' %}"
+                           class="sp-btn sp-btn-primary">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Reset report
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+    <!-- Report footer -->
+    <footer class="sp-report-footer">
+        <span>
+            <i class="bi bi-shield-check me-1"></i>
+            DDS-NK THRIVE · Procurement reporting
+        </span>
+
+        <span>
+            Reporting year: <strong>{{ selected_year }}</strong>
+            <span class="mx-1">·</span>
+            Currency: <strong>UGX</strong>
+        </span>
+    </footer>
+
+</div>
+{% endblock %}

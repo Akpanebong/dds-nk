@@ -1,0 +1,449 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Schedule Orientation | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="orientation-schedule">
+
+    <style>
+        .orientation-schedule {
+            --os-pink: #e50078;
+            --os-plum: #3b2938;
+            --os-muted: #77808c;
+            --os-border: #e9e7ec;
+            --os-soft: #f8f7fa;
+            color: var(--os-plum);
+            padding-bottom: 2rem;
+        }
+
+        .orientation-schedule * {
+            box-sizing: border-box;
+        }
+
+        .orientation-schedule .os-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            background: linear-gradient(120deg, #3b2938, #56364d 70%, #8f1458);
+            border-radius: 20px;
+        }
+
+        .orientation-schedule .os-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .65rem;
+            color: #ffd3e8;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .orientation-schedule .os-hero h1 {
+            margin: 0 0 .55rem;
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .orientation-schedule .os-hero p {
+            max-width: 620px;
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .orientation-schedule .os-hero-icon {
+            display: grid;
+            flex: 0 0 76px;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 22px;
+            font-size: 2rem;
+        }
+
+        .orientation-schedule .os-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 285px;
+            align-items: start;
+            gap: 1.5rem;
+        }
+
+        .orientation-schedule .os-panel {
+            min-width: 0;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--os-border);
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .045);
+        }
+
+        .orientation-schedule .os-panel-header {
+            padding: 1.4rem 1.5rem;
+            border-bottom: 1px solid var(--os-border);
+        }
+
+        .orientation-schedule .os-panel-header h2 {
+            margin: 0;
+            color: var(--os-plum);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .orientation-schedule .os-panel-header p {
+            margin: .4rem 0 0;
+            color: var(--os-muted);
+            font-size: .85rem;
+            line-height: 1.6;
+        }
+
+        .orientation-schedule .os-form-body {
+            padding: 1.5rem;
+        }
+
+        .orientation-schedule .os-form-fields p {
+            margin-bottom: 1.25rem;
+        }
+
+        .orientation-schedule .os-form-fields label {
+            display: block;
+            margin-bottom: .45rem;
+            color: var(--os-plum);
+            font-size: .86rem;
+            font-weight: 700;
+        }
+
+        .orientation-schedule .os-form-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        .orientation-schedule .os-form-fields select,
+        .orientation-schedule .os-form-fields textarea {
+            display: block;
+            width: 100%;
+            min-height: 44px;
+            padding: .7rem .85rem;
+            color: var(--os-plum);
+            background: #fff;
+            border: 1px solid #dcd7e0;
+            border-radius: 10px;
+            outline: none;
+            font: inherit;
+            font-size: .9rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .orientation-schedule .os-form-fields textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .orientation-schedule .os-form-fields input:focus,
+        .orientation-schedule .os-form-fields select:focus,
+        .orientation-schedule .os-form-fields textarea:focus {
+            border-color: var(--os-pink);
+            box-shadow: 0 0 0 3px rgba(229, 0, 120, .09);
+        }
+
+        .orientation-schedule .os-form-fields input[type="checkbox"],
+        .orientation-schedule .os-form-fields input[type="radio"] {
+            accent-color: var(--os-pink);
+        }
+
+        .orientation-schedule .os-form-fields input[type="file"] {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            font-size: .85rem;
+        }
+
+        .orientation-schedule .os-form-fields .helptext,
+        .orientation-schedule .os-form-fields small {
+            display: block;
+            margin-top: .4rem;
+            color: var(--os-muted);
+            font-size: .78rem;
+            line-height: 1.55;
+        }
+
+        .orientation-schedule .os-form-fields ul.errorlist {
+            padding: .7rem .9rem;
+            margin: .5rem 0;
+            color: #a61b36;
+            background: #fff0f2;
+            border: 1px solid #f5c6ce;
+            border-radius: 9px;
+            font-size: .82rem;
+            list-style: none;
+        }
+
+        .orientation-schedule .os-form-fields .errorlist li + li {
+            margin-top: .25rem;
+        }
+
+        .orientation-schedule .os-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 1.25rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--os-border);
+        }
+
+        .orientation-schedule .os-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            min-height: 44px;
+            padding: .7rem 1.25rem;
+            color: #fff;
+            background: var(--os-pink);
+            border: 1px solid var(--os-pink);
+            border-radius: 10px;
+            font-size: .87rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background .2s, box-shadow .2s, transform .2s;
+        }
+
+        .orientation-schedule .os-submit:hover {
+            color: #fff;
+            background: #c90069;
+            border-color: #c90069;
+            box-shadow: 0 5px 14px rgba(229, 0, 120, .18);
+            transform: translateY(-1px);
+        }
+
+        .orientation-schedule .os-submit:focus-visible {
+            outline: 3px solid rgba(229, 0, 120, .25);
+            outline-offset: 3px;
+        }
+
+        .orientation-schedule .os-guidance {
+            padding: 1.25rem;
+            background: #fff;
+            border: 1px solid var(--os-border);
+            border-radius: 16px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+        }
+
+        .orientation-schedule .os-guidance-icon {
+            display: grid;
+            width: 44px;
+            height: 44px;
+            margin-bottom: .9rem;
+            place-items: center;
+            color: var(--os-pink);
+            background: #fff0f7;
+            border-radius: 13px;
+            font-size: 1.25rem;
+        }
+
+        .orientation-schedule .os-guidance h3 {
+            margin: 0 0 .65rem;
+            color: var(--os-plum);
+            font-size: .98rem;
+            font-weight: 800;
+        }
+
+        .orientation-schedule .os-guidance p {
+            margin: 0;
+            color: var(--os-muted);
+            font-size: .84rem;
+            line-height: 1.7;
+        }
+
+        .orientation-schedule .os-guidance-list {
+            display: grid;
+            gap: .9rem;
+            padding: 0;
+            margin: 1.15rem 0 0;
+            list-style: none;
+        }
+
+        .orientation-schedule .os-guidance-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: .65rem;
+            color: #625563;
+            font-size: .82rem;
+            line-height: 1.6;
+        }
+
+        .orientation-schedule .os-guidance-list i {
+            margin-top: .15rem;
+            color: var(--os-pink);
+        }
+
+        .orientation-schedule .os-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: .7rem;
+            margin-top: 1rem;
+            padding: .9rem;
+            color: #654f60;
+            background: #fff6fa;
+            border: 1px solid #f7d8e8;
+            border-radius: 11px;
+            font-size: .81rem;
+            line-height: 1.65;
+        }
+
+        .orientation-schedule .os-notice i {
+            margin-top: .1rem;
+            color: var(--os-pink);
+        }
+
+        @media (max-width: 1000px) {
+            .orientation-schedule .os-layout {
+                grid-template-columns: minmax(0, 1fr) 250px;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .orientation-schedule .os-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .orientation-schedule .os-hero {
+                padding: 1.35rem;
+                border-radius: 15px;
+            }
+
+            .orientation-schedule .os-hero-icon {
+                display: none;
+            }
+
+            .orientation-schedule .os-panel-header,
+            .orientation-schedule .os-form-body {
+                padding: 1.1rem;
+            }
+
+            .orientation-schedule .os-form-actions {
+                justify-content: stretch;
+            }
+
+            .orientation-schedule .os-submit {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Header -->
+    <section class="os-hero">
+        <div>
+            <div class="os-eyebrow">
+                <i class="bi bi-calendar2-week"></i>
+                Human Resources
+            </div>
+            <h1>Schedule Orientation</h1>
+            <p>
+                Arrange orientation activities to help staff understand
+                their departmental responsibilities and onboarding
+                requirements.
+            </p>
+        </div>
+
+        <div class="os-hero-icon" aria-hidden="true">
+            <i class="bi bi-calendar2-plus"></i>
+        </div>
+    </section>
+
+    <div class="os-layout">
+
+        <!-- Scheduling form -->
+        <section class="os-panel">
+            <div class="os-panel-header">
+                <h2>
+                    <i class="bi bi-clock-history me-2"
+                       style="color: var(--os-pink);"></i>
+                    Orientation schedule details
+                </h2>
+                <p>
+                    Complete the scheduling form and submit your details.
+                </p>
+            </div>
+
+            <div class="os-form-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="os-form-fields">
+                        {{ form.as_p }}
+                    </div>
+
+                    <div class="os-form-actions">
+                        <button type="submit" class="os-submit">
+                            <i class="bi bi-calendar-check"></i>
+                            Schedule orientation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Scheduling guidance -->
+        <aside>
+            <div class="os-guidance">
+                <div class="os-guidance-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+
+                <h3>Scheduling guidance</h3>
+                <p>
+                    Use the scheduling form to record the required
+                    orientation details for the relevant staff member.
+                </p>
+
+                <ul class="os-guidance-list">
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Verify the staff member and department, where applicable.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Check the date and time fields carefully if provided.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Complete all required fields before submitting.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Review any validation errors and correct them before retrying.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="os-notice">
+                <i class="bi bi-info-circle-fill"></i>
+                <div>
+                    <strong>Important</strong><br>
+                    The form's existing validation and server-side
+                    scheduling rules remain responsible for accepting
+                    or rejecting the submitted schedule.
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

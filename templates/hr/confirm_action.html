@@ -1,0 +1,2 @@
+﻿{% extends 'module_base.html' %}{% block content %}<div class="panel"><h1>Confirm {{ action }}</h1><p>Confirm this workflow action for {{ obj }}.</p><form method="post">{% csrf_token %}<button class="btn btn-primary">Confirm</button></form></div>{% endblock %}
+

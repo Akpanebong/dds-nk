@@ -1,0 +1,562 @@
+{% extends 'module_base.html' %}
+
+{% block title %}Projects | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">PROCUREMENT</span>
+    <h1 class="mb-0">DDS-NK Projects</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .projects-page {
+        --project-primary: #087f7b;
+        --project-primary-dark: #066663;
+        --project-border: #e5eaf0;
+        --project-muted: #64748b;
+        color: #18323a;
+    }
+
+    .projects-page .page-intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .projects-page .page-intro h2 {
+        font-size: 1.2rem;
+        font-weight: 750;
+        margin: 0 0 .35rem;
+    }
+
+    .projects-page .page-intro p {
+        color: var(--project-muted);
+        margin: 0;
+        font-size: .9rem;
+        line-height: 1.6;
+    }
+
+    .projects-page .btn-primary {
+        background: var(--project-primary);
+        border-color: var(--project-primary);
+        font-weight: 600;
+        border-radius: 8px;
+        padding: .65rem 1rem;
+        white-space: nowrap;
+    }
+
+    .projects-page .btn-primary:hover {
+        background: var(--project-primary-dark);
+        border-color: var(--project-primary-dark);
+    }
+
+    .projects-page .search-panel {
+        background: #fff;
+        border: 1px solid var(--project-border);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .projects-page .search-panel label {
+        display: block;
+        font-size: .78rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: .45rem;
+    }
+
+    .projects-page .search-panel .form-control {
+        min-height: 43px;
+        border-color: #dbe3eb;
+        border-radius: 8px 0 0 8px;
+        box-shadow: none;
+    }
+
+    .projects-page .search-panel .form-control:focus {
+        border-color: var(--project-primary);
+        box-shadow: 0 0 0 3px rgb(8 127 123 / 10%);
+    }
+
+    .projects-page .search-panel .btn {
+        border-radius: 0 8px 8px 0;
+        font-weight: 600;
+    }
+
+    .projects-page .projects-panel {
+        background: #fff;
+        border: 1px solid var(--project-border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .projects-page .panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--project-border);
+    }
+
+    .projects-page .panel-heading h2 {
+        font-size: .98rem;
+        font-weight: 750;
+        margin: 0;
+    }
+
+    .projects-page .panel-heading .record-count {
+        color: var(--project-muted);
+        font-size: .8rem;
+    }
+
+    .projects-page .smart-table {
+        margin: 0;
+        vertical-align: middle;
+        min-width: 800px;
+    }
+
+    .projects-page .smart-table thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-size: .72rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: .045em;
+        white-space: nowrap;
+        padding: .9rem 1rem;
+        border-bottom: 1px solid var(--project-border);
+    }
+
+    .projects-page .smart-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #edf1f5;
+        font-size: .85rem;
+    }
+
+    .projects-page .smart-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .projects-page .smart-table tbody tr:hover {
+        background: #f8fbfc;
+    }
+
+    .projects-page .project-identity {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        min-width: 190px;
+    }
+
+    .projects-page .project-icon {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+        display: grid;
+        place-items: center;
+        color: var(--project-primary);
+        background: #e8f5f4;
+        border-radius: 10px;
+        font-size: 1rem;
+    }
+
+    .projects-page .project-code {
+        display: block;
+        color: #18323a;
+        font-size: .84rem;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .projects-page .project-name {
+        display: block;
+        color: var(--project-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+        margin-top: .2rem;
+        overflow-wrap: anywhere;
+    }
+
+    .projects-page .project-donor,
+    .projects-page .project-owner {
+        color: #334155;
+        min-width: 105px;
+    }
+
+    .projects-page .project-dates {
+        min-width: 145px;
+        line-height: 1.7;
+        white-space: nowrap;
+        color: #475569;
+        font-size: .8rem;
+    }
+
+    .projects-page .date-separator {
+        color: #94a3b8;
+        margin: 0 .2rem;
+    }
+
+    .projects-page .status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 700;
+        white-space: nowrap;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .projects-page .status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .projects-page .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .projects-page .status-completed {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .projects-page .status-on-hold,
+    .projects-page .status-on_hold,
+    .projects-page .status-suspended {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .projects-page .status-cancelled,
+    .projects-page .status-canceled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .projects-page .status-planned,
+    .projects-page .status-pending {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .projects-page .actions-cell {
+        min-width: 135px;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .projects-page .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        padding: .4rem .65rem;
+        border: 1px solid var(--project-border);
+        border-radius: 7px;
+        font-size: .76rem;
+        font-weight: 650;
+        text-decoration: none;
+        transition: background .15s ease, border-color .15s ease;
+    }
+
+    .projects-page .action-edit {
+        background: #fff;
+        color: #334155;
+    }
+
+    .projects-page .action-edit:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .projects-page .action-delete {
+        background: #fff;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+
+    .projects-page .action-delete:hover {
+        background: #fef2f2;
+        border-color: #f87171;
+    }
+
+    .projects-page .empty-state {
+        padding: 3.5rem 1.25rem !important;
+        text-align: center;
+        color: var(--project-muted);
+    }
+
+    .projects-page .empty-state-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto .9rem;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 1.4rem;
+    }
+
+    .projects-page .empty-state h3 {
+        color: #334155;
+        font-size: .98rem;
+        font-weight: 750;
+        margin-bottom: .4rem;
+    }
+
+    .projects-page .empty-state p {
+        font-size: .85rem;
+        margin: 0;
+    }
+
+    @media (max-width: 767.98px) {
+        .projects-page .page-intro {
+            align-items: stretch;
+        }
+
+        .projects-page .page-intro .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .projects-page .search-panel {
+            padding: .8rem;
+        }
+
+        .projects-page .panel-heading {
+            padding: .9rem 1rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .projects-page * {
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="projects-page">
+
+    <div class="page-intro">
+        <div>
+            <h2>Project Register</h2>
+            <p>
+                Manage project ownership, delivery timelines, donor information
+                and project budgets.
+            </p>
+        </div>
+
+        {% if manage_access.procurement %}
+            <a
+                class="btn btn-danger d-inline-flex align-items-center gap-2"
+                href="{% url 'procurement:project_create' %}"
+            >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                <span>New project</span>
+            </a>
+        {% endif %}
+    </div>
+
+    <form
+        method="get"
+        class="search-panel"
+        role="search"
+        aria-label="Search projects"
+    >
+        <label for="project-search">Find a project</label>
+
+        <div class="input-group">
+            <input
+                id="project-search"
+                type="search"
+                name="q"
+                value="{{ query|default:'' }}"
+                class="form-control"
+                placeholder="Search by project name, code or donor..."
+                aria-label="Search by project name, code or donor"
+            >
+
+            <button class="btn btn-outline-secondary" type="submit">
+                <i class="bi bi-search me-1" aria-hidden="true"></i>
+                Search
+            </button>
+        </div>
+    </form>
+
+    <section class="projects-panel" aria-labelledby="projects-heading">
+
+        <div class="panel-heading">
+            <h2 id="projects-heading">
+                <i class="bi bi-kanban me-2 text-secondary"
+                   aria-hidden="true"></i>
+                All Projects
+            </h2>
+
+            <span class="record-count">
+                {% if projects %}
+                    Project register
+                {% else %}
+                    No matching records
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table smart-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Project</th>
+                        <th scope="col">Donor</th>
+                        <th scope="col">Project Officer</th>
+                        <th scope="col">Timeline</th>
+                        <th scope="col">Status</th>
+
+                        {% if manage_access.procurement %}
+                            <th scope="col" class="text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in projects %}
+                        <tr>
+                            <td>
+                                <div class="project-identity">
+                                    <div class="project-icon">
+                                        <i class="bi bi-folder2-open"
+                                           aria-hidden="true"></i>
+                                    </div>
+
+                                    <div>
+                                        <span class="project-code">
+                                            {{ item.code|default:"Uncoded project" }}
+                                        </span>
+
+                                        <span class="project-name">
+                                            {{ item.name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="project-donor">
+                                    {{ item.donor|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="project-owner">
+                                    {{ item.project_officer|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="project-dates">
+                                    <div>
+                                        <i class="bi bi-calendar-event me-1"
+                                           aria-hidden="true"></i>
+                                        {{ item.start_date|date:"d M Y"|default:"Not set" }}
+                                    </div>
+
+                                    <div>
+                                        <i class="bi bi-calendar-check me-1"
+                                           aria-hidden="true"></i>
+                                        {{ item.end_date|date:"d M Y"|default:"Not set" }}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="status status-{{ item.status|slugify }}">
+                                    {{ item.get_status_display }}
+                                </span>
+                            </td>
+
+                            {% if manage_access.procurement %}
+                                <td class="actions-cell">
+                                    <a
+                                        class="action-btn action-edit"
+                                        href="{% url 'procurement:project_update' item.pk item.slug %}"
+                                        aria-label="Edit {{ item.name }}"
+                                    >
+                                        <i class="bi bi-pencil-square"
+                                           aria-hidden="true"></i>
+                                        Edit
+                                    </a>
+
+                                    <a
+                                        class="action-btn action-delete"
+                                        href="{% url 'procurement:project_delete' item.pk item.slug %}"
+                                        aria-label="Delete {{ item.name }}"
+                                    >
+                                        <i class="bi bi-trash3"
+                                           aria-hidden="true"></i>
+                                        Delete
+                                    </a>
+                                </td>
+                            {% endif %}
+                        </tr>
+
+                    {% empty %}
+                        <tr>
+                            <td
+                                colspan="{% if manage_access.procurement %}6{% else %}5{% endif %}"
+                                class="empty-state"
+                            >
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-folder2-open"
+                                       aria-hidden="true"></i>
+                                </div>
+
+                                <h3>No projects found</h3>
+
+                                <p>
+                                    {% if query %}
+                                        No projects match
+                                        <strong>{{ query }}</strong>.
+                                        Try another search term.
+                                    {% else %}
+                                        Projects will appear here when they
+                                        have been registered in the system.
+                                    {% endif %}
+                                </p>
+
+                                {% if manage_access.procurement and not query %}
+                                    <a
+                                        href="{% url 'procurement:project_create' %}"
+                                        class="btn btn-primary btn-sm mt-3"
+                                    >
+                                        <i class="bi bi-plus-lg me-1"
+                                           aria-hidden="true"></i>
+                                        Create first project
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</div>
+{% endblock %}

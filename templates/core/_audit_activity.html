@@ -1,0 +1,25 @@
+{% load group_tags %}
+{% if request.user.is_superuser or request.user|has_group:"ED" %}
+<div class="panel mt-4">
+    <div class="panel-head">
+        <div><h4>Central audit activity</h4><small>Recent actions across DDS-NK THRIVE</small></div>
+        <i class="bi bi-activity"></i>
+    </div>
+    <div class="table-responsive">
+        <table class="table smart-table mb-0">
+            <thead><tr><th>Time</th><th>Module</th><th>Action</th><th>Actor</th><th>Details</th></tr></thead>
+            <tbody>
+                {% for activity in recent_activity %}
+                <tr>
+                    <td>{{ activity.created_at|date:'d M Y H:i' }}</td>
+                    <td><span class="status status-approved">{{ activity.module }}</span></td>
+                    <td>{{ activity.action }}</td>
+                    <td>{% if activity.actor %}{{ activity.actor.get_full_name|default:activity.actor.username }}{% else %}System{% endif %}</td>
+                    <td>{{ activity.detail|default:'—'|truncatechars:80 }}</td>
+                </tr>
+                {% empty %}<tr><td colspan="5" class="empty">No audit activity has been recorded yet.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}

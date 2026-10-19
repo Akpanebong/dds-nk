@@ -1,0 +1,664 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Edit Training | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-edit-training-page">
+
+    <!-- Page heading -->
+    <div class="edit-training-header">
+        <div class="edit-training-heading">
+            <div class="edit-training-icon">
+                <i class="bi bi-mortarboard"></i>
+            </div>
+            <div>
+                <span class="edit-training-eyebrow">HUMAN RESOURCES</span>
+                <h1>Edit Training</h1>
+                <p>Update training event details and maintain accurate staff development records.</p>
+            </div>
+        </div>
+
+        <a href="{% url 'hr:training_edit' training.slug %}" class="edit-training-back">
+            <i class="bi bi-arrow-left"></i>
+            Training Details
+        </a>
+    </div>
+
+    <div class="edit-training-layout">
+
+        <!-- Main form -->
+        <main class="edit-training-main">
+            <section class="edit-training-card">
+
+                <div class="edit-training-card-header">
+                    <div class="edit-training-card-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h2>Training Information</h2>
+                        <p>Review and update the fields below.</p>
+                    </div>
+                </div>
+
+                <form method="post" class="edit-training-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="edit-training-error-summary" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>Please review the following errors</strong>
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    <div class="edit-training-field
+                        {% if field.field.widget.input_type == 'checkbox' %}edit-training-checkbox-field{% endif %}">
+
+                        <label for="{{ field.id_for_label }}" class="edit-training-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="edit-training-required">*</span>
+                            {% endif %}
+                        </label>
+
+                        {% if field.help_text %}
+                            <div class="edit-training-help">{{ field.help_text|safe }}</div>
+                        {% endif %}
+
+                        <div class="edit-training-control">
+                            {{ field }}
+                        </div>
+
+                        {% if field.errors %}
+                        <div class="edit-training-field-errors" role="alert">
+                            {% for error in field.errors %}
+                            <span>
+                                <i class="bi bi-exclamation-circle"></i>
+                                {{ error }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="edit-training-form-footer">
+                        <a href="{% url 'hr:training_edit' training.slug %}"
+                           class="edit-training-cancel">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="edit-training-save">
+                            <i class="bi bi-check2-circle"></i>
+                            Save Training
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <!-- Guidance sidebar -->
+        <aside class="edit-training-sidebar">
+
+            <section class="edit-training-guidance">
+                <div class="edit-guidance-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+
+                <h3>Update Guidelines</h3>
+                <p>Use these checks to maintain clear and reliable training records.</p>
+
+                <div class="edit-guidance-list">
+                    <div class="edit-guidance-item">
+                        <span class="edit-guidance-number">01</span>
+                        <div>
+                            <strong>Review the title</strong>
+                            <p>Use a clear title that identifies the training activity.</p>
+                        </div>
+                    </div>
+
+                    <div class="edit-guidance-item">
+                        <span class="edit-guidance-number">02</span>
+                        <div>
+                            <strong>Confirm the dates</strong>
+                            <p>Ensure the start and end dates reflect the schedule.</p>
+                        </div>
+                    </div>
+
+                    <div class="edit-guidance-item">
+                        <span class="edit-guidance-number">03</span>
+                        <div>
+                            <strong>Update the description</strong>
+                            <p>Keep the purpose and key details clear and accurate.</p>
+                        </div>
+                    </div>
+
+                    <div class="edit-guidance-item">
+                        <span class="edit-guidance-number">04</span>
+                        <div>
+                            <strong>Save your changes</strong>
+                            <p>Review the information before submitting the form.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="edit-training-security">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                    <strong>HR Record Management</strong>
+                    <p>Keep training information consistent with approved organizational plans.</p>
+                </div>
+            </section>
+
+        </aside>
+    </div>
+</div>
+
+<style>
+    .hr-edit-training-page {
+        --et-primary: #e50078;
+        --et-primary-dark: #b80060;
+        --et-plum: #3b2938;
+        --et-muted: #77717a;
+        --et-border: #e9e4e9;
+        --et-background: #faf8fa;
+        --et-pink-soft: #fff0f7;
+
+        padding: 8px 0 30px;
+        color: var(--et-plum);
+    }
+
+    .hr-edit-training-page,
+    .hr-edit-training-page * {
+        box-sizing: border-box;
+    }
+
+    .edit-training-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .edit-training-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .edit-training-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        background: var(--et-pink-soft);
+        color: var(--et-primary);
+        font-size: 25px;
+    }
+
+    .edit-training-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--et-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .edit-training-heading h1 {
+        margin: 0;
+        color: var(--et-plum);
+        font-size: clamp(23px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -.7px;
+    }
+
+    .edit-training-heading p {
+        margin: 6px 0 0;
+        color: var(--et-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .edit-training-back,
+    .edit-training-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 10px 15px;
+        border: 1px solid var(--et-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--et-plum);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .edit-training-back:hover,
+    .edit-training-cancel:hover {
+        border-color: var(--et-primary);
+        background: var(--et-pink-soft);
+        color: var(--et-primary);
+    }
+
+    .edit-training-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: start;
+        gap: 22px;
+    }
+
+    .edit-training-card,
+    .edit-training-guidance,
+    .edit-training-security {
+        border: 1px solid var(--et-border);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+    }
+
+    .edit-training-card {
+        overflow: hidden;
+    }
+
+    .edit-training-card-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 22px 25px;
+        border-bottom: 1px solid var(--et-border);
+        background: linear-gradient(120deg, #fff 0%, #fff9fc 100%);
+    }
+
+    .edit-training-card-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--et-pink-soft);
+        color: var(--et-primary);
+        font-size: 19px;
+    }
+
+    .edit-training-card-header h2 {
+        margin: 0 0 5px;
+        color: var(--et-plum);
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .edit-training-card-header p {
+        margin: 0;
+        color: var(--et-muted);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .edit-training-form {
+        padding: 25px;
+    }
+
+    .edit-training-field {
+        min-width: 0;
+        margin-bottom: 21px;
+    }
+
+    .edit-training-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--et-plum);
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .edit-training-required {
+        color: var(--et-primary);
+        font-weight: 800;
+    }
+
+    .edit-training-help {
+        margin: -2px 0 8px;
+        color: var(--et-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .edit-training-help ul,
+    .edit-training-help ol {
+        padding-left: 20px;
+        margin: 5px 0;
+    }
+
+    .edit-training-control input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .edit-training-control select,
+    .edit-training-control textarea {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #ded6df;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--et-plum);
+        font-family: inherit;
+        font-size: 13px;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .edit-training-control textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .edit-training-control input[type="file"] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        border: 1px dashed #d8cbd7;
+        border-radius: 9px;
+        background: var(--et-background);
+        color: var(--et-muted);
+        font-size: 12px;
+    }
+
+    .edit-training-control input[type="checkbox"],
+    .edit-training-control input[type="radio"] {
+        accent-color: var(--et-primary);
+    }
+
+    .edit-training-control input:focus,
+    .edit-training-control select:focus,
+    .edit-training-control textarea:focus {
+        outline: none;
+        border-color: var(--et-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .10);
+    }
+
+    .edit-training-checkbox-field .edit-training-control {
+        padding: 12px 14px;
+        border: 1px solid var(--et-border);
+        border-radius: 9px;
+        background: var(--et-background);
+    }
+
+    .edit-training-checkbox-field .edit-training-control label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        color: var(--et-plum);
+        font-size: 12px;
+    }
+
+    .edit-training-field-errors {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 7px;
+        color: #b4234b;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .edit-training-error-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 14px 15px;
+        margin-bottom: 21px;
+        border: 1px solid #f3c8d4;
+        border-radius: 9px;
+        background: #fff2f5;
+        color: #a51e43;
+        font-size: 12px;
+    }
+
+    .edit-training-error-summary > i {
+        margin-top: 2px;
+        font-size: 16px;
+    }
+
+    .edit-training-error-summary strong {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .edit-training-error-summary p {
+        margin: 0 0 4px;
+    }
+
+    .edit-training-error-summary p:last-child {
+        margin-bottom: 0;
+    }
+
+    .edit-training-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 20px;
+        margin-top: 5px;
+        border-top: 1px solid var(--et-border);
+    }
+
+    .edit-training-save {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 11px 19px;
+        border: 1px solid var(--et-primary);
+        border-radius: 9px;
+        background: var(--et-primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .edit-training-save:hover {
+        border-color: var(--et-primary-dark);
+        background: var(--et-primary-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .edit-training-save:focus-visible,
+    .edit-training-back:focus-visible,
+    .edit-training-cancel:focus-visible {
+        outline: 3px solid rgba(229, 0, 120, .25);
+        outline-offset: 2px;
+    }
+
+    .edit-training-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .edit-training-guidance {
+        padding: 22px 20px;
+    }
+
+    .edit-guidance-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        background: var(--et-pink-soft);
+        color: var(--et-primary);
+        font-size: 20px;
+    }
+
+    .edit-training-guidance h3 {
+        margin: 0 0 8px;
+        color: var(--et-plum);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .edit-training-guidance > p {
+        margin: 0 0 20px;
+        color: var(--et-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .edit-guidance-list {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+    }
+
+    .edit-guidance-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+    }
+
+    .edit-guidance-number {
+        display: grid;
+        place-items: center;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        border-radius: 9px;
+        background: #f7f1f6;
+        color: var(--et-primary);
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .edit-guidance-item strong {
+        display: block;
+        margin: 1px 0 4px;
+        color: var(--et-plum);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .edit-guidance-item p {
+        margin: 0;
+        color: var(--et-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .edit-training-security {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px;
+        background: #fff9fc;
+    }
+
+    .edit-training-security > i {
+        color: var(--et-primary);
+        font-size: 21px;
+    }
+
+    .edit-training-security strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--et-plum);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .edit-training-security p {
+        margin: 0;
+        color: var(--et-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 1000px) {
+        .edit-training-layout {
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 16px;
+        }
+
+        .edit-training-form {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .edit-training-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .edit-training-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .edit-training-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .edit-training-heading {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .edit-training-icon {
+            flex-basis: 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            font-size: 22px;
+        }
+
+        .edit-training-back {
+            width: 100%;
+        }
+
+        .edit-training-card-header,
+        .edit-training-form {
+            padding: 17px;
+        }
+
+        .edit-training-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .edit-training-form-footer {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .edit-training-save,
+        .edit-training-cancel {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

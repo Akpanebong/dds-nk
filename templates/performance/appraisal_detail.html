@@ -1,0 +1,380 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Appraisal {{ appraisal.reference }} | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .appraisal-detail {
+        --ad-primary: var(--primary-color, #e50078);
+        --ad-plum: #3b2938;
+        --ad-muted: #77818d;
+        --ad-border: #e8ebf0;
+        --ad-bg: #f7f8fb;
+        color: var(--ad-plum);
+    }
+
+    .appraisal-detail .page-intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .appraisal-detail .eyebrow {
+        color: var(--ad-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .45rem;
+    }
+
+    .appraisal-detail h1 {
+        font-size: clamp(1.4rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        margin: 0 0 .4rem;
+        overflow-wrap: anywhere;
+    }
+
+    .appraisal-detail .subtitle {
+        color: var(--ad-muted);
+        margin: 0;
+    }
+
+    .appraisal-detail .detail-card {
+        background: #fff;
+        border: 1px solid var(--ad-border);
+        border-radius: 16px;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+    }
+
+    .appraisal-detail .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.2rem 1.35rem;
+        border-bottom: 1px solid var(--ad-border);
+    }
+
+    .appraisal-detail .heading-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        border-radius: 12px;
+        background: #fff0f7;
+        color: var(--ad-primary);
+        font-size: 1.15rem;
+    }
+
+    .appraisal-detail .card-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .2rem;
+    }
+
+    .appraisal-detail .card-heading p {
+        font-size: .8rem;
+        color: var(--ad-muted);
+        margin: 0;
+    }
+
+    .appraisal-detail .card-body {
+        padding: 1.35rem;
+    }
+
+    .appraisal-detail .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .appraisal-detail .field-item {
+        min-width: 0;
+        background: var(--ad-bg);
+        border: 1px solid #eef0f4;
+        border-radius: 11px;
+        padding: .9rem 1rem;
+    }
+
+    .appraisal-detail .field-label {
+        display: block;
+        color: var(--ad-muted);
+        font-size: .72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .055em;
+        margin-bottom: .45rem;
+    }
+
+    .appraisal-detail .field-value {
+        display: block;
+        color: var(--ad-plum);
+        font-size: .92rem;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+
+    .appraisal-detail .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        border-radius: 999px;
+        padding: .4rem .75rem;
+        background: #f2edf2;
+        color: var(--ad-plum);
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+    .appraisal-detail .status-pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .appraisal-detail .status-approved {
+        background: #e9f7ef;
+        color: #187647;
+    }
+
+    .appraisal-detail .status-rejected {
+        background: #fff0f0;
+        color: #b42318;
+    }
+
+    .appraisal-detail .status-pending {
+        background: #fff5df;
+        color: #956000;
+    }
+
+    .appraisal-detail .document-download {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--ad-border);
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--ad-plum);
+        transition: border-color .2s ease, background .2s ease;
+    }
+
+    .appraisal-detail .document-download:hover {
+        border-color: var(--ad-primary);
+        background: #fff8fb;
+        color: var(--ad-plum);
+    }
+
+    .appraisal-detail .document-icon {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: grid;
+        place-items: center;
+        background: #fff0f7;
+        color: var(--ad-primary);
+        border-radius: 12px;
+        font-size: 1.25rem;
+    }
+
+    .appraisal-detail .document-download strong {
+        display: block;
+        font-size: .9rem;
+        font-weight: 800;
+    }
+
+    .appraisal-detail .document-download small {
+        display: block;
+        margin-top: .2rem;
+        color: var(--ad-muted);
+        font-size: .78rem;
+    }
+
+    .appraisal-detail .btn-ad {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: .5rem;
+        border-radius: 10px;
+        padding: .7rem 1rem;
+        text-decoration: none;
+        font-weight: 700;
+        border: 1px solid var(--ad-border);
+        background: #fff;
+        color: var(--ad-plum);
+    }
+
+    .appraisal-detail .btn-ad:hover {
+        border-color: var(--ad-primary);
+        color: var(--ad-primary);
+    }
+
+    @media (max-width: 575.98px) {
+        .appraisal-detail .field-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .appraisal-detail .card-heading,
+        .appraisal-detail .card-body {
+            padding: 1rem;
+        }
+
+        .appraisal-detail .page-intro .btn-ad {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="appraisal-detail">
+
+    <!-- Page header -->
+    <div class="page-intro">
+        <div>
+            <div class="eyebrow">
+                <i class="bi bi-person-workspace me-1"></i>
+                Human Resources / Performance Appraisal
+            </div>
+
+            <h1>{{ appraisal.reference }}</h1>
+
+            <p class="subtitle">
+                <i class="bi bi-person me-1"></i>
+                {{ appraisal.employee }}
+                <span class="mx-1">·</span>
+                <span class="status-pill
+                    {% if appraisal.status == 'approved' %}status-approved
+                    {% elif appraisal.status == 'rejected' or appraisal.status == 'ed_rejected' %}status-rejected
+                    {% elif appraisal.status == 'pending' or appraisal.status == 'submitted' or appraisal.status == 'under_review' %}status-pending
+                    {% endif %}">
+                    {{ appraisal.get_status_display }}
+                </span>
+            </p>
+        </div>
+
+        <a href="{% url 'appraisal_list' %}" class="btn-ad">
+            <i class="bi bi-arrow-left"></i>
+            Back to Appraisals
+        </a>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        {% if is_employee and appraisal.status == 'sent_to_employee' %}
+        <a class="btn-ad" href="{% url 'employee_submit' appraisal.slug %}"><i class="bi bi-pencil-square"></i> Complete appraisal</a>
+        {% endif %}
+        {% if is_supervisor and appraisal.status == 'submitted_by_employee' and appraisal.supervisor_id == request.user.pk %}
+        <a class="btn-ad" href="{% url 'supervisor_review' appraisal.slug %}"><i class="bi bi-check2-square"></i> Supervisor review</a>
+        {% endif %}
+        {% if is_hr and appraisal.status == 'reviewed_by_supervisor' %}
+        <a class="btn-ad" href="{% url 'hr_review' appraisal.slug %}"><i class="bi bi-shield-check"></i> HR review</a>
+        {% endif %}
+        {% if is_cmt and appraisal.status == 'reviewed_by_hr' %}
+        <a class="btn-ad" href="{% url 'cmt_approval' appraisal.slug %}"><i class="bi bi-award"></i> ED approval</a>
+        {% endif %}
+        {% if appraisal.pdf and appraisal.status == 'approved' %}
+        <a class="btn-ad" href="{% url 'download_final_appraisal' appraisal.slug %}">
+            <i class="bi bi-file-earmark-pdf"></i> Download final appraisal
+        </a>
+        {% endif %}
+        {% if pip and pip.status == 'sent_to_staff' %}
+        <a class="btn-ad" href="{% url 'fill_pip' pip.token %}"><i class="bi bi-clipboard-pulse"></i> Complete PIP</a>
+        {% endif %}
+    </div>
+
+    <!-- Appraisal information -->
+    <section class="detail-card">
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div>
+                <h2>Appraisal Details</h2>
+                <p>Recorded information and performance assessment values</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {% if appraisal_form %}
+                <div class="field-grid">
+                                    {% for field in appraisal_form %}
+                                        {% if field.name != 'filled_appraisal' %}
+                                        <div class="field-item">
+                            <span class="field-label">{{ field.label }}</span>
+                            <span class="field-value">
+                                {% if field.value != None and field.value != '' %}
+                                    {{ field.value }}
+                                {% else %}
+                                    <span class="text-muted">Not provided</span>
+                                {% endif %}
+                            </span>
+                                        </div>
+                                        {% endif %}
+                    {% empty %}
+                        <div class="text-muted">
+                            No appraisal form fields are available.
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-info-circle fs-2 text-muted"></i>
+                    <p class="text-muted mt-2 mb-0">
+                        No appraisal form information is available.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Completed appraisal document -->
+    <section class="detail-card">
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-paperclip"></i>
+            </div>
+            <div>
+                <h2>Supporting Document</h2>
+                <p>Completed appraisal file and related documentation</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {% if appraisal.filled_appraisal %}
+                <a href="{{ appraisal.filled_appraisal.url }}"
+                   class="document-download"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <span class="document-icon">
+                        <i class="bi bi-file-earmark-arrow-down"></i>
+                    </span>
+
+                    <span class="flex-grow-1">
+                        <strong>Download Completed Appraisal</strong>
+                        <small>Open or download the uploaded appraisal document</small>
+                    </span>
+
+                    <i class="bi bi-download fs-5"></i>
+                </a>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-file-earmark-x fs-2 text-muted"></i>
+                    <p class="fw-semibold mt-2 mb-1">No document uploaded</p>
+                    <p class="text-muted small mb-0">
+                        A completed appraisal document has not been attached to this record.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

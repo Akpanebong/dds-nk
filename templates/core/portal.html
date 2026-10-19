@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+
+{% block title %}Choose Workspace | DDS-NK THRIVE{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* =========================================================
+       DDS-NK THRIVE — Workspace Portal
+       Designed to work with the existing base.html topbar
+       ========================================================= */
+
+    .portal-wrap {
+        min-height: calc(100vh - 76px);
+        padding: 2rem 2.25rem 3rem;
+        background:
+            radial-gradient(circle at 85% 0%, rgba(13, 110, 253, 0.07), transparent 30%),
+            radial-gradient(circle at 5% 20%, rgba(25, 135, 84, 0.06), transparent 28%),
+            #f6f8fb;
+    }
+
+    /* Page heading */
+    .workspace-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .workspace-heading {
+        max-width: 760px;
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        margin-bottom: .65rem;
+        color: #667085;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .workspace-heading h1 {
+        margin: 0;
+        color: #172033;
+        font-size: clamp(1.75rem, 3vw, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .workspace-heading p {
+        max-width: 700px;
+        margin: .65rem 0 0;
+        color: #667085;
+        font-size: .98rem;
+        line-height: 1.7;
+    }
+
+    .date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+        flex-shrink: 0;
+        padding: .7rem 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .85);
+        color: #475467;
+        font-size: .84rem;
+        font-weight: 600;
+        box-shadow: 0 3px 14px rgba(16, 24, 40, .04);
+    }
+
+    .date-chip i {
+        color: #0d6efd;
+        font-size: 1rem;
+    }
+
+    /* Workspace cards */
+    .module-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 310px;
+        overflow: hidden;
+        padding: 1.45rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 18px;
+        background: #fff;
+        color: inherit;
+        text-decoration: none;
+        box-shadow: 0 8px 28px rgba(16, 24, 40, .055);
+        transition:
+            transform .22s ease,
+            box-shadow .22s ease,
+            border-color .22s ease;
+    }
+
+    .module-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 4px;
+        background: var(--module-accent, #0d6efd);
+    }
+
+    .module-card::after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        right: -75px;
+        bottom: -75px;
+        border-radius: 50%;
+        background: var(--module-soft, rgba(13, 110, 253, .06));
+        pointer-events: none;
+    }
+
+    .module-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--module-accent, #0d6efd);
+        box-shadow: 0 18px 42px rgba(16, 24, 40, .11);
+        color: inherit;
+    }
+
+    .module-card:focus-visible {
+        outline: 3px solid rgba(13, 110, 253, .25);
+        outline-offset: 3px;
+    }
+
+    .module-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1.4rem;
+    }
+
+    .module-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 15px;
+        background: var(--module-soft, rgba(13, 110, 253, .08));
+        color: var(--module-accent, #0d6efd);
+        font-size: 1.45rem;
+    }
+
+    .module-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 30px;
+        padding: 0 .6rem;
+        border-radius: 30px;
+        background: #f2f4f7;
+        color: #667085;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+    }
+
+    .module-code {
+        display: block;
+        margin-bottom: .35rem;
+        color: var(--module-accent, #0d6efd);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .module-card h2 {
+        margin: 0 0 .7rem;
+        color: #172033;
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -.025em;
+    }
+
+    .module-card p {
+        margin: 0;
+        color: #667085;
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .module-card-content {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+    }
+
+    .module-card-footer {
+        position: relative;
+        z-index: 2;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eef0f3;
+    }
+
+    .launch {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        color: #344054;
+        font-size: .84rem;
+        font-weight: 700;
+        transition: gap .2s ease, color .2s ease;
+    }
+
+    .launch i {
+        transition: transform .2s ease;
+    }
+
+    .module-card:hover .launch {
+        gap: .7rem;
+        color: var(--module-accent, #0d6efd);
+    }
+
+    .module-card:hover .launch i {
+        transform: translateX(3px);
+    }
+
+    /* Module colour themes */
+    .meal-card {
+        --module-accent: #0d6efd;
+        --module-soft: rgba(13, 110, 253, .09);
+    }
+
+    .procurement-card {
+        --module-accent: #198754;
+        --module-soft: rgba(25, 135, 84, .09);
+    }
+
+    .hr-card {
+        --module-accent: #6f42c1;
+        --module-soft: rgba(111, 66, 193, .09);
+    }
+
+    .vsla-card {
+        --module-accent: #d97706;
+        --module-soft: rgba(217, 119, 6, .09);
+    }
+
+    /* Empty state */
+    .empty-workspace {
+        padding: 3.5rem 1.5rem;
+        border: 1px dashed #d0d5dd;
+        border-radius: 18px;
+        background: #fff;
+        text-align: center;
+        box-shadow: 0 8px 28px rgba(16, 24, 40, .04);
+    }
+
+    .empty-workspace-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        height: 68px;
+        margin-bottom: 1rem;
+        border-radius: 50%;
+        background: #f2f4f7;
+        color: #667085;
+        font-size: 1.5rem;
+    }
+
+    .empty-workspace h2 {
+        margin-bottom: .55rem;
+        color: #172033;
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    .empty-workspace p {
+        max-width: 520px;
+        margin: 0 auto 1.25rem;
+        color: #667085;
+        line-height: 1.7;
+    }
+
+    /* Responsive */
+    @media (max-width: 767.98px) {
+        .portal-wrap {
+            padding: 1.35rem 1rem 2rem;
+        }
+
+        .workspace-header {
+            display: block;
+            margin-bottom: 1.5rem;
+        }
+
+        .date-chip {
+            margin-top: 1rem;
+        }
+
+        .module-card {
+            min-height: 285px;
+            padding: 1.25rem;
+            border-radius: 15px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .module-card,
+        .launch,
+        .launch i {
+            transition: none;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block body %}
+
+<div class="container-fluid portal-wrap">
+
+    <!-- Workspace Header -->
+    <section class="workspace-header">
+
+        <div class="workspace-heading">
+
+            <span class="eyebrow">
+                <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
+                Staff Workspace
+            </span>
+
+            <h1>
+                Good day,
+                {{ request.user.first_name|default:request.user.username|title }}.
+            </h1>
+
+            <p>
+                Select the subsystem you want to work with.
+                Each workspace provides dedicated tools, dashboards,
+                records and navigation for your role.
+            </p>
+
+        </div>
+
+        <div class="date-chip">
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            <span>{{ now|date:"l, d M Y" }}</span>
+        </div>
+
+    </section>
+
+
+    <!-- Workspace Modules -->
+    <div class="row g-4">
+
+        {% if module_access.meal %}
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <a
+                href="{% url 'meal:dashboard' %}"
+                class="module-card meal-card"
+                aria-label="Open MEAL workspace"
+            >
+
+                <div class="module-card-top">
+
+                    <div class="module-icon" aria-hidden="true">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                    </div>
+
+                    <span class="module-number">01</span>
+
+                </div>
+
+
+                <div class="module-card-content">
+
+                    <span class="module-code">
+                        Program Performance
+                    </span>
+
+                    <h2>MEAL</h2>
+
+                    <p>
+                        Monitoring, Evaluation, Accountability &amp; Learning.
+                        Capture, verify, track, analyze and report program data.
+                    </p>
+
+                </div>
+
+
+                <div class="module-card-footer">
+
+                    <span class="launch">
+                        Open workspace
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if module_access.procurement %}
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <a
+                href="{% url 'procurement:dashboard' %}"
+                class="module-card procurement-card"
+                aria-label="Open Procurement workspace"
+            >
+
+                <div class="module-card-top">
+
+                    <div class="module-icon" aria-hidden="true">
+                        <i class="bi bi-bag-check-fill"></i>
+                    </div>
+
+                    <span class="module-number">02</span>
+
+                </div>
+
+
+                <div class="module-card-content">
+
+                    <span class="module-code">
+                        Supply &amp; Compliance
+                    </span>
+
+                    <h2>PROCUREMENT</h2>
+
+                    <p>
+                        Manage vendors, procurement requests, approvals,
+                        awards, documentation and procurement tracking.
+                    </p>
+
+                </div>
+
+
+                <div class="module-card-footer">
+
+                    <span class="launch">
+                        Open workspace
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if module_access.hr %}
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <a
+                href="{% url 'hr:dashboard' %}"
+                class="module-card hr-card"
+                aria-label="Open Human Resources workspace"
+            >
+
+                <div class="module-card-top">
+
+                    <div class="module-icon" aria-hidden="true">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <span class="module-number">03</span>
+
+                </div>
+
+
+                <div class="module-card-content">
+
+                    <span class="module-code">
+                        People &amp; Performance
+                    </span>
+
+                    <h2>HUMAN RESOURCES</h2>
+
+                    <p>
+                        Centralize staff records, performance reviews
+                        and core HR management processes.
+                    </p>
+
+                </div>
+
+
+                <div class="module-card-footer">
+
+                    <span class="launch">
+                        Open workspace
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+         {% if module_access.vsla %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <a href="{% url 'vsla:dashboard' %}" class="module-card vsla-card" aria-label="Open VSLA workspace">
+                <div class="module-card-top"><div class="module-icon"><i class="bi bi-people-fill"></i></div><span class="module-number">04</span></div>
+                <div class="module-card-content"><span class="module-code">Savings &amp; Groups</span><h2>VSLA</h2><p>Manage village savings groups, members, savings, loans, meetings and social funds.</p></div>
+                <div class="module-card-footer"><span class="launch">Open workspace <i class="bi bi-arrow-right"></i></span></div>
+            </a>
+        </div>
+        {% endif %}
+
+
+        <!-- No Workspace Access -->
+
+        {% if not module_access.meal and not module_access.procurement and not module_access.hr and not module_access.vsla %}
+
+        <div class="col-12">
+
+            <div class="empty-workspace">
+
+                <div class="empty-workspace-icon">
+                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+                </div>
+
+                <h2>No workspace assigned</h2>
+
+                <p>
+                    Your account currently does not have access to any
+                    DDS-NK THRIVE subsystem. Please contact the system
+                    administrator to request access.
+                </p>
+
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="bi bi-box-arrow-right me-2"></i>
+                        Sign out
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

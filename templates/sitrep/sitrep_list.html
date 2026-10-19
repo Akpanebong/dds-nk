@@ -1,0 +1,568 @@
+﻿{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Situation Reports | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<style>
+    .sitrep-list {
+        --sl-primary: #e50078;
+        --sl-plum: #3b2938;
+        --sl-muted: #75808d;
+        --sl-border: #e6eaf0;
+        --sl-soft: #fff4f9;
+        color: var(--sl-plum);
+    }
+
+    .sitrep-list .page-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .sitrep-list .eyebrow {
+        margin-bottom: .45rem;
+        color: var(--sl-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .sitrep-list .page-heading h1 {
+        margin: 0 0 .45rem;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .sitrep-list .page-heading p {
+        max-width: 650px;
+        margin: 0;
+        color: var(--sl-muted);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .sitrep-list .btn-new-report {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1rem;
+        border: 1px solid var(--sl-primary);
+        border-radius: 10px;
+        background: var(--sl-primary);
+        color: #fff;
+        font-size: .86rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .sitrep-list .btn-new-report:hover {
+        transform: translateY(-1px);
+        border-color: #c90069;
+        background: #c90069;
+        color: #fff;
+    }
+
+    .sitrep-list .metric-card {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        height: 100%;
+        padding: 1.15rem;
+        border: 1px solid var(--sl-border);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(59, 41, 56, .035);
+    }
+
+    .sitrep-list .metric-icon {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        place-items: center;
+        border-radius: 12px;
+        background: #ffe6f2;
+        color: var(--sl-primary);
+        font-size: 1.2rem;
+    }
+
+    .sitrep-list .metric-label {
+        display: block;
+        margin-bottom: .25rem;
+        color: var(--sl-muted);
+        font-size: .75rem;
+        font-weight: 700;
+    }
+
+    .sitrep-list .metric-value {
+        display: block;
+        color: var(--sl-plum);
+        font-size: 1.45rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .sitrep-list .report-card {
+        overflow: hidden;
+        border: 1px solid var(--sl-border);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 6px 24px rgba(59, 41, 56, .04);
+    }
+
+    .sitrep-list .card-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.2rem 1.4rem;
+        border-bottom: 1px solid var(--sl-border);
+        background: linear-gradient(120deg, #fff, #fff8fb);
+    }
+
+    .sitrep-list .card-heading h2 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .sitrep-list .card-heading p {
+        margin: 0;
+        color: var(--sl-muted);
+        font-size: .82rem;
+    }
+
+    .sitrep-list .search-box {
+        position: relative;
+        width: min(100%, 290px);
+    }
+
+    .sitrep-list .search-box i {
+        position: absolute;
+        top: 50%;
+        left: .8rem;
+        color: var(--sl-muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .sitrep-list .search-box input {
+        width: 100%;
+        min-height: 40px;
+        padding: .6rem .8rem .6rem 2.25rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--sl-plum);
+        font-size: .84rem;
+    }
+
+    .sitrep-list .search-box input:focus {
+        outline: none;
+        border-color: var(--sl-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .09);
+    }
+
+    .sitrep-list .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .sitrep-list .report-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        vertical-align: middle;
+    }
+
+    .sitrep-list .report-table thead th {
+        padding: .9rem 1.1rem;
+        border-bottom: 1px solid var(--sl-border);
+        background: #fafbfc;
+        color: var(--sl-muted);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .sitrep-list .report-table tbody td {
+        padding: 1rem 1.1rem;
+        border-bottom: 1px solid #edf0f4;
+        color: #596472;
+        font-size: .85rem;
+    }
+
+    .sitrep-list .report-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .sitrep-list .report-table tbody tr:hover {
+        background: #fffafd;
+    }
+
+    .sitrep-list .report-title {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: .65rem;
+        color: var(--sl-plum);
+        font-weight: 750;
+        line-height: 1.5;
+        text-decoration: none;
+    }
+
+    .sitrep-list .report-title i {
+        margin-top: .15rem;
+        color: var(--sl-primary);
+        font-size: 1rem;
+    }
+
+    .sitrep-list .report-title:hover {
+        color: var(--sl-primary);
+    }
+
+    .sitrep-list .reporter-name {
+        color: var(--sl-plum);
+        font-weight: 650;
+    }
+
+    .sitrep-list .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .65rem;
+        border: 1px solid #f1c6dc;
+        border-radius: 999px;
+        background: var(--sl-soft);
+        color: var(--sl-primary);
+        font-size: .73rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .sitrep-list .date-value {
+        white-space: nowrap;
+        color: var(--sl-muted);
+        font-size: .82rem;
+    }
+
+    .sitrep-list .empty-state {
+        padding: 3rem 1.25rem !important;
+        text-align: center;
+    }
+
+    .sitrep-list .empty-icon {
+        display: grid;
+        width: 56px;
+        height: 56px;
+        margin: 0 auto .9rem;
+        place-items: center;
+        border-radius: 16px;
+        background: var(--sl-soft);
+        color: var(--sl-primary);
+        font-size: 1.6rem;
+    }
+
+    .sitrep-list .empty-state h3 {
+        margin-bottom: .45rem;
+        color: var(--sl-plum);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .sitrep-list .empty-state p {
+        margin: 0;
+        color: var(--sl-muted);
+        font-size: .85rem;
+    }
+
+    .sitrep-list .no-search-results {
+        display: none;
+        padding: 1.5rem;
+        color: var(--sl-muted);
+        font-size: .85rem;
+        text-align: center;
+    }
+
+    .sitrep-list .table-footer {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding: .9rem 1.2rem;
+        border-top: 1px solid var(--sl-border);
+        background: #fcfcfd;
+        color: var(--sl-muted);
+        font-size: .78rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .sitrep-list .page-heading {
+            flex-direction: column;
+        }
+
+        .sitrep-list .btn-new-report {
+            width: 100%;
+        }
+
+        .sitrep-list .card-heading {
+            align-items: stretch;
+            padding: 1rem;
+        }
+
+        .sitrep-list .search-box {
+            width: 100%;
+        }
+
+        .sitrep-list .metric-card {
+            padding: .9rem;
+        }
+    }
+</style>
+
+<div class="sitrep-list">
+
+    <!-- Page heading -->
+    <header class="page-heading">
+        <div>
+            <div class="eyebrow">
+                <i class="bi bi-file-earmark-bar-graph me-1"></i>
+                DDS-NK THRIVE / Reporting
+            </div>
+
+            <h1>Situation Reports</h1>
+
+            <p>
+                Review submitted situation reports, identify their current
+                status, and open individual records for detailed information.
+            </p>
+        </div>
+
+        <a class="btn-new-report" href="{% url 'hr:create_sitrep' %}">
+            <i class="bi bi-plus-circle"></i>
+            New Situation Report
+        </a>
+    </header>
+
+    <!-- Summary metrics -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="bi bi-files"></i>
+                </div>
+                <div>
+                    <span class="metric-label">Reports Listed</span>
+                    <span class="metric-value" id="totalReports">
+                        {{ reports|length|intcomma }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                    <span class="metric-label">Latest Report</span>
+                    <span class="metric-value" style="font-size:1rem;">
+                        <span id="latestReport">—</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <div>
+                    <span class="metric-label">Matching Reports</span>
+                    <span class="metric-value" id="matchingReports">
+                        {{ reports|length|intcomma }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Report table -->
+    <section class="report-card">
+
+        <div class="card-heading">
+            <div>
+                <h2>Report Register</h2>
+                <p>Search and select a report to view its full details.</p>
+            </div>
+
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input
+                    type="search"
+                    id="reportSearch"
+                    placeholder="Search reports..."
+                    aria-label="Search situation reports"
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Report Title</th>
+                        <th scope="col">Reporter</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Created</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportTableBody">
+                    {% for report in reports %}
+                        <tr class="report-row">
+                            <td>
+                                <a
+                                    class="report-title"
+                                    href="{% url 'hr:sitrep_detail' report.pk %}"
+                                >
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <span>{{ report.title }}</span>
+                                </a>
+                            </td>
+
+                            <td>
+                                <span class="reporter-name">
+                                    {{ report.reporter|default:"Not specified" }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="status-badge">
+                                    <i class="bi bi-circle-fill" style="font-size:.4rem;"></i>
+                                    {{ report.get_status_display|default:"Unknown" }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="date-value report-date">
+                                    {{ report.created_at|date:"d M Y, H:i" }}
+                                </span>
+                                <span class="report-timestamp" hidden>
+                                    {{ report.created_at|date:"Y-m-d H:i:s" }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-inbox"></i>
+                                </div>
+                                <h3>No situation reports yet</h3>
+                                <p>Create a new report to begin building the register.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="no-search-results" id="noSearchResults" role="status">
+                <i class="bi bi-search me-1"></i>
+                No reports match your search. Try a different keyword.
+            </div>
+        </div>
+
+        <footer class="table-footer">
+            <span id="tableSummary">
+                Showing {{ reports|length|intcomma }} report{{ reports|length|pluralize }}
+            </span>
+            <span>
+                <i class="bi bi-shield-check me-1"></i>
+                Situation Report Register
+            </span>
+        </footer>
+
+    </section>
+
+</div>
+
+<script>
+(function () {
+    const searchInput = document.getElementById('reportSearch');
+    const tableBody = document.getElementById('reportTableBody');
+    const matchingReports = document.getElementById('matchingReports');
+    const totalReports = document.getElementById('totalReports');
+    const tableSummary = document.getElementById('tableSummary');
+    const noResults = document.getElementById('noSearchResults');
+    const latestReport = document.getElementById('latestReport');
+
+    if (!searchInput || !tableBody) return;
+
+    const rows = Array.from(tableBody.querySelectorAll('.report-row'));
+    const total = rows.length;
+
+    totalReports.textContent = total.toLocaleString();
+    matchingReports.textContent = total.toLocaleString();
+
+    const timestamps = rows
+        .map(row => {
+            const value = row.querySelector('.report-timestamp');
+            return value ? value.textContent.trim() : '';
+        })
+        .filter(Boolean)
+        .sort()
+        .reverse();
+
+    if (timestamps.length > 0) {
+        const date = new Date(timestamps[0].replace(' ', 'T'));
+        if (!Number.isNaN(date.getTime())) {
+            latestReport.textContent = date.toLocaleDateString(undefined, {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+    }
+
+    function filterReports() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visible = 0;
+
+        rows.forEach(row => {
+            const matches = row.textContent.toLowerCase().includes(query);
+            row.style.display = matches ? '' : 'none';
+
+            if (matches) visible++;
+        });
+
+        matchingReports.textContent = visible.toLocaleString();
+        tableSummary.textContent =
+            `Showing ${visible.toLocaleString()} of ${total.toLocaleString()} report${total === 1 ? '' : 's'}`;
+
+        noResults.style.display =
+            rows.length > 0 && visible === 0 ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', filterReports);
+})();
+</script>
+{% endblock %}

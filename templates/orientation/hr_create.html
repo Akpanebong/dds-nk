@@ -1,0 +1,471 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Create Orientation Plan | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="orientation-create">
+
+    <style>
+        .orientation-create {
+            --oc-pink: #e50078;
+            --oc-plum: #3b2938;
+            --oc-muted: #77808c;
+            --oc-border: #e9e7ec;
+            --oc-soft: #f8f7fa;
+            color: var(--oc-plum);
+            padding-bottom: 2rem;
+        }
+
+        .orientation-create * {
+            box-sizing: border-box;
+        }
+
+        .orientation-create .oc-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            background: linear-gradient(120deg, #3b2938, #56364d 70%, #8f1458);
+            border-radius: 20px;
+        }
+
+        .orientation-create .oc-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .65rem;
+            color: #ffd3e8;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .orientation-create .oc-hero h1 {
+            margin: 0 0 .55rem;
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .orientation-create .oc-hero p {
+            max-width: 620px;
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .orientation-create .oc-hero-icon {
+            display: grid;
+            flex: 0 0 76px;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 22px;
+            font-size: 2rem;
+        }
+
+        .orientation-create .oc-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            align-items: start;
+            gap: 1.5rem;
+        }
+
+        .orientation-create .oc-panel {
+            min-width: 0;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--oc-border);
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .045);
+        }
+
+        .orientation-create .oc-panel-header {
+            padding: 1.4rem 1.5rem;
+            border-bottom: 1px solid var(--oc-border);
+        }
+
+        .orientation-create .oc-panel-header h2 {
+            margin: 0;
+            color: var(--oc-plum);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .orientation-create .oc-panel-header p {
+            margin: .4rem 0 0;
+            color: var(--oc-muted);
+            font-size: .85rem;
+            line-height: 1.6;
+        }
+
+        .orientation-create .oc-form-body {
+            padding: 1.5rem;
+        }
+
+        .orientation-create .oc-staff-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem;
+            margin-bottom: 1.5rem;
+            background: var(--oc-soft);
+            border: 1px solid var(--oc-border);
+            border-radius: 14px;
+        }
+
+        .orientation-create .oc-staff-icon {
+            display: grid;
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            place-items: center;
+            color: var(--oc-pink);
+            background: #fff0f7;
+            border-radius: 14px;
+            font-size: 1.35rem;
+        }
+
+        .orientation-create .oc-label {
+            display: block;
+            margin-bottom: .25rem;
+            color: var(--oc-muted);
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+        }
+
+        .orientation-create .oc-staff-name {
+            margin: 0;
+            color: var(--oc-plum);
+            font-size: 1rem;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .orientation-create .oc-form-fields p {
+            margin-bottom: 1.2rem;
+        }
+
+        .orientation-create .oc-form-fields label {
+            display: block;
+            margin-bottom: .45rem;
+            color: var(--oc-plum);
+            font-size: .86rem;
+            font-weight: 700;
+        }
+
+        .orientation-create .oc-form-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        .orientation-create .oc-form-fields select,
+        .orientation-create .oc-form-fields textarea {
+            display: block;
+            width: 100%;
+            min-height: 44px;
+            padding: .7rem .85rem;
+            color: var(--oc-plum);
+            background: #fff;
+            border: 1px solid #dcd7e0;
+            border-radius: 10px;
+            outline: none;
+            font: inherit;
+            font-size: .9rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .orientation-create .oc-form-fields textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .orientation-create .oc-form-fields input:focus,
+        .orientation-create .oc-form-fields select:focus,
+        .orientation-create .oc-form-fields textarea:focus {
+            border-color: var(--oc-pink);
+            box-shadow: 0 0 0 3px rgba(229, 0, 120, .09);
+        }
+
+        .orientation-create .oc-form-fields input[type="checkbox"],
+        .orientation-create .oc-form-fields input[type="radio"] {
+            accent-color: var(--oc-pink);
+        }
+
+        .orientation-create .oc-form-fields input[type="file"] {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            font-size: .85rem;
+        }
+
+        .orientation-create .oc-form-fields .helptext,
+        .orientation-create .oc-form-fields small {
+            display: block;
+            margin-top: .4rem;
+            color: var(--oc-muted);
+            font-size: .78rem;
+            line-height: 1.55;
+        }
+
+        .orientation-create .oc-form-fields ul.errorlist {
+            padding: .7rem .9rem;
+            margin: .5rem 0;
+            color: #a61b36;
+            background: #fff0f2;
+            border: 1px solid #f5c6ce;
+            border-radius: 9px;
+            font-size: .82rem;
+            list-style: none;
+        }
+
+        .orientation-create .oc-form-fields .errorlist li + li {
+            margin-top: .25rem;
+        }
+
+        .orientation-create .oc-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: .75rem;
+            padding-top: 1.25rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--oc-border);
+        }
+
+        .orientation-create .oc-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            min-height: 44px;
+            padding: .7rem 1.2rem;
+            color: #fff;
+            background: var(--oc-pink);
+            border: 1px solid var(--oc-pink);
+            border-radius: 10px;
+            font-size: .87rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background .2s, box-shadow .2s, transform .2s;
+        }
+
+        .orientation-create .oc-submit:hover {
+            color: #fff;
+            background: #c90069;
+            border-color: #c90069;
+            box-shadow: 0 5px 14px rgba(229, 0, 120, .18);
+            transform: translateY(-1px);
+        }
+
+        .orientation-create .oc-submit:focus-visible {
+            outline: 3px solid rgba(229, 0, 120, .25);
+            outline-offset: 3px;
+        }
+
+        .orientation-create .oc-guidance {
+            padding: 1.25rem;
+            background: #fff;
+            border: 1px solid var(--oc-border);
+            border-radius: 16px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+        }
+
+        .orientation-create .oc-guidance-icon {
+            display: grid;
+            width: 44px;
+            height: 44px;
+            margin-bottom: .9rem;
+            place-items: center;
+            color: var(--oc-pink);
+            background: #fff0f7;
+            border-radius: 13px;
+            font-size: 1.25rem;
+        }
+
+        .orientation-create .oc-guidance h3 {
+            margin: 0 0 .65rem;
+            color: var(--oc-plum);
+            font-size: .98rem;
+            font-weight: 800;
+        }
+
+        .orientation-create .oc-guidance p {
+            margin: 0;
+            color: var(--oc-muted);
+            font-size: .84rem;
+            line-height: 1.7;
+        }
+
+        .orientation-create .oc-guidance-list {
+            display: grid;
+            gap: .9rem;
+            padding: 0;
+            margin: 1.15rem 0 0;
+            list-style: none;
+        }
+
+        .orientation-create .oc-guidance-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: .65rem;
+            color: #625563;
+            font-size: .82rem;
+            line-height: 1.6;
+        }
+
+        .orientation-create .oc-guidance-list i {
+            margin-top: .15rem;
+            color: var(--oc-pink);
+        }
+
+        @media (max-width: 1000px) {
+            .orientation-create .oc-layout {
+                grid-template-columns: minmax(0, 1fr) 240px;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .orientation-create .oc-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .orientation-create .oc-hero {
+                padding: 1.35rem;
+                border-radius: 15px;
+            }
+
+            .orientation-create .oc-hero-icon {
+                display: none;
+            }
+
+            .orientation-create .oc-panel-header,
+            .orientation-create .oc-form-body {
+                padding: 1.1rem;
+            }
+
+            .orientation-create .oc-form-actions {
+                flex-direction: column;
+            }
+
+            .orientation-create .oc-submit {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Page header -->
+    <section class="oc-hero">
+        <div>
+            <div class="oc-eyebrow">
+                <i class="bi bi-person-workspace"></i>
+                Human Resources
+            </div>
+            <h1>Create Orientation Plan</h1>
+            <p>
+                Set up a structured orientation plan to guide a staff
+                member through departmental familiarisation and onboarding.
+            </p>
+        </div>
+
+        <div class="oc-hero-icon" aria-hidden="true">
+            <i class="bi bi-clipboard2-plus"></i>
+        </div>
+    </section>
+
+    <div class="oc-layout">
+
+        <!-- Main form -->
+        <section class="oc-panel">
+            <div class="oc-panel-header">
+                <h2>
+                    <i class="bi bi-file-earmark-plus me-2"
+                       style="color: var(--oc-pink);"></i>
+                    Orientation plan details
+                </h2>
+                <p>Complete the fields below and submit the plan.</p>
+            </div>
+
+            <div class="oc-form-body">
+
+                <div class="oc-staff-card">
+                    <div class="oc-staff-icon" aria-hidden="true">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div>
+                        <span class="oc-label">Staff member</span>
+                        <h2 class="oc-staff-name">
+                            {{ staff|default:"Staff member not specified" }}
+                        </h2>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="oc-form-fields">
+                        {{ form.as_p }}
+                    </div>
+
+                    <div class="oc-form-actions">
+                        <button type="submit" class="oc-submit">
+                            <i class="bi bi-check2-circle"></i>
+                            Create orientation plan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Guidance panel -->
+        <aside class="oc-guidance">
+            <div class="oc-guidance-icon">
+                <i class="bi bi-lightbulb"></i>
+            </div>
+
+            <h3>Before you create the plan</h3>
+            <p>
+                Review the orientation details carefully to support a
+                clear and consistent onboarding process.
+            </p>
+
+            <ul class="oc-guidance-list">
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Confirm that the correct staff member is selected.</span>
+                </li>
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Complete all required fields in the form.</span>
+                </li>
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Ensure the plan supports relevant departmental orientation activities.</span>
+                </li>
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Review any validation messages before submitting.</span>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="arabic-reshaper" />
+          <option value="asgiref" />
+          <option value="asn1crypto" />
+          <option value="Brotli" />
+          <option value="certifi" />
+          <option value="cffi" />
+          <option value="charset-normalizer" />
+          <option value="cryptography" />
+          <option value="cssselect2" />
+          <option value="dj-database-url" />
+          <option value="Django" />
+          <option value="et_xmlfile" />
+          <option value="fonttools" />
+          <option value="gunicorn" />
+          <option value="html5lib" />
+          <option value="idna" />
+          <option value="lxml" />
+          <option value="openpyxl" />
+          <option value="oscrypto" />
+          <option value="packaging" />
+          <option value="pillow" />
+          <option value="psycopg2-binary" />
+          <option value="pycparser" />
+          <option value="pydyf" />
+          <option value="pyHanko" />
+          <option value="pyhanko-certvalidator" />
+          <option value="pypdf" />
+          <option value="pyphen" />
+          <option value="python-bidi" />
+          <option value="PyYAML" />
+          <option value="reportlab" />
+          <option value="requests" />
+          <option value="six" />
+          <option value="sqlparse" />
+          <option value="svglib" />
+          <option value="tinycss2" />
+          <option value="tinyhtml5" />
+          <option value="typing_extensions" />
+          <option value="tzdata" />
+          <option value="tzlocal" />
+          <option value="uritools" />
+          <option value="urllib3" />
+          <option value="weasyprint" />
+          <option value="webencodings" />
+          <option value="whitenoise" />
+          <option value="xhtml2pdf" />
+          <option value="zopfli" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyStubPackagesAdvertiser" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="pandas" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

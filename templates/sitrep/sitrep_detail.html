@@ -1,0 +1,355 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}{{ report.title }} | Situation Reports | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .situation-detail {
+        --sd-primary: #e50078;
+        --sd-plum: #3b2938;
+        --sd-muted: #75808d;
+        --sd-border: #e6eaf0;
+        --sd-soft: #fff4f9;
+        color: var(--sd-plum);
+    }
+
+    .situation-detail .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .situation-detail .eyebrow {
+        margin-bottom: .5rem;
+        color: var(--sd-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .situation-detail .page-heading h1 {
+        margin: 0 0 .65rem;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        overflow-wrap: anywhere;
+    }
+
+    .situation-detail .page-heading p {
+        margin: 0;
+        color: var(--sd-muted);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .situation-detail .detail-card {
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--sd-border);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 6px 24px rgba(59, 41, 56, .045);
+    }
+
+    .situation-detail .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid var(--sd-border);
+        background: linear-gradient(120deg, #fff 0%, #fff8fb 100%);
+    }
+
+    .situation-detail .heading-icon {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        place-items: center;
+        border-radius: 12px;
+        background: #ffe6f2;
+        color: var(--sd-primary);
+        font-size: 1.25rem;
+    }
+
+    .situation-detail .card-heading h2 {
+        margin: 0 0 .2rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .situation-detail .card-heading p {
+        margin: 0;
+        color: var(--sd-muted);
+        font-size: .82rem;
+    }
+
+    .situation-detail .card-body-custom {
+        padding: 1.5rem;
+    }
+
+    .situation-detail .status-panel {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem;
+        border: 1px solid #f2d2e2;
+        border-radius: 12px;
+        background: var(--sd-soft);
+    }
+
+    .situation-detail .status-label {
+        display: block;
+        margin-bottom: .35rem;
+        color: var(--sd-muted);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+    }
+
+    .situation-detail .status-value {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        color: var(--sd-primary);
+        font-size: .9rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .situation-detail .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--sd-primary);
+    }
+
+    .situation-detail .report-description {
+        margin: 0;
+        color: #596472;
+        font-size: .93rem;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+    }
+
+    .situation-detail .empty-description {
+        padding: 1rem;
+        border: 1px dashed #d9dee7;
+        border-radius: 10px;
+        background: #fafbfc;
+        color: var(--sd-muted);
+        font-size: .88rem;
+    }
+
+    .situation-detail .form-fields p {
+        margin-bottom: 1.2rem;
+    }
+
+    .situation-detail .form-fields label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--sd-plum);
+        font-size: .85rem;
+        font-weight: 750;
+    }
+
+    .situation-detail .form-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .situation-detail .form-fields select,
+    .situation-detail .form-fields textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--sd-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .situation-detail .form-fields textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .situation-detail .form-fields input:focus,
+    .situation-detail .form-fields select:focus,
+    .situation-detail .form-fields textarea:focus {
+        outline: none;
+        border-color: var(--sd-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .situation-detail .form-fields ul.errorlist {
+        margin: .4rem 0;
+        padding: 0;
+        list-style: none;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .situation-detail .form-fields .helptext,
+    .situation-detail .form-fields .form-text {
+        display: block;
+        margin-top: .35rem;
+        color: var(--sd-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .situation-detail .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.4rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--sd-border);
+    }
+
+    .situation-detail .btn-update-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1.2rem;
+        border: 1px solid var(--sd-primary);
+        border-radius: 10px;
+        background: var(--sd-primary);
+        color: #fff;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .situation-detail .btn-update-status:hover {
+        transform: translateY(-1px);
+        border-color: #c90069;
+        background: #c90069;
+        color: #fff;
+    }
+
+    @media (max-width: 575.98px) {
+        .situation-detail .card-heading,
+        .situation-detail .card-body-custom {
+            padding: 1rem;
+        }
+
+        .situation-detail .form-actions,
+        .situation-detail .btn-update-status {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="situation-detail">
+
+    <header class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-file-earmark-bar-graph me-1"></i>
+            DDS-NK THRIVE / Reporting
+        </div>
+
+        <h1>{{ report.title|default:"Situation Report" }}</h1>
+
+        <p>
+            Review the report details and track its current processing status.
+        </p>
+    </header>
+
+    <!-- Report status -->
+    <section class="detail-card">
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-activity"></i>
+            </div>
+            <div>
+                <h2>Report Overview</h2>
+                <p>Current status of this situation report</p>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+            <div class="status-panel">
+                <div>
+                    <span class="status-label">Processing status</span>
+                    <span class="status-value">
+                        <span class="status-dot"></span>
+                        {{ report.get_status_display|default:"Not specified" }}
+                    </span>
+                </div>
+                <i class="bi bi-clipboard2-check"
+                   style="font-size: 1.8rem; color: var(--sd-primary);"
+                   aria-hidden="true"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Report description -->
+    <section class="detail-card">
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-file-text"></i>
+            </div>
+            <div>
+                <h2>Report Details</h2>
+                <p>Situation summary and supporting narrative</p>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+            {% if report.description %}
+                <p class="report-description">{{ report.description }}</p>
+            {% else %}
+                <div class="empty-description">
+                    No description has been provided for this report.
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Conditional status update form -->
+    {% if form %}
+        <section class="detail-card">
+            <div class="card-heading">
+                <div class="heading-icon">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div>
+                    <h2>Update Report Status</h2>
+                    <p>Submit the status update using the authorised workflow.</p>
+                </div>
+            </div>
+
+            <div class="card-body-custom">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-fields">
+                        {{ form.as_p }}
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-update-status">
+                            <i class="bi bi-check2-circle"></i>
+                            Update Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    {% endif %}
+
+</div>
+{% endblock %}

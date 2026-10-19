@@ -1,0 +1,15 @@
+<div class="vsla-sidebar">
+  <div class="vsla-brand"><span class="vsla-brand-icon"><i class="bi bi-piggy-bank"></i></span><span><strong>VSLA</strong><small>COMMUNITY FINANCE</small></span></div>
+  <nav class="vsla-nav">
+    <a href="{% url 'vsla:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Overview</a>
+    <div class="vsla-nav-label">GROUP OPERATIONS</div>
+    <a href="{% url 'vsla:groups' %}"><i class="bi bi-people"></i> VSLA Groups</a>
+    <a href="{% url 'vsla:members' %}"><i class="bi bi-person-vcard"></i> Member Registry</a>
+    <a href="{% url 'vsla:meetings' %}"><i class="bi bi-calendar2-week"></i> Meetings</a>
+    <div class="vsla-nav-label">FINANCIAL LEDGERS</div>
+    <a href="{% url 'vsla:savings' %}"><i class="bi bi-wallet2"></i> Weekly Savings</a>
+    <a href="{% url 'vsla:loans' %}"><i class="bi bi-cash-coin"></i> Loan Portfolio</a>
+    <a href="{% url 'vsla:social_fund' %}"><i class="bi bi-heart-pulse"></i> Social Fund</a>
+  </nav>
+  <div class="vsla-sidebar-foot">DDS-NK THRIVE · FIELD SYSTEMS</div>
+</div>

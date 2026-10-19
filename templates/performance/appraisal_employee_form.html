@@ -1,0 +1,312 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Complete Appraisal | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .appraisal-complete {
+        --ac-primary: var(--primary-color, #e50078);
+        --ac-plum: #3b2938;
+        --ac-muted: #77818d;
+        --ac-border: #e6eaf0;
+        --ac-bg: #f7f8fb;
+        color: var(--ac-plum);
+    }
+
+    .appraisal-complete .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .appraisal-complete .eyebrow {
+        color: var(--ac-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .5rem;
+    }
+
+    .appraisal-complete .page-heading h1 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        margin: 0 0 .4rem;
+    }
+
+    .appraisal-complete .page-heading p {
+        color: var(--ac-muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .appraisal-complete .form-card {
+        background: #fff;
+        border: 1px solid var(--ac-border);
+        border-radius: 16px;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+        overflow: hidden;
+    }
+
+    .appraisal-complete .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--ac-border);
+    }
+
+    .appraisal-complete .heading-icon {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        border-radius: 13px;
+        background: #fff0f7;
+        color: var(--ac-primary);
+        font-size: 1.25rem;
+    }
+
+    .appraisal-complete .card-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .25rem;
+    }
+
+    .appraisal-complete .card-heading p {
+        color: var(--ac-muted);
+        font-size: .82rem;
+        margin: 0;
+    }
+
+    .appraisal-complete .form-body {
+        padding: 1.5rem;
+    }
+
+    .appraisal-complete .form-body p {
+        margin-bottom: 1.25rem;
+    }
+
+    .appraisal-complete .form-body label {
+        display: block;
+        color: var(--ac-plum);
+        font-size: .85rem;
+        font-weight: 700;
+        margin-bottom: .45rem;
+    }
+
+    .appraisal-complete .form-body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .appraisal-complete .form-body select,
+    .appraisal-complete .form-body textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background-color: #fff;
+        color: var(--ac-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .appraisal-complete .form-body textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .appraisal-complete .form-body input:focus,
+    .appraisal-complete .form-body select:focus,
+    .appraisal-complete .form-body textarea:focus {
+        outline: none;
+        border-color: var(--ac-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .appraisal-complete .form-body input[type="checkbox"],
+    .appraisal-complete .form-body input[type="radio"] {
+        accent-color: var(--ac-primary);
+    }
+
+    .appraisal-complete .form-body input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: .7rem;
+        border: 1px dashed #cbd2dc;
+        border-radius: 10px;
+        background: var(--ac-bg);
+        font-size: .85rem;
+    }
+
+    .appraisal-complete .form-body .helptext,
+    .appraisal-complete .form-body .form-text {
+        display: block;
+        margin-top: .4rem;
+        color: var(--ac-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .appraisal-complete .form-body ul.errorlist {
+        list-style: none;
+        padding: 0;
+        margin: .4rem 0 0;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .appraisal-complete .form-body .errorlist + input,
+    .appraisal-complete .form-body .errorlist + select,
+    .appraisal-complete .form-body .errorlist + textarea {
+        border-color: #dc3545;
+    }
+
+    .appraisal-complete .form-note {
+        display: flex;
+        gap: .75rem;
+        align-items: flex-start;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f2d6e5;
+        background: #fff8fb;
+        border-radius: 12px;
+        color: var(--ac-muted);
+        font-size: .84rem;
+        line-height: 1.6;
+    }
+
+    .appraisal-complete .form-note i {
+        color: var(--ac-primary);
+        font-size: 1.1rem;
+        margin-top: .1rem;
+    }
+
+    .appraisal-complete .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--ac-border);
+    }
+
+    .appraisal-complete .btn-ac {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 43px;
+        padding: .7rem 1.1rem;
+        border-radius: 10px;
+        font-size: .88rem;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform .2s ease, background .2s ease;
+    }
+
+    .appraisal-complete .btn-ac-primary {
+        color: #fff;
+        background: var(--ac-primary);
+        border: 1px solid var(--ac-primary);
+    }
+
+    .appraisal-complete .btn-ac-primary:hover {
+        color: #fff;
+        background: #c90069;
+        transform: translateY(-1px);
+    }
+
+    .appraisal-complete .btn-ac-secondary {
+        color: var(--ac-plum);
+        background: #fff;
+        border: 1px solid var(--ac-border);
+    }
+
+    .appraisal-complete .btn-ac-secondary:hover {
+        color: var(--ac-primary);
+        border-color: var(--ac-primary);
+    }
+
+    @media (max-width: 575.98px) {
+        .appraisal-complete .card-heading,
+        .appraisal-complete .form-body {
+            padding: 1rem;
+        }
+
+        .appraisal-complete .form-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .appraisal-complete .btn-ac {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="appraisal-complete">
+
+    <div class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-person-workspace me-1"></i>
+            Human Resources / Performance
+        </div>
+        <h1>Complete Appraisal</h1>
+        <p>Provide the required performance assessment information and submit the completed appraisal for processing.</p>
+    </div>
+
+    <section class="form-card">
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-clipboard2-check"></i>
+            </div>
+            <div>
+                <h2>Appraisal Submission Form</h2>
+                <p>Complete all required fields before submitting.</p>
+            </div>
+        </div>
+
+        <div class="form-body">
+
+            <div class="form-note">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Before you submit</strong><br>
+                    Review your responses for accuracy. Fields marked as required by the form must be completed. If a supporting document is requested, attach it before submission.
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please review the following errors:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {{ form.as_p }}
+
+                <div class="form-actions">
+                    <button type="reset" class="btn-ac btn-ac-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Reset Form
+                    </button>
+
+                    <button type="submit" class="btn-ac btn-ac-primary">
+                        <i class="bi bi-check2-circle"></i>
+                        Submit Appraisal
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

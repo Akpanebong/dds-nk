@@ -1,0 +1,427 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Complete Orientation | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="orientation-complete-page">
+
+    <style>
+        .orientation-complete-page {
+            --oc-pink: #e50078;
+            --oc-plum: #3b2938;
+            --oc-muted: #77808c;
+            --oc-border: #e9e7ec;
+            --oc-soft: #faf8fb;
+            color: var(--oc-plum);
+            padding-bottom: 2rem;
+        }
+
+        .orientation-complete-page .oc-hero {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            overflow: hidden;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            background: linear-gradient(120deg, #3b2938, #56364d 70%, #8f1458);
+            border-radius: 20px;
+        }
+
+        .orientation-complete-page .oc-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .orientation-complete-page .oc-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .7rem;
+            color: #ffd3e8;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .orientation-complete-page .oc-hero h1 {
+            margin: 0 0 .6rem;
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .orientation-complete-page .oc-hero p {
+            max-width: 620px;
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .orientation-complete-page .oc-hero-icon {
+            display: grid;
+            flex: 0 0 76px;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 22px;
+            font-size: 2rem;
+        }
+
+        .orientation-complete-page .oc-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 290px;
+            align-items: start;
+            gap: 1.25rem;
+        }
+
+        .orientation-complete-page .oc-panel {
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--oc-border);
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .045);
+        }
+
+        .orientation-complete-page .oc-panel-header {
+            padding: 1.35rem 1.5rem;
+            border-bottom: 1px solid var(--oc-border);
+        }
+
+        .orientation-complete-page .oc-panel-header h2 {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin: 0 0 .4rem;
+            color: var(--oc-plum);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .orientation-complete-page .oc-panel-header h2 i {
+            color: var(--oc-pink);
+        }
+
+        .orientation-complete-page .oc-panel-header p {
+            margin: 0;
+            color: var(--oc-muted);
+            font-size: .85rem;
+            line-height: 1.6;
+        }
+
+        .orientation-complete-page .oc-form-body {
+            padding: 1.5rem;
+        }
+
+        .orientation-complete-page .oc-form-body p {
+            margin-bottom: 1.2rem;
+        }
+
+        .orientation-complete-page .oc-form-body label {
+            display: block;
+            margin-bottom: .45rem;
+            color: var(--oc-plum);
+            font-size: .85rem;
+            font-weight: 700;
+        }
+
+        .orientation-complete-page .oc-form-body input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+        .orientation-complete-page .oc-form-body select,
+        .orientation-complete-page .oc-form-body textarea {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            min-height: 44px;
+            padding: .7rem .85rem;
+            color: var(--oc-plum);
+            background: #fff;
+            border: 1px solid #ded9e2;
+            border-radius: 10px;
+            font-size: .9rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .orientation-complete-page .oc-form-body textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .orientation-complete-page .oc-form-body input:focus,
+        .orientation-complete-page .oc-form-body select:focus,
+        .orientation-complete-page .oc-form-body textarea:focus {
+            border-color: var(--oc-pink);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(229, 0, 120, .09);
+        }
+
+        .orientation-complete-page .oc-form-body input[type="checkbox"],
+        .orientation-complete-page .oc-form-body input[type="radio"] {
+            accent-color: var(--oc-pink);
+        }
+
+        .orientation-complete-page .oc-form-body .helptext,
+        .orientation-complete-page .oc-form-body small {
+            display: block;
+            margin-top: .4rem;
+            color: var(--oc-muted);
+            font-size: .78rem;
+            line-height: 1.5;
+        }
+
+        .orientation-complete-page .oc-form-body ul.errorlist {
+            padding-left: 1.1rem;
+            margin: .35rem 0 .5rem;
+            color: #b42318;
+            font-size: .82rem;
+        }
+
+        .orientation-complete-page .oc-form-body .errorlist li {
+            margin-bottom: .2rem;
+        }
+
+        .orientation-complete-page .oc-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 1.25rem;
+            margin-top: .5rem;
+            border-top: 1px solid var(--oc-border);
+        }
+
+        .orientation-complete-page .oc-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            min-height: 46px;
+            padding: .75rem 1.2rem;
+            color: #fff;
+            background: var(--oc-pink);
+            border: 1px solid var(--oc-pink);
+            border-radius: 11px;
+            font-size: .88rem;
+            font-weight: 800;
+            transition: background .2s, transform .2s, box-shadow .2s;
+            cursor: pointer;
+        }
+
+        .orientation-complete-page .oc-submit:hover {
+            background: #c90069;
+            border-color: #c90069;
+            box-shadow: 0 5px 14px rgba(229, 0, 120, .18);
+            transform: translateY(-1px);
+        }
+
+        .orientation-complete-page .oc-guidance {
+            padding: 1.35rem;
+        }
+
+        .orientation-complete-page .oc-guidance-icon {
+            display: grid;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            place-items: center;
+            color: var(--oc-pink);
+            background: #fff0f7;
+            border-radius: 14px;
+            font-size: 1.4rem;
+        }
+
+        .orientation-complete-page .oc-guidance h3 {
+            margin: 0 0 .6rem;
+            color: var(--oc-plum);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .orientation-complete-page .oc-guidance > p {
+            margin: 0 0 1.2rem;
+            color: var(--oc-muted);
+            font-size: .84rem;
+            line-height: 1.7;
+        }
+
+        .orientation-complete-page .oc-checklist {
+            display: grid;
+            gap: .9rem;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .orientation-complete-page .oc-checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: .65rem;
+            color: #625563;
+            font-size: .83rem;
+            line-height: 1.6;
+        }
+
+        .orientation-complete-page .oc-checklist i {
+            margin-top: .15rem;
+            color: var(--oc-pink);
+            font-size: 1rem;
+        }
+
+        .orientation-complete-page .oc-note {
+            padding: 1rem;
+            margin-top: 1.3rem;
+            color: #6d5365;
+            background: #fff7fb;
+            border: 1px solid #f6d5e6;
+            border-radius: 12px;
+            font-size: .81rem;
+            line-height: 1.65;
+        }
+
+        .orientation-complete-page .oc-note i {
+            margin-right: .35rem;
+            color: var(--oc-pink);
+        }
+
+        @media (max-width: 900px) {
+            .orientation-complete-page .oc-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .orientation-complete-page .oc-hero {
+                padding: 1.35rem;
+                border-radius: 15px;
+            }
+
+            .orientation-complete-page .oc-hero-icon {
+                display: none;
+            }
+
+            .orientation-complete-page .oc-panel-header,
+            .orientation-complete-page .oc-form-body,
+            .orientation-complete-page .oc-guidance {
+                padding: 1.1rem;
+            }
+
+            .orientation-complete-page .oc-form-actions {
+                justify-content: stretch;
+            }
+
+            .orientation-complete-page .oc-submit {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Page header -->
+    <section class="oc-hero">
+        <div class="oc-hero-content">
+            <div class="oc-eyebrow">
+                <i class="bi bi-person-check"></i>
+                Human Resources / Staff Development
+            </div>
+            <h1>Complete Orientation</h1>
+            <p>
+                Record the completion of a staff orientation activity
+                and submit the required information for the orientation
+                process.
+            </p>
+        </div>
+
+        <div class="oc-hero-icon" aria-hidden="true">
+            <i class="bi bi-clipboard2-check"></i>
+        </div>
+    </section>
+
+    <div class="oc-layout">
+
+        <!-- Completion form -->
+        <section class="oc-panel">
+            <div class="oc-panel-header">
+                <h2>
+                    <i class="bi bi-ui-checks"></i>
+                    Orientation completion details
+                </h2>
+                <p>
+                    Complete the fields below and submit the form
+                    to record the orientation completion.
+                </p>
+            </div>
+
+            <div class="oc-form-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <div class="fw-bold mb-1">
+                                Please review the following errors.
+                            </div>
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    {{ form.as_p }}
+
+                    <div class="oc-form-actions">
+                        <button type="submit" class="oc-submit">
+                            <i class="bi bi-check-circle"></i>
+                            Mark complete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Guidance panel -->
+        <aside class="oc-panel">
+            <div class="oc-guidance">
+                <div class="oc-guidance-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+
+                <h3>Completion checklist</h3>
+                <p>
+                    Before submitting, confirm that the orientation
+                    activity has been completed and the information
+                    entered is accurate.
+                </p>
+
+                <ul class="oc-checklist">
+                    <li>
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Review the information entered in the form.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Ensure all required fields are completed.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Confirm that the recorded details reflect the completed orientation.</span>
+                    </li>
+                    <li>
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Submit the form to record the completion.</span>
+                    </li>
+                </ul>
+
+                <div class="oc-note">
+                    <i class="bi bi-shield-check"></i>
+                    <strong>Record accuracy:</strong>
+                    Submit accurate information to maintain reliable
+                    staff orientation records.
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

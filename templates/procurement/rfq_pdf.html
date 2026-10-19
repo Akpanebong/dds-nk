@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4 portrait; margin: 1.2cm; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 9px; color: #352735; }
+        table { width: 100%; border-collapse: collapse; }
+        .header { border-bottom: 2px solid #a65a7a; margin-bottom: 12px; }
+        .header td { padding: 0 0 8px; vertical-align: middle; }
+        .logo { width: 42px; height: 42px; }
+        .brand { font-size: 15px; font-weight: bold; }
+        .muted { color: #806b7a; font-size: 7px; }
+        .right { text-align: right; }
+        .title { color: #3b2938; font-size: 16px; font-weight: bold; }
+        .section { margin-top: 12px; padding: 6px 8px; background: #3b2938; color: #fff; font-size: 8px; font-weight: bold; text-transform: uppercase; }
+        .meta td { padding: 7px; border: 1px solid #ead8e2; }
+        .label { display: block; color: #806b7a; font-size: 7px; text-transform: uppercase; }
+        .value { font-weight: bold; }
+        .items { margin-top: 5px; }
+        .items th { padding: 6px; background: #f5edf1; border-bottom: 2px solid #a65a7a; text-align: left; }
+        .items td { padding: 6px; border-bottom: 1px solid #ead8e2; }
+        .num { text-align: right; }
+        .suppliers { margin-top: 6px; }
+        .suppliers td { padding: 6px; border: 1px solid #ead8e2; }
+        .footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #ead8e2; color: #806b7a; font-size: 7px; }
+    </style>
+</head>
+<body>
+    <table class="header">
+        <tr>
+            <td style="width:52px"><img class="logo" src="{{ logo_path }}"></td>
+            <td><div class="brand">DDS-NK THRIVE</div><div class="muted">Official request for quotation</div></td>
+            <td class="right"><div class="title">{{ rfq.reference_no }}</div><div class="muted">Issued {{ rfq.date_issued|date:'d M Y' }}</div></td>
+        </tr>
+    </table>
+
+    <div class="section">Quotation instructions</div>
+    <table class="meta">
+        <tr>
+            <td><span class="label">Requisition reference</span><span class="value">{{ requisition.number }}</span></td>
+            <td><span class="label">Project</span><span class="value">{{ requisition.project.name }}</span></td>
+            <td><span class="label">Quote deadline</span><span class="value">{{ rfq.deadline|date:'d M Y' }}</span></td>
+        </tr>
+    </table>
+
+    <div class="section">Items requested</div>
+    <table class="items">
+        <thead><tr><th style="width:7%">#</th><th style="width:48%">Description</th><th style="width:18%">Unit</th><th style="width:12%" class="num">Quantity</th><th style="width:15%">Delivery date</th></tr></thead>
+        <tbody>
+            {% for item in items %}
+                <tr><td>{{ forloop.counter }}</td><td>{{ item.description }}</td><td>{{ item.unit_measure }}</td><td class="num">{{ item.qty|floatformat:2 }}</td><td>{{ item.delivery_date|date:'d M Y' }}</td></tr>
+            {% empty %}
+                <tr><td colspan="5">No items listed.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section">Supplier instructions</div>
+    <table class="meta">
+        <tr><td>Please provide your unit rates, applicable taxes, delivery terms, validity period, and total quotation in your response. Return the signed quotation before the deadline shown above.</td></tr>
+    </table>
+
+    <div class="footer">Please return your signed quotation before {{ rfq.deadline|date:'d M Y' }}. Thank you for your interest in supplying DDS-NK THRIVE.</div>
+</body>
+</html>

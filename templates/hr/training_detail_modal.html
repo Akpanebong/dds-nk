@@ -1,0 +1,272 @@
+<div class="training-detail-card">
+    <div class="training-detail-header">
+        <div class="training-detail-icon">
+            <i class="bi bi-mortarboard-fill"></i>
+        </div>
+        <div class="training-detail-heading">
+            <span class="training-detail-eyebrow">HR DEVELOPMENT</span>
+            <h3>{{ training.title }}</h3>
+        </div>
+        <span class="training-detail-badge">
+            <i class="bi bi-calendar-event"></i>
+            Training
+        </span>
+    </div>
+
+    <div class="training-detail-body">
+        <div class="training-detail-section">
+            <h4>
+                <i class="bi bi-card-text"></i>
+                Training Overview
+            </h4>
+            <p class="training-detail-description">
+                {{ training.description|default:"No description has been provided."|linebreaksbr }}
+            </p>
+        </div>
+
+        <div class="training-detail-dates">
+            <div class="training-date-item">
+                <span class="training-date-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </span>
+                <div>
+                    <span class="training-date-label">Start Date</span>
+                    <strong>
+                        {{ training.start_date|date:"d M Y"|default:"Not specified" }}
+                    </strong>
+                </div>
+            </div>
+
+            <div class="training-date-divider"></div>
+
+            <div class="training-date-item">
+                <span class="training-date-icon training-date-end">
+                    <i class="bi bi-calendar2-check"></i>
+                </span>
+                <div>
+                    <span class="training-date-label">End Date</span>
+                    <strong>
+                        {{ training.end_date|date:"d M Y"|default:"Not specified" }}
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="training-detail-footer">
+        <span>
+            <i class="bi bi-shield-check"></i>
+            Staff learning and development
+        </span>
+    </div>
+</div>
+
+<style>
+    .training-detail-card {
+        --td-primary: #e50078;
+        --td-plum: #3b2938;
+        --td-muted: #77717a;
+        --td-border: #eee5ec;
+
+        overflow: hidden;
+        border: 1px solid var(--td-border);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 6px 24px rgba(59, 41, 56, .06);
+        color: var(--td-plum);
+    }
+
+    .training-detail-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 22px;
+        border-bottom: 1px solid var(--td-border);
+        background: linear-gradient(120deg, #fff 0%, #fff5fa 100%);
+    }
+
+    .training-detail-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #ffe5f2;
+        color: var(--td-primary);
+        font-size: 23px;
+    }
+
+    .training-detail-heading {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .training-detail-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--td-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.3px;
+    }
+
+    .training-detail-heading h3 {
+        margin: 0;
+        color: var(--td-plum);
+        font-size: 19px;
+        font-weight: 800;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .training-detail-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border: 1px solid #f4c7df;
+        border-radius: 30px;
+        background: #fff;
+        color: var(--td-primary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .training-detail-body {
+        padding: 24px 22px;
+    }
+
+    .training-detail-section h4 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 12px;
+        color: var(--td-plum);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .training-detail-section h4 i {
+        color: var(--td-primary);
+        font-size: 16px;
+    }
+
+    .training-detail-description {
+        margin: 0;
+        color: #625b64;
+        font-size: 13px;
+        line-height: 1.85;
+        overflow-wrap: anywhere;
+    }
+
+    .training-detail-dates {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+        align-items: center;
+        gap: 18px;
+        margin-top: 24px;
+        padding: 18px;
+        border: 1px solid var(--td-border);
+        border-radius: 12px;
+        background: #fcfafc;
+    }
+
+    .training-date-item {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 0;
+    }
+
+    .training-date-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: #ffe5f2;
+        color: var(--td-primary);
+        font-size: 17px;
+    }
+
+    .training-date-end {
+        background: #f0eaf0;
+        color: var(--td-plum);
+    }
+
+    .training-date-label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--td-muted);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+    }
+
+    .training-date-item strong {
+        display: block;
+        color: var(--td-plum);
+        font-size: 13px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .training-date-divider {
+        width: 1px;
+        height: 38px;
+        background: var(--td-border);
+    }
+
+    .training-detail-footer {
+        padding: 13px 22px;
+        border-top: 1px solid var(--td-border);
+        background: #fffafd;
+    }
+
+    .training-detail-footer span {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--td-muted);
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .training-detail-footer i {
+        color: var(--td-primary);
+        font-size: 14px;
+    }
+
+    @media (max-width: 520px) {
+        .training-detail-header {
+            padding: 17px;
+        }
+
+        .training-detail-badge {
+            margin-left: 66px;
+        }
+
+        .training-detail-body {
+            padding: 18px 17px;
+        }
+
+        .training-detail-dates {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            padding: 14px;
+        }
+
+        .training-date-divider {
+            width: 100%;
+            height: 1px;
+        }
+
+        .training-detail-footer {
+            padding: 12px 17px;
+        }
+    }
+</style>

@@ -1,0 +1,47 @@
+#header {
+    background: #3b2938;
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited,
+#user-tools,
+#user-tools a {
+    color: #fff;
+}
+
+.dds-admin-brand {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
+.dds-admin-brand img {
+    border-radius: 8px;
+    height: 34px;
+    object-fit: cover;
+    width: 34px;
+}
+
+.dds-admin-brand a {
+    color: #fff !important;
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.dds-admin-brand span {
+    color: #ffc2dd;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+#login-form input[type="submit"],
+.submit-row input[type="submit"] {
+    background: #e50078;
+}
+
+#login-form input[type="submit"]:hover,
+.submit-row input[type="submit"]:hover {
+    background: #bd005f;
+}

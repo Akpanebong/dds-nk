@@ -1,0 +1,502 @@
+{% extends 'vsla/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ group.name }} | VSLA{% endblock %}
+
+{% block vsla_content %}
+<style>
+    .vsla-page .status-active,
+    .vsla-page .status-approved,
+    .vsla-page .status-disbursed,
+    .vsla-page .status-posted,
+    .vsla-page .status-closed {
+        background: #fff4e9;
+        color: #a94600 !important;
+    }
+    .vsla-page .status-forming,
+    .vsla-page .status-submitted,
+    .vsla-page .status-draft {
+        background: #fff1dc;
+        color: #80520b !important;
+    }
+</style>
+<div class="vsla-page">
+
+    <!-- Group overview and actions -->
+    <section class="vsla-hero mb-4">
+        <div class="d-flex justify-content-between align-items-start
+                    flex-wrap gap-4">
+
+            <div class="flex-grow-1">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="vsla-code">
+                        <i class="bi bi-upc-scan me-1"></i>
+                        {{ group.code }}
+                    </span>
+                    <span class="status-pill status-{{ group.status }}">
+                        {{ group.get_status_display }}
+                    </span>
+                </div>
+
+                <h2 class="h3 fw-bold mb-2">{{ group.name }}</h2>
+
+                <div class="vsla-hero-meta">
+                    <i class="bi bi-geo-alt me-1"></i>
+                    {{ group.district|default:"Location not specified" }}
+                    {% if group.sub_county %}, {{ group.sub_county }}{% endif %}
+                    {% if group.parish_or_village %}, {{ group.parish_or_village }}{% endif %}
+                </div>
+
+                {% if group.project_name or group.donor_name %}
+                <div class="vsla-hero-meta mt-2">
+                    <i class="bi bi-folder2-open me-1"></i>
+                    {{ group.project_name|default:"Project not specified" }}
+                    {% if group.donor_name %}
+                        <span class="mx-1">·</span>{{ group.donor_name }}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="vsla-actions d-flex flex-wrap gap-2">
+                <a href="{% url 'vsla:member_create' %}"
+                   class="btn btn-light">
+                    <i class="bi bi-person-plus me-1"></i>
+                    Add member
+                </a>
+
+                <a href="{% url 'vsla:savings_create' %}?group={{ group.pk }}"
+                   class="btn btn-outline-light">
+                    <i class="bi bi-wallet2 me-1"></i>
+                    Record savings
+                </a>
+
+                <a href="{% url 'vsla:loan_create' %}?group={{ group.pk }}"
+                   class="btn btn-outline-light">
+                    <i class="bi bi-cash-stack me-1"></i>
+                    New loan
+                </a>
+
+                <a href="{% url 'vsla:social_fund_create' %}?group={{ group.pk }}"
+                   class="btn btn-outline-light">
+                    <i class="bi bi-heart me-1"></i>
+                    Social fund
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key metrics -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="vsla-metric h-100">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="vsla-metric-label">
+                            Group savings balance
+                        </div>
+                        <div class="vsla-metric-value mt-2">
+                            <span class="vsla-currency">UGX</span>
+                            {{ group_savings|floatformat:0|intcomma }}
+                        </div>
+                    </div>
+                    <span class="vsla-metric-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </span>
+                </div>
+                <div class="small text-muted mt-3">
+                    Recorded group savings
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="vsla-metric h-100">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="vsla-metric-label">
+                            Registered members
+                        </div>
+                        <div class="vsla-metric-value mt-2">
+                            {{ members.count }}
+                        </div>
+                    </div>
+                    <span class="vsla-metric-icon">
+                        <i class="bi bi-people"></i>
+                    </span>
+                </div>
+                <div class="small text-muted mt-3">
+                    Members in this savings group
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="vsla-metric h-100">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="vsla-metric-label">
+                            Weekly share value
+                        </div>
+                        <div class="vsla-metric-value mt-2">
+                            <span class="vsla-currency">UGX</span>
+                            {{ group.weekly_share_value|floatformat:0|intcomma }}
+                        </div>
+                    </div>
+                    <span class="vsla-metric-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </span>
+                </div>
+                <div class="small text-muted mt-3">
+                    Maximum {{ group.max_shares_per_week }} shares per week
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Member registry and savings -->
+    <div class="row g-3 mb-3">
+
+        <div class="col-12 col-xl-6">
+            <section class="vsla-panel h-100">
+                <div class="vsla-section-heading">
+                    <div>
+                        <h3 class="h5 fw-bold mb-1">Member registry</h3>
+                        <p class="small text-muted mb-0">
+                            Member records and current status.
+                        </p>
+                    </div>
+                    <span class="vsla-count">{{ members.count }}</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle vsla-table mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Member</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in members %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'vsla:member_detail' member.member_no %}"
+                                       class="vsla-group-name">
+                                        {{ member.full_name }}
+                                    </a>
+                                    <div class="small text-muted mt-1">
+                                        {{ member.member_no }}
+                                    </div>
+                                </td>
+                                <td class="text-nowrap">
+                                    {{ member.phone|default:"—" }}
+                                </td>
+                                <td>
+                                    <span class="status-pill status-{{ member.status }}">
+                                        {{ member.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-5">
+                                    <i class="bi bi-people vsla-empty-icon"></i>
+                                    <p class="small text-muted mt-2 mb-0">
+                                        No members registered.
+                                    </p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <section class="vsla-panel h-100">
+                <div class="vsla-section-heading">
+                    <div>
+                        <h3 class="h5 fw-bold mb-1">Recent savings</h3>
+                        <p class="small text-muted mb-0">
+                            Latest recorded savings transactions.
+                        </p>
+                    </div>
+                    <span class="vsla-heading-icon">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle vsla-table mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Member</th>
+                                <th scope="col">Type</th>
+                                <th scope="col" class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr>
+                                <td class="text-nowrap">
+                                    {{ tx.transaction_date|date:"d M Y" }}
+                                </td>
+                                <td>{{ tx.member.full_name }}</td>
+                                <td>{{ tx.get_transaction_type_display }}</td>
+                                <td class="text-end text-nowrap fw-semibold">
+                                    {{ tx.amount|floatformat:0|intcomma }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <i class="bi bi-wallet2 vsla-empty-icon"></i>
+                                    <p class="small text-muted mt-2 mb-0">
+                                        No savings recorded.
+                                    </p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+    <!-- Loan register -->
+    <section class="vsla-panel mt-3">
+        <div class="vsla-section-heading">
+            <div>
+                <h3 class="h5 fw-bold mb-1">Recent loans</h3>
+                <p class="small text-muted mb-0">
+                    Loan requests and their current processing status.
+                </p>
+            </div>
+            <span class="vsla-heading-icon">
+                <i class="bi bi-cash-stack"></i>
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle vsla-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Loan number</th>
+                        <th scope="col">Member</th>
+                        <th scope="col">Requested amount</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                    <tr>
+                        <td class="fw-semibold">
+                            {{ loan.loan_no }}
+                        </td>
+                        <td>{{ loan.member.full_name }}</td>
+                        <td class="text-nowrap">
+                            <span class="small text-muted">UGX</span>
+                            {{ loan.requested_amount|floatformat:0|intcomma }}
+                        </td>
+                        <td>
+                            <span class="status-pill status-{{ loan.status }}">
+                                {{ loan.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'vsla:loan_detail' loan.loan_no %}"
+                               class="btn btn-sm btn-outline-secondary text-nowrap">
+                                View loan
+                                <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="bi bi-cash-stack vsla-empty-icon"></i>
+                            <p class="small text-muted mt-2 mb-0">
+                                No loan applications recorded.
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<style>
+    .vsla-page {
+        --vsla-accent: var(--vsla-primary, #087f7b);
+        --vsla-accent-dark: var(--vsla-primary-dark, #075c63);
+        min-width: 0;
+    }
+
+    .vsla-hero {
+        padding: 1.5rem;
+        border-radius: 1rem;
+        color: #fff;
+        background: linear-gradient(
+            120deg,
+            var(--vsla-accent),
+            var(--vsla-accent-dark)
+        );
+        box-shadow: 0 8px 24px rgba(7, 92, 99, .12);
+    }
+
+    .vsla-code {
+        padding: .45rem .75rem;
+        border: 1px solid rgba(255,255,255,.35);
+        border-radius: .5rem;
+        background: rgba(255,255,255,.13);
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .vsla-hero-meta {
+        color: rgba(255,255,255,.82);
+        font-size: .9rem;
+    }
+
+    .vsla-actions .btn {
+        font-size: .84rem;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .vsla-metric {
+        padding: 1.35rem;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: 1rem;
+        background: var(--bs-body-bg, #fff);
+        box-shadow: 0 4px 20px rgba(24, 50, 58, .035);
+    }
+
+    .vsla-metric-label {
+        color: var(--bs-secondary-color, #6c757d);
+        font-size: .8rem;
+        font-weight: 650;
+    }
+
+    .vsla-metric-value {
+        font-size: clamp(1.35rem, 2vw, 1.8rem);
+        font-weight: 800;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .vsla-currency {
+        color: var(--bs-secondary-color, #6c757d);
+        font-size: .75rem;
+        font-weight: 650;
+    }
+
+    .vsla-metric-icon,
+    .vsla-heading-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: .8rem;
+        color: var(--vsla-accent);
+        background: rgba(8,127,123,.10);
+        font-size: 1.2rem;
+    }
+
+    .vsla-panel {
+        padding: 1.35rem;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: 1rem;
+        background: var(--bs-body-bg, #fff);
+        box-shadow: 0 4px 20px rgba(24, 50, 58, .035);
+    }
+
+    .vsla-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .vsla-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        padding: .45rem .7rem;
+        border-radius: 2rem;
+        background: rgba(8,127,123,.09);
+        color: var(--vsla-accent-dark);
+        font-size: .8rem;
+        font-weight: 750;
+    }
+
+    .vsla-group-name {
+        color: var(--vsla-accent-dark);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .vsla-group-name:hover {
+        color: var(--vsla-accent);
+        text-decoration: underline;
+    }
+
+    .vsla-table thead th {
+        padding: .8rem .7rem;
+        color: var(--bs-secondary-color, #6c757d);
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+        font-size: .69rem;
+        font-weight: 800;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .vsla-table tbody td {
+        padding: .9rem .7rem;
+        border-bottom-color: var(--bs-border-color, #e9ecef);
+        font-size: .86rem;
+    }
+
+    .vsla-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .vsla-empty-icon {
+        color: var(--vsla-accent);
+        font-size: 2rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .vsla-hero,
+        .vsla-panel {
+            padding: 1rem;
+        }
+
+        .vsla-actions {
+            width: 100%;
+        }
+
+        .vsla-actions .btn {
+            flex: 1 1 auto;
+        }
+    }
+</style>
+{% endblock %}

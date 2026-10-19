@@ -1,0 +1,999 @@
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-cart-check me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1>{{ title }}</h1>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid px-0 procurement-project-form">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between
+                align-items-lg-center gap-3 mb-4">
+
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-folder2-open me-1"></i>
+                    Project Management
+                </span>
+
+                {% if form.instance.pk %}
+                    <span class="badge rounded-pill bg-primary-subtle
+                                 text-primary border border-primary-subtle">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Editing Project
+                    </span>
+                {% else %}
+                    <span class="badge rounded-pill bg-success-subtle
+                                 text-success border border-success-subtle">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        New Project
+                    </span>
+                {% endif %}
+            </div>
+
+            <h2 class="fw-bold mb-1">{{ title }}</h2>
+            <p class="text-muted mb-0">
+                Configure project details, budget allocations and reporting information.
+            </p>
+        </div>
+
+        <a href="{% url 'procurement:projects' %}"
+           class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Projects</span>
+        </a>
+    </div>
+
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger border-0 rounded-3 mb-4">
+                <div class="d-flex gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>
+                        <strong>Please review the project details.</strong>
+                        {% for error in form.non_field_errors %}
+                            <div class="small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+
+        <!-- =====================================================
+             PROJECT PROFILE
+        ====================================================== -->
+        <section class="panel form-panel mb-4">
+
+            <div class="project-section-heading">
+                <div class="project-section-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h4 class="mb-1">Project Profile</h4>
+                    <p class="text-muted mb-0 small">
+                        Enter the core information used to identify and manage this project.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+
+                {% for field in form %}
+
+                    {% if field.field.widget.input_type == 'checkbox' %}
+
+                        <!-- Full-width Boolean Status Card -->
+                        <div class="col-12">
+
+                            <div class="project-boolean-card
+                                        {% if field.value %}is-enabled{% endif %}
+                                        {% if field.errors %}has-error{% endif %}">
+
+                                <div class="project-boolean-information">
+                                    <div class="project-boolean-icon">
+                                        {% if field.value %}
+                                            <i class="bi bi-check2-circle"></i>
+                                        {% else %}
+                                            <i class="bi bi-toggles"></i>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="project-boolean-copy">
+                                        <label for="{{ field.id_for_label }}"
+                                               class="project-boolean-label">
+                                            {{ field.label }}
+                                            {% if field.field.required %}
+                                                <span class="text-danger">*</span>
+                                            {% endif %}
+                                        </label>
+
+                                        {% if field.help_text %}
+                                            <div class="project-boolean-help">
+                                                {{ field.help_text }}
+                                            </div>
+                                        {% else %}
+                                            <div class="project-boolean-help">
+                                                Enable or disable this project setting.
+                                            </div>
+                                        {% endif %}
+
+                                        {% if field.errors %}
+                                            <div class="text-danger small mt-2">
+                                                {% for error in field.errors %}
+                                                    <div>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <label class="project-switch"
+                                       for="{{ field.id_for_label }}"
+                                       aria-label="{{ field.label }}">
+
+                                    {{ field }}
+
+                                    <span class="project-switch-track"
+                                          aria-hidden="true">
+                                        <span class="project-switch-thumb"></span>
+                                    </span>
+                                </label>
+
+                            </div>
+                        </div>
+
+                    {% else %}
+
+                        <!-- Standard Project Fields -->
+                        <div class="col-12
+                            {% if field.name == 'description' or field.name == 'location' %}
+                                col-md-12
+                            {% else %}
+                                col-md-6
+                            {% endif %}">
+
+                            <label for="{{ field.id_for_label }}"
+                                   class="form-label fw-semibold">
+
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+
+                            {% if field.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in field.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+        </section>
+
+
+        <!-- =====================================================
+             PROJECT BUDGET
+        ====================================================== -->
+        <section class="panel form-panel">
+
+            <div class="d-flex flex-column flex-xl-row
+                        justify-content-between align-items-xl-center
+                        gap-3 mb-4">
+
+                <div class="project-section-heading mb-0">
+                    <div class="project-section-icon">
+                        <i class="bi bi-currency-exchange"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">Project Budget</h4>
+                        <p class="text-muted mb-0 small">
+                            Set the annual budget and allocate funds across Q1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Q4.
+                        </p>
+                    </div>
+                </div>
+
+                <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Currency: Project reporting currency
+                </span>
+            </div>
+
+
+            {{ formset.management_form }}
+
+            {% if formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {% for error in formset.non_form_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+
+            <div class="row g-3" id="budgetRows">
+
+                {% for budget in formset %}
+                    <div class="col-12 col-md-6 col-xl-4 budget-row"
+                         data-period="{{ budget.period.value|default:'' }}">
+
+                        <div class="budget-card h-100
+                            {% if budget.period.value == 'FULL_YEAR' %}
+                                budget-card-annual
+                            {% endif %}">
+
+                            {{ budget.id }}
+
+                            <div class="d-flex justify-content-between
+                                        align-items-start gap-2 mb-3">
+
+                                <div>
+                                    <div class="small text-muted mb-1">
+                                        BUDGET LINE {{ forloop.counter }}
+                                    </div>
+                                    <h6 class="fw-bold mb-0 budget-card-title">
+                                        {% if budget.period.value == 'FULL_YEAR' %}
+                                            Annual Budget
+                                        {% elif budget.period.value %}
+                                            {{ budget.period.value }}
+                                        {% else %}
+                                            Budget Allocation
+                                        {% endif %}
+                                    </h6>
+                                </div>
+
+                                {% if budget.period.value == 'FULL_YEAR' %}
+                                    <span class="badge rounded-pill bg-primary-subtle
+                                                 text-primary">
+                                        <i class="bi bi-calendar-range me-1"></i>
+                                        Annual
+                                    </span>
+                                {% endif %}
+                            </div>
+
+
+                            {% for field in budget.visible_fields %}
+
+                                {% if field.name != 'DELETE' %}
+
+                                    <div class="mb-3">
+
+                                        <label for="{{ field.id_for_label }}"
+                                               class="form-label small fw-semibold">
+
+                                            {{ field.label }}
+
+                                            {% if field.field.required %}
+                                                <span class="text-danger">*</span>
+                                            {% endif %}
+                                        </label>
+
+                                        {{ field }}
+
+                                        {% if field.help_text %}
+                                            <div class="form-text">
+                                                {{ field.help_text }}
+                                            </div>
+                                        {% endif %}
+
+                                        {% if field.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in field.errors %}
+                                                    <div>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+
+                            {% if budget.DELETE %}
+                                <label class="budget-remove-toggle"
+                                       for="{{ budget.DELETE.id_for_label }}">
+
+                                    <span class="budget-remove-copy">
+                                        <i class="bi bi-trash3"></i>
+                                        <span>Mark line for removal</span>
+                                    </span>
+
+                                    {{ budget.DELETE }}
+
+                                    <span class="budget-remove-switch"
+                                          aria-hidden="true"></span>
+                                </label>
+
+                                {% if budget.DELETE.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in budget.DELETE.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="text-center border rounded-3 p-5">
+                            <i class="bi bi-wallet2 fs-1 text-muted"></i>
+                            <h6 class="fw-bold mt-3">No budget lines available</h6>
+                            <p class="text-muted small mb-0">
+                                Configure the project budget formset to add budget allocations.
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Budget Summary -->
+            <div class="budget-summary mt-4">
+
+                <div class="budget-summary-icon">
+                    <i class="bi bi-calculator"></i>
+                </div>
+
+                <div class="budget-summary-copy">
+                    <div class="fw-bold">Unallocated Remainder</div>
+                    <div class="small text-muted">
+                        Annual budget minus the combined Q1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Q4 allocations.
+                    </div>
+                </div>
+
+                <div class="budget-summary-value" id="budgetRemainder">
+                    0.00
+                </div>
+
+            </div>
+
+
+            <!-- Form Actions -->
+            <div class="form-actions border-top pt-4 mt-4">
+
+                <div class="d-flex flex-column flex-sm-row
+                            justify-content-between align-items-sm-center gap-3">
+
+                    <div class="small text-muted">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Review the project profile and budget before saving.
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+
+                        <a href="{% url 'procurement:projects' %}"
+                           class="btn btn-light border d-inline-flex
+                                  align-items-center justify-content-center gap-2">
+                            <i class="bi bi-x-lg"></i>
+                            Cancel
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary px-4 d-inline-flex
+                                       align-items-center justify-content-center gap-2">
+                            <i class="bi bi-check2-circle"></i>
+                            {% if form.instance.pk %}
+                                Save Changes
+                            {% else %}
+                                Save Project
+                            {% endif %}
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </form>
+</div>
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .procurement-project-form {
+        --project-primary: var(--bs-primary, #087f7b);
+        --project-border: #e2e8f0;
+        --project-muted: #64748b;
+    }
+
+    .procurement-project-form .panel {
+        background: #fff;
+        border: 1px solid var(--project-border);
+        border-radius: 16px;
+        padding: clamp(1rem, 2.5vw, 1.75rem);
+        box-shadow: 0 4px 18px rgba(15, 23, 42, .035);
+    }
+
+    .project-section-heading {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .project-section-icon {
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: #e8f5f3;
+        color: #087f7b;
+        font-size: 1.25rem;
+    }
+
+    .project-section-heading h4 {
+        font-size: 1.08rem;
+        font-weight: 750;
+    }
+
+    .procurement-project-form .form-label {
+        color: #334155;
+        margin-bottom: .5rem;
+    }
+
+    .procurement-project-form input:not([type="checkbox"]):not([type="radio"]),
+    .procurement-project-form select,
+    .procurement-project-form textarea {
+        width: 100%;
+        max-width: 100%;
+        min-height: 44px;
+        border: 1px solid #dbe2ea;
+        border-radius: 9px;
+        padding: .65rem .8rem;
+        background-color: #fff;
+        color: #1e293b;
+        transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .procurement-project-form textarea {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    .procurement-project-form input:focus,
+    .procurement-project-form select:focus,
+    .procurement-project-form textarea:focus {
+        border-color: #0d9488;
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .12);
+        outline: none;
+    }
+
+    /* Full-width Boolean Status Cards */
+    .project-boolean-card {
+        display: flex;
+        width: 100%;
+        min-height: 100px;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.15rem 1.25rem;
+        border: 1px solid #dce4ec;
+        border-radius: 13px;
+        background: linear-gradient(120deg, #fff 0%, #f8fafc 100%);
+        transition: border-color .2s ease, background .2s ease,
+                    box-shadow .2s ease;
+    }
+
+    .project-boolean-card:hover {
+        border-color: #b8d9d5;
+        box-shadow: 0 5px 16px rgba(15, 23, 42, .04);
+    }
+
+    .project-boolean-card.is-enabled {
+        border-color: #a9d9d1;
+        background: linear-gradient(120deg, #f0fdfa 0%, #fff 100%);
+    }
+
+    .project-boolean-card.has-error {
+        border-color: #dc3545;
+    }
+
+    .project-boolean-information {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 0;
+    }
+
+    .project-boolean-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 46px;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: #eef2f6;
+        color: #475569;
+        font-size: 1.3rem;
+    }
+
+    .project-boolean-card.is-enabled .project-boolean-icon {
+        background: #d9f4ed;
+        color: #087f7b;
+    }
+
+    .project-boolean-copy {
+        min-width: 0;
+    }
+
+    .project-boolean-label {
+        display: block;
+        color: #1e293b;
+        font-weight: 750;
+        font-size: .97rem;
+        cursor: pointer;
+        margin-bottom: .25rem;
+    }
+
+    .project-boolean-help {
+        color: var(--project-muted);
+        font-size: .85rem;
+        line-height: 1.5;
+    }
+
+    /* Custom switch: hides the native checkbox appearance */
+    .project-switch {
+        display: inline-flex;
+        align-items: center;
+        flex: 0 0 auto;
+        cursor: pointer;
+        margin: 0;
+        padding: 5px;
+    }
+
+    .project-switch input[type="checkbox"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .project-switch-track {
+        position: relative;
+        display: block;
+        width: 54px;
+        height: 30px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        box-shadow: inset 0 1px 3px rgba(15, 23, 42, .12);
+        transition: background .2s ease, box-shadow .2s ease;
+    }
+
+    .project-switch-thumb {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, .2);
+        transition: transform .2s ease;
+    }
+
+    .project-switch input:checked + .project-switch-track {
+        background: #087f7b;
+    }
+
+    .project-switch input:checked + .project-switch-track
+    .project-switch-thumb {
+        transform: translateX(24px);
+    }
+
+    .project-switch input:focus-visible + .project-switch-track {
+        outline: 3px solid rgba(13, 148, 136, .25);
+        outline-offset: 3px;
+    }
+
+    .project-switch input:disabled + .project-switch-track {
+        opacity: .55;
+        cursor: not-allowed;
+    }
+
+    /* Budget Cards */
+    .budget-card {
+        padding: 1.15rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 13px;
+        background: #fff;
+        transition: border-color .2s ease, box-shadow .2s ease,
+                    opacity .2s ease;
+    }
+
+    .budget-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, .04);
+    }
+
+    .budget-card-annual {
+        border: 1px solid #80c8c0;
+        background: linear-gradient(145deg, #f0fdfa 0%, #fff 72%);
+    }
+
+    .budget-card-title {
+        color: #1e293b;
+    }
+
+    .budget-row-removed {
+        opacity: .48;
+    }
+
+    .budget-row-removed .budget-card {
+        border-color: #dc3545;
+        background: #fff7f7;
+    }
+
+    .budget-row-removed .budget-card-title {
+        text-decoration: line-through;
+    }
+
+    /* Budget deletion control */
+    .budget-remove-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        width: 100%;
+        margin-top: .5rem;
+        padding: .8rem .9rem;
+        border: 1px solid #fee2e2;
+        border-radius: 9px;
+        background: #fff8f8;
+        color: #991b1b;
+        cursor: pointer;
+    }
+
+    .budget-remove-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+        font-size: .85rem;
+        font-weight: 650;
+    }
+
+    .budget-remove-toggle input[type="checkbox"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+
+    .budget-remove-switch {
+        position: relative;
+        width: 38px;
+        height: 22px;
+        flex: 0 0 38px;
+        border-radius: 999px;
+        background: #e5b4b4;
+        transition: background .2s ease;
+    }
+
+    .budget-remove-switch::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
+        transition: transform .2s ease;
+    }
+
+    .budget-remove-toggle input:checked + .budget-remove-switch {
+        background: #dc3545;
+    }
+
+    .budget-remove-toggle input:checked + .budget-remove-switch::after {
+        transform: translateX(16px);
+    }
+
+    .budget-remove-toggle input:focus-visible + .budget-remove-switch {
+        outline: 3px solid rgba(220, 53, 69, .2);
+        outline-offset: 3px;
+    }
+
+    /* Budget summary */
+    .budget-summary {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem;
+        border: 1px solid #dbe5ef;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .budget-summary-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        background: #e0f2fe;
+        color: #0369a1;
+        font-size: 1.25rem;
+    }
+
+    .budget-summary-copy {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .budget-summary-value {
+        color: #087f7b;
+        font-size: clamp(1.1rem, 2vw, 1.45rem);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .budget-summary-value.is-negative {
+        color: #dc3545;
+    }
+
+    .budget-summary-value.is-balanced {
+        color: #15803d;
+    }
+
+    .procurement-project-form .form-actions .btn {
+        min-height: 43px;
+        border-radius: 9px;
+        font-weight: 650;
+    }
+
+    @media (max-width: 575.98px) {
+        .project-boolean-card {
+            align-items: flex-start;
+            padding: 1rem;
+            gap: .5rem;
+        }
+
+        .project-boolean-information {
+            gap: .7rem;
+        }
+
+        .project-boolean-icon {
+            flex-basis: 38px;
+            width: 38px;
+            height: 38px;
+            font-size: 1.1rem;
+        }
+
+        .project-switch {
+            padding: 3px;
+        }
+
+        .project-switch-track {
+            width: 46px;
+            height: 26px;
+        }
+
+        .project-switch-thumb {
+            width: 20px;
+            height: 20px;
+        }
+
+        .project-switch input:checked + .project-switch-track
+        .project-switch-thumb {
+            transform: translateX(20px);
+        }
+
+        .budget-summary {
+            flex-wrap: wrap;
+            padding: 1rem;
+        }
+
+        .budget-summary-value {
+            width: 100%;
+            text-align: left;
+            padding-left: 3.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rows = Array.from(document.querySelectorAll('.budget-row'));
+    const remainder = document.getElementById('budgetRemainder');
+
+    function field(row, suffix) {
+        return row.querySelector('[name$="-' + suffix + '"]');
+    }
+
+    function period(row) {
+        const select = field(row, 'period');
+        return select ? select.value : row.dataset.period;
+    }
+
+    function amount(row) {
+        const input = field(row, 'budget_amount');
+        const value = input ? parseFloat(input.value) : NaN;
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    function isRemoved(row) {
+        const input = row.querySelector('.budget-remove-toggle input[type="checkbox"]');
+        return Boolean(input && input.checked);
+    }
+
+    function activeRows() {
+        return rows.filter(row => !isRemoved(row));
+    }
+
+    function updateRemainder() {
+        const active = activeRows();
+
+        const annualRow = active.find(row => period(row) === 'FULL_YEAR');
+        const annual = annualRow ? amount(annualRow) : 0;
+
+        const quarterTotal = active
+            .filter(row => ['Q1', 'Q2', 'Q3', 'Q4'].includes(period(row)))
+            .reduce((total, row) => total + amount(row), 0);
+
+        const value = annual - quarterTotal;
+
+        remainder.textContent = value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        remainder.classList.toggle('is-negative', value < -0.009);
+        remainder.classList.toggle('is-balanced', Math.abs(value) < 0.01);
+    }
+
+    function splitAnnual() {
+        const active = activeRows();
+        const annualRow = active.find(row => period(row) === 'FULL_YEAR');
+
+        if (!annualRow) {
+            updateRemainder();
+            return;
+        }
+
+        const annual = amount(annualRow);
+        const quarters = active.filter(row =>
+            ['Q1', 'Q2', 'Q3', 'Q4'].includes(period(row))
+        );
+
+        if (!quarters.length) {
+            updateRemainder();
+            return;
+        }
+
+        // Split into cents and distribute the remainder so quarterly
+        // amounts add up to the annual amount, where four quarters exist.
+        const totalCents = Math.round(annual * 100);
+        const baseCents = Math.floor(totalCents / quarters.length);
+        const remainderCents = totalCents - (baseCents * quarters.length);
+
+        quarters.forEach((row, index) => {
+            const input = field(row, 'budget_amount');
+
+            if (input) {
+                const cents = baseCents + (index < remainderCents ? 1 : 0);
+                input.value = (cents / 100).toFixed(2);
+            }
+        });
+
+        updateRemainder();
+    }
+
+    function refreshBooleanCard(input) {
+        const card = input.closest('.project-boolean-card');
+
+        if (card) {
+            card.classList.toggle('is-enabled', input.checked);
+
+            const icon = card.querySelector('.project-boolean-icon i');
+
+            if (icon) {
+                icon.className = input.checked
+                    ? 'bi bi-check2-circle'
+                    : 'bi bi-toggles';
+            }
+        }
+    }
+
+    // Project boolean settings.
+    document.querySelectorAll(
+        '.project-boolean-card input[type="checkbox"]'
+    ).forEach(input => {
+        refreshBooleanCard(input);
+
+        input.addEventListener('change', function () {
+            refreshBooleanCard(input);
+        });
+    });
+
+    // Budget allocation and deletion.
+    rows.forEach(row => {
+        const amountInput = field(row, 'budget_amount');
+        const periodInput = field(row, 'period');
+        const removeInput = row.querySelector(
+            '.budget-remove-toggle input[type="checkbox"]'
+        );
+
+        if (amountInput) {
+            amountInput.addEventListener('input', function () {
+                if (period(row) === 'FULL_YEAR') {
+                    splitAnnual();
+                } else {
+                    updateRemainder();
+                }
+            });
+        }
+
+        if (periodInput) {
+            periodInput.addEventListener('change', function () {
+                row.dataset.period = periodInput.value;
+                updateRemainder();
+            });
+        }
+
+        if (removeInput) {
+            row.classList.toggle('budget-row-removed', removeInput.checked);
+
+            removeInput.addEventListener('change', function () {
+                row.classList.toggle('budget-row-removed', removeInput.checked);
+                updateRemainder();
+            });
+        }
+    });
+
+    updateRemainder();
+});
+</script>
+{% endblock %}

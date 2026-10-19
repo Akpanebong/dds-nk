@@ -1,0 +1,24 @@
+.site-logo {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 11px;
+}
+
+.sidebar-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: 9px;
+}
+
+.login-logo {
+    overflow: hidden;
+    padding: 0;
+}
+
+.login-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

@@ -1,0 +1,330 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">PROCUREMENT</span>
+    <h1 class="mb-0">{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .procurement-delete {
+        --delete-ink: #18323a;
+        --delete-muted: #64748b;
+        --delete-border: #e2e8f0;
+        --delete-primary: #087f7b;
+        max-width: 760px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+        color: var(--delete-ink);
+    }
+
+    .procurement-delete .delete-card {
+        background: #fff;
+        border: 1px solid var(--delete-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 28px rgb(15 23 42 / 5%);
+    }
+
+    .procurement-delete .delete-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #fff8f7;
+        border-bottom: 1px solid #fee2e2;
+    }
+
+    .procurement-delete .delete-icon {
+        display: grid;
+        place-items: center;
+        width: 52px;
+        height: 52px;
+        flex: 0 0 52px;
+        border-radius: 14px;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-size: 1.45rem;
+    }
+
+    .procurement-delete .delete-header h2 {
+        font-size: 1.12rem;
+        font-weight: 800;
+        margin: 0 0 .35rem;
+        color: #7f1d1d;
+    }
+
+    .procurement-delete .delete-header p {
+        color: #991b1b;
+        font-size: .84rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .procurement-delete .delete-body {
+        padding: 1.5rem;
+    }
+
+    .procurement-delete .record-label {
+        display: block;
+        margin-bottom: .5rem;
+        color: var(--delete-muted);
+        font-size: .75rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    .procurement-delete .record-card {
+        display: flex;
+        align-items: flex-start;
+        gap: .85rem;
+        padding: 1rem;
+        border: 1px solid var(--delete-border);
+        border-radius: 10px;
+        background: #f8fafc;
+        overflow-wrap: anywhere;
+    }
+
+    .procurement-delete .record-card-icon {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        border-radius: 10px;
+        background: #e7f5f4;
+        color: var(--delete-primary);
+        font-size: 1.1rem;
+    }
+
+    .procurement-delete .record-name {
+        display: block;
+        font-size: .96rem;
+        font-weight: 750;
+        line-height: 1.5;
+    }
+
+    .procurement-delete .warning-note {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        margin-top: 1.25rem;
+        padding: .9rem 1rem;
+        border: 1px solid #fed7aa;
+        border-radius: 9px;
+        background: #fff7ed;
+        color: #9a3412;
+        font-size: .82rem;
+        line-height: 1.65;
+    }
+
+    .procurement-delete .warning-note i {
+        margin-top: .15rem;
+        font-size: 1rem;
+    }
+
+    .procurement-delete .delete-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--delete-border);
+    }
+
+    .procurement-delete .delete-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        min-height: 42px;
+        padding: .65rem 1rem;
+        border-radius: 8px;
+        font-size: .84rem;
+        font-weight: 700;
+    }
+
+    .procurement-delete .btn-danger {
+        background: #b91c1c;
+        border-color: #b91c1c;
+    }
+
+    .procurement-delete .btn-danger:hover {
+        background: #991b1b;
+        border-color: #991b1b;
+    }
+
+    .procurement-delete .btn-light {
+        border: 1px solid #dbe3eb;
+        background: #fff;
+        color: #334155;
+    }
+
+    .procurement-delete .btn-light:hover {
+        background: #f1f5f9;
+    }
+
+    .procurement-delete .delete-actions .btn:focus-visible {
+        outline: 3px solid rgb(8 127 123 / 35%);
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 575.98px) {
+        .procurement-delete .delete-header,
+        .procurement-delete .delete-body {
+            padding: 1rem;
+        }
+
+        .procurement-delete .delete-header {
+            align-items: flex-start;
+        }
+
+        .procurement-delete .delete-icon {
+            width: 44px;
+            height: 44px;
+            flex-basis: 44px;
+            font-size: 1.2rem;
+        }
+
+        .procurement-delete .delete-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .procurement-delete .delete-actions .btn {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .procurement-delete * {
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="procurement-delete">
+
+    <section class="delete-card" aria-labelledby="deleteHeading">
+
+        <div class="delete-header">
+            <div class="delete-icon">
+                <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+            </div>
+
+            <div>
+                <h2 id="deleteHeading">Confirm deletion</h2>
+                <p>
+                    Review the selected record before proceeding.
+                    This operation may permanently remove data.
+                </p>
+            </div>
+        </div>
+
+        <div class="delete-body">
+
+            <span class="record-label">Record selected for deletion</span>
+
+            <div class="record-card">
+                <div class="record-card-icon">
+                    <i class="bi bi-file-earmark-text"
+                       aria-hidden="true"></i>
+                </div>
+
+                <div>
+                    <span class="record-name">{{ object }}</span>
+                </div>
+            </div>
+
+            <div class="warning-note" role="note">
+                <i class="bi bi-exclamation-triangle-fill"
+                   aria-hidden="true"></i>
+
+                <div>
+                    <strong>Important:</strong>
+                    Are you sure you want to delete this record?
+                    This action cannot be undone. Confirm that you have
+                    selected the correct record before continuing.
+                </div>
+            </div>
+
+            <form method="post" id="deleteConfirmationForm">
+                {% csrf_token %}
+
+                <div class="delete-actions">
+
+                    {% if cancel_slug %}
+                        <a
+                            href="{% url cancel_url cancel_slug %}"
+                            class="btn btn-light"
+                        >
+                            <i class="bi bi-arrow-left"
+                               aria-hidden="true"></i>
+                            Cancel
+                        </a>
+                    {% else %}
+                        <a
+                            href="{% url cancel_url %}"
+                            class="btn btn-light"
+                        >
+                            <i class="bi bi-arrow-left"
+                               aria-hidden="true"></i>
+                            Cancel
+                        </a>
+                    {% endif %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                        id="confirmDeleteButton"
+                    >
+                        <i class="bi bi-trash3"
+                           aria-hidden="true"></i>
+                        Confirm deletion
+                    </button>
+
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('deleteConfirmationForm');
+    const button = document.getElementById('confirmDeleteButton');
+
+    if (!form || !button) return;
+
+    let submitting = false;
+
+    form.addEventListener('submit', function (event) {
+        if (submitting) {
+            event.preventDefault();
+            return;
+        }
+
+        submitting = true;
+        button.disabled = true;
+
+        button.innerHTML =
+            '<span class="spinner-border spinner-border-sm" ' +
+            'aria-hidden="true"></span> Deleting...';
+    });
+});
+</script>
+{% endblock %}

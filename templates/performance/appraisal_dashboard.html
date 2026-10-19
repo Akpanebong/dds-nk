@@ -1,0 +1,529 @@
+﻿{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Performance Dashboard | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --appraisal-primary: var(--primary-color, #e50078);
+        --appraisal-dark: #3b2938;
+        --appraisal-muted: #77818d;
+        --appraisal-border: #e9edf2;
+        --appraisal-surface: #ffffff;
+        --appraisal-bg: #f7f8fb;
+    }
+
+    .appraisal-dashboard {
+        color: var(--appraisal-dark);
+    }
+
+    .appraisal-dashboard .page-intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .appraisal-dashboard .page-intro h1 {
+        font-size: clamp(1.45rem, 2.5vw, 2rem);
+        font-weight: 800;
+        margin: 0 0 .4rem;
+        letter-spacing: -.035em;
+    }
+
+    .appraisal-dashboard .page-intro p {
+        color: var(--appraisal-muted);
+        margin: 0;
+    }
+
+    .appraisal-dashboard .eyebrow {
+        color: var(--appraisal-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .45rem;
+    }
+
+    .appraisal-dashboard .dashboard-actions {
+        display: flex;
+        gap: .6rem;
+        flex-wrap: wrap;
+    }
+
+    .appraisal-dashboard .btn-appraisal {
+        background: var(--appraisal-primary);
+        border: 1px solid var(--appraisal-primary);
+        color: #fff;
+        border-radius: 10px;
+        padding: .7rem 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        transition: transform .2s ease, opacity .2s ease;
+    }
+
+    .appraisal-dashboard .btn-appraisal:hover {
+        color: #fff;
+        opacity: .92;
+        transform: translateY(-1px);
+    }
+
+    .appraisal-dashboard .btn-appraisal-outline {
+        background: #fff;
+        color: var(--appraisal-dark);
+        border: 1px solid var(--appraisal-border);
+    }
+
+    .appraisal-dashboard .btn-appraisal-outline:hover {
+        color: var(--appraisal-primary);
+        border-color: var(--appraisal-primary);
+    }
+
+    .appraisal-dashboard .kpi-card,
+    .appraisal-dashboard .dashboard-panel {
+        background: var(--appraisal-surface);
+        border: 1px solid var(--appraisal-border);
+        border-radius: 16px;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+        height: 100%;
+    }
+
+    .appraisal-dashboard .kpi-card {
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .appraisal-dashboard .kpi-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .appraisal-dashboard .kpi-label {
+        color: var(--appraisal-muted);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .075em;
+        text-transform: uppercase;
+    }
+
+    .appraisal-dashboard .kpi-value {
+        display: block;
+        margin-top: .6rem;
+        font-size: clamp(1.7rem, 3vw, 2.25rem);
+        font-weight: 800;
+        letter-spacing: -.045em;
+        line-height: 1.15;
+        color: var(--appraisal-dark);
+        overflow-wrap: anywhere;
+    }
+
+    .appraisal-dashboard .kpi-description {
+        color: var(--appraisal-muted);
+        font-size: .8rem;
+        margin: .6rem 0 0;
+    }
+
+    .appraisal-dashboard .kpi-icon {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: #fff0f7;
+        color: var(--appraisal-primary);
+        font-size: 1.2rem;
+    }
+
+    .appraisal-dashboard .kpi-icon.plum {
+        background: #f2edf2;
+        color: var(--appraisal-dark);
+    }
+
+    .appraisal-dashboard .kpi-icon.blue {
+        background: #edf4ff;
+        color: #3269b0;
+    }
+
+    .appraisal-dashboard .section-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 1.2rem 1.25rem;
+        border-bottom: 1px solid var(--appraisal-border);
+    }
+
+    .appraisal-dashboard .section-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .3rem;
+    }
+
+    .appraisal-dashboard .section-heading p {
+        color: var(--appraisal-muted);
+        font-size: .82rem;
+        margin: 0;
+    }
+
+    .appraisal-dashboard .panel-body {
+        padding: 1.25rem;
+    }
+
+    .appraisal-dashboard .chart-container {
+        position: relative;
+        height: 280px;
+        width: 100%;
+    }
+
+    .appraisal-dashboard .score-note {
+        border-radius: 12px;
+        padding: 1rem;
+        background: var(--appraisal-bg);
+        color: var(--appraisal-muted);
+        font-size: .85rem;
+        line-height: 1.6;
+    }
+
+    .appraisal-dashboard .score-note strong {
+        color: var(--appraisal-dark);
+    }
+
+    .appraisal-dashboard .quick-link {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1rem;
+        border: 1px solid var(--appraisal-border);
+        border-radius: 12px;
+        color: var(--appraisal-dark);
+        text-decoration: none;
+        transition: border-color .2s ease, background .2s ease;
+        height: 100%;
+    }
+
+    .appraisal-dashboard .quick-link:hover {
+        border-color: var(--appraisal-primary);
+        background: #fff8fb;
+    }
+
+    .appraisal-dashboard .quick-link-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        border-radius: 12px;
+        background: #fff0f7;
+        color: var(--appraisal-primary);
+        font-size: 1.15rem;
+    }
+
+    .appraisal-dashboard .quick-link strong {
+        display: block;
+        font-size: .9rem;
+        font-weight: 800;
+    }
+
+    .appraisal-dashboard .quick-link small {
+        display: block;
+        color: var(--appraisal-muted);
+        margin-top: .2rem;
+        font-size: .76rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .appraisal-dashboard .kpi-card {
+            padding: 1rem;
+        }
+
+        .appraisal-dashboard .section-heading,
+        .appraisal-dashboard .panel-body {
+            padding: 1rem;
+        }
+
+        .appraisal-dashboard .chart-container {
+            height: 240px;
+        }
+
+        .appraisal-dashboard .dashboard-actions {
+            width: 100%;
+        }
+
+        .appraisal-dashboard .dashboard-actions a {
+            flex: 1;
+        }
+    }
+</style>
+
+<div class="appraisal-dashboard">
+
+    <!-- Page heading -->
+    <div class="page-intro">
+        <div>
+            <div class="eyebrow">
+                <i class="bi bi-graph-up-arrow me-1"></i>
+                Human Resources / Performance
+            </div>
+            <h1>Performance Dashboard</h1>
+            <p>Monitor appraisal activity and review employee performance scores.</p>
+        </div>
+
+        <div class="dashboard-actions">
+            <a href="{% url 'appraisal_list' %}"
+               class="btn-appraisal btn-appraisal-outline">
+                <i class="bi bi-list-ul"></i>
+                View Appraisals
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div>
+                        <div class="kpi-label">Total Appraisals</div>
+                        <strong class="kpi-value">
+                            {{ stats.total|default:0|intcomma }}
+                        </strong>
+                        <p class="kpi-description">
+                            Recorded performance appraisals
+                        </p>
+                    </div>
+                    <div class="kpi-icon">
+                        <i class="bi bi-clipboard2-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div>
+                        <div class="kpi-label">Average Job Score</div>
+                        <strong class="kpi-value">
+                            {{ stats.avg_job|default:0|floatformat:1 }}
+                        </strong>
+                        <p class="kpi-description">
+                            Average score for job performance
+                        </p>
+                    </div>
+                    <div class="kpi-icon plum">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div>
+                        <div class="kpi-label">Average Service Score</div>
+                        <strong class="kpi-value">
+                            {{ stats.avg_service|default:0|floatformat:1 }}
+                        </strong>
+                        <p class="kpi-description">
+                            Average score for service delivery
+                        </p>
+                    </div>
+                    <div class="kpi-icon blue">
+                        <i class="bi bi-award"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Performance overview -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-lg-7">
+            <section class="dashboard-panel">
+                <div class="section-heading">
+                    <div>
+                        <h2>Performance Score Overview</h2>
+                        <p>Comparison of the average job and service scores.</p>
+                    </div>
+                    <span class="badge rounded-pill text-bg-light border">
+                        Average scores
+                    </span>
+                </div>
+
+                <div class="panel-body">
+                    <div class="chart-container">
+                        <canvas id="performanceScoreChart"
+                                role="img"
+                                aria-label="Bar chart comparing average job and service scores">
+                            Performance score comparison chart.
+                        </canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <section class="dashboard-panel">
+                <div class="section-heading">
+                    <div>
+                        <h2>Performance Summary</h2>
+                        <p>Quick interpretation of the available metrics.</p>
+                    </div>
+                </div>
+
+                <div class="panel-body d-flex flex-column gap-3">
+                    <div class="score-note">
+                        <strong><i class="bi bi-clipboard-data me-2"></i>Appraisal coverage</strong>
+                        <p class="mb-0 mt-2">
+                            A total of
+                            <strong>{{ stats.total|default:0|intcomma }}</strong>
+                            appraisal record{{ stats.total|pluralize }}
+                            {{ stats.total|pluralize:"is,are" }} currently reflected in this dashboard.
+                        </p>
+                    </div>
+
+                    <div class="score-note">
+                        <strong><i class="bi bi-briefcase me-2"></i>Job performance</strong>
+                        <p class="mb-0 mt-2">
+                            The recorded average job score is
+                            <strong>{{ stats.avg_job|default:0|floatformat:1 }}</strong>.
+                            Use this measure alongside appraisal details and organisational criteria.
+                        </p>
+                    </div>
+
+                    <div class="score-note">
+                        <strong><i class="bi bi-award me-2"></i>Service delivery</strong>
+                        <p class="mb-0 mt-2">
+                            The recorded average service score is
+                            <strong>{{ stats.avg_service|default:0|floatformat:1 }}</strong>.
+                            Review individual records for additional context.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+    <!-- Quick actions -->
+    <section class="dashboard-panel mb-4">
+        <div class="section-heading">
+            <div>
+                <h2>Quick Actions</h2>
+                <p>Navigate to appraisal records and performance reviews.</p>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="row g-3">
+
+                <div class="col-12 col-md-6">
+                    <a href="{% url 'appraisal_list' %}" class="quick-link">
+                        <span class="quick-link-icon">
+                            <i class="bi bi-card-list"></i>
+                        </span>
+                        <span>
+                            <strong>Appraisal Register</strong>
+                            <small>Browse existing employee appraisals</small>
+                        </span>
+                        <i class="bi bi-arrow-up-right ms-auto"></i>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <a href="{% url 'appraisal_list' %}" class="quick-link">
+                        <span class="quick-link-icon">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <span>
+                            <strong>Review Performance</strong>
+                            <small>Open the appraisal register to inspect records</small>
+                        </span>
+                        <i class="bi bi-arrow-up-right ms-auto"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Chart.js: uses the existing dashboard metrics only -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('performanceScoreChart');
+
+    if (!canvas || typeof Chart === 'undefined') {
+        return;
+    }
+
+    const jobScore = Number('{{ stats.avg_job|default:0 }}') || 0;
+    const serviceScore = Number('{{ stats.avg_service|default:0 }}') || 0;
+
+    new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: ['Job Performance', 'Service Delivery'],
+            datasets: [{
+                label: 'Average Score',
+                data: [jobScore, serviceScore],
+                backgroundColor: ['#e50078', '#3b2938'],
+                borderRadius: 8,
+                maxBarThickness: 68
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return 'Average score: ' + context.parsed.x.toFixed(1);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#edf0f4'
+                    },
+                    ticks: {
+                        precision: 1
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

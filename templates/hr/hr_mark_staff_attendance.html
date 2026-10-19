@@ -1,0 +1,665 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Record Attendance | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-record-attendance-page">
+
+    <!-- Page heading -->
+    <div class="record-attendance-header">
+        <div class="record-attendance-heading">
+            <div class="record-attendance-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+            <div>
+                <span class="record-attendance-eyebrow">HUMAN RESOURCES</span>
+                <h1>Record Attendance</h1>
+                <p>Capture and maintain accurate employee attendance records.</p>
+            </div>
+        </div>
+
+        <a href="{% url 'hr:attendance_list' %}" class="record-attendance-back">
+            <i class="bi bi-arrow-left"></i>
+            Back to Attendance
+        </a>
+    </div>
+
+    <!-- Main content -->
+    <div class="record-attendance-layout">
+
+        <main class="record-attendance-main">
+            <section class="record-attendance-card">
+
+                <div class="record-attendance-card-header">
+                    <div class="record-card-heading-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h2>Attendance Details</h2>
+                        <p>Complete the fields below and save the attendance record.</p>
+                    </div>
+                </div>
+
+                <form method="post" class="record-attendance-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="record-attendance-error-summary" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>Please review the following errors</strong>
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    <div class="record-form-field
+                        {% if field.field.widget.input_type == 'checkbox' %}record-checkbox-field{% endif %}">
+
+                        <label for="{{ field.id_for_label }}" class="record-field-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="record-required">*</span>
+                            {% endif %}
+                        </label>
+
+                        {% if field.help_text %}
+                        <div class="record-field-help">{{ field.help_text|safe }}</div>
+                        {% endif %}
+
+                        <div class="record-field-control">
+                            {{ field }}
+                        </div>
+
+                        {% if field.errors %}
+                        <div class="record-field-errors" role="alert">
+                            {% for error in field.errors %}
+                            <span>
+                                <i class="bi bi-exclamation-circle"></i>
+                                {{ error }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="record-attendance-form-footer">
+                        <a href="{% url 'hr:attendance_list' %}" class="record-cancel-btn">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="record-save-btn">
+                            <i class="bi bi-check2-circle"></i>
+                            Save Attendance
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <!-- Guidance sidebar -->
+        <aside class="record-attendance-sidebar">
+
+            <section class="record-guidance-card">
+                <div class="record-guidance-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+
+                <h3>Recording Guidelines</h3>
+                <p>Follow these steps to maintain reliable attendance records.</p>
+
+                <div class="record-guidance-list">
+                    <div class="record-guidance-item">
+                        <span class="record-guidance-number">01</span>
+                        <div>
+                            <strong>Verify the employee</strong>
+                            <p>Ensure the correct employee is selected.</p>
+                        </div>
+                    </div>
+
+                    <div class="record-guidance-item">
+                        <span class="record-guidance-number">02</span>
+                        <div>
+                            <strong>Confirm the date</strong>
+                            <p>Check that the attendance date is accurate.</p>
+                        </div>
+                    </div>
+
+                    <div class="record-guidance-item">
+                        <span class="record-guidance-number">03</span>
+                        <div>
+                            <strong>Select the correct status</strong>
+                            <p>Record the status that reflects the employee's attendance.</p>
+                        </div>
+                    </div>
+
+                    <div class="record-guidance-item">
+                        <span class="record-guidance-number">04</span>
+                        <div>
+                            <strong>Review before saving</strong>
+                            <p>Check the entered information before submitting.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="record-security-card">
+                <div class="record-security-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <strong>Record Accuracy</strong>
+                    <p>Accurate attendance information supports workforce reporting and HR administration.</p>
+                </div>
+            </section>
+
+        </aside>
+    </div>
+</div>
+
+<style>
+    .hr-record-attendance-page {
+        --ra-primary: #e50078;
+        --ra-primary-dark: #b80060;
+        --ra-plum: #3b2938;
+        --ra-muted: #77717a;
+        --ra-border: #e9e4e9;
+        --ra-background: #faf8fa;
+        --ra-pink-soft: #fff0f7;
+
+        color: var(--ra-plum);
+        padding: 8px 0 30px;
+    }
+
+    .hr-record-attendance-page,
+    .hr-record-attendance-page * {
+        box-sizing: border-box;
+    }
+
+    .record-attendance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .record-attendance-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .record-attendance-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        background: var(--ra-pink-soft);
+        color: var(--ra-primary);
+        font-size: 25px;
+    }
+
+    .record-attendance-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--ra-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .record-attendance-heading h1 {
+        margin: 0;
+        color: var(--ra-plum);
+        font-size: clamp(23px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -.7px;
+    }
+
+    .record-attendance-heading p {
+        margin: 6px 0 0;
+        color: var(--ra-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .record-attendance-back,
+    .record-cancel-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 10px 15px;
+        border: 1px solid var(--ra-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--ra-plum);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .record-attendance-back:hover,
+    .record-cancel-btn:hover {
+        border-color: var(--ra-primary);
+        background: var(--ra-pink-soft);
+        color: var(--ra-primary);
+    }
+
+    .record-attendance-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: start;
+        gap: 22px;
+    }
+
+    .record-attendance-card,
+    .record-guidance-card,
+    .record-security-card {
+        border: 1px solid var(--ra-border);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+    }
+
+    .record-attendance-card {
+        overflow: hidden;
+    }
+
+    .record-attendance-card-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 22px 25px;
+        border-bottom: 1px solid var(--ra-border);
+        background: linear-gradient(120deg, #fff 0%, #fff9fc 100%);
+    }
+
+    .record-card-heading-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--ra-pink-soft);
+        color: var(--ra-primary);
+        font-size: 19px;
+    }
+
+    .record-attendance-card-header h2 {
+        margin: 0 0 5px;
+        color: var(--ra-plum);
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .record-attendance-card-header p {
+        margin: 0;
+        color: var(--ra-muted);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .record-attendance-form {
+        padding: 25px;
+    }
+
+    .record-form-field {
+        min-width: 0;
+        margin-bottom: 21px;
+    }
+
+    .record-field-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--ra-plum);
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .record-required {
+        color: var(--ra-primary);
+        font-weight: 800;
+    }
+
+    .record-field-help {
+        margin: -2px 0 8px;
+        color: var(--ra-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .record-field-help ul,
+    .record-field-help ol {
+        padding-left: 20px;
+        margin: 5px 0;
+    }
+
+    .record-field-control input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .record-field-control select,
+    .record-field-control textarea {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #ded6df;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--ra-plum);
+        font-family: inherit;
+        font-size: 13px;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .record-field-control textarea {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    .record-field-control input[type="file"] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        border: 1px dashed #d8cbd7;
+        border-radius: 9px;
+        background: var(--ra-background);
+        color: var(--ra-muted);
+        font-size: 12px;
+    }
+
+    .record-field-control input[type="checkbox"],
+    .record-field-control input[type="radio"] {
+        accent-color: var(--ra-primary);
+    }
+
+    .record-field-control input:focus,
+    .record-field-control select:focus,
+    .record-field-control textarea:focus {
+        outline: none;
+        border-color: var(--ra-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .10);
+    }
+
+    .record-checkbox-field .record-field-control {
+        padding: 12px 14px;
+        border: 1px solid var(--ra-border);
+        border-radius: 9px;
+        background: var(--ra-background);
+    }
+
+    .record-checkbox-field .record-field-control label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        color: var(--ra-plum);
+        font-size: 12px;
+    }
+
+    .record-field-errors {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 7px;
+        color: #b4234b;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .record-attendance-error-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 14px 15px;
+        margin-bottom: 21px;
+        border: 1px solid #f3c8d4;
+        border-radius: 9px;
+        background: #fff2f5;
+        color: #a51e43;
+        font-size: 12px;
+    }
+
+    .record-attendance-error-summary > i {
+        margin-top: 2px;
+        font-size: 16px;
+    }
+
+    .record-attendance-error-summary strong {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .record-attendance-error-summary p {
+        margin: 0 0 4px;
+    }
+
+    .record-attendance-error-summary p:last-child {
+        margin-bottom: 0;
+    }
+
+    .record-attendance-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 20px;
+        margin-top: 5px;
+        border-top: 1px solid var(--ra-border);
+    }
+
+    .record-save-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 11px 19px;
+        border: 1px solid var(--ra-primary);
+        border-radius: 9px;
+        background: var(--ra-primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .record-save-btn:hover {
+        border-color: var(--ra-primary-dark);
+        background: var(--ra-primary-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .record-save-btn:focus-visible,
+    .record-attendance-back:focus-visible,
+    .record-cancel-btn:focus-visible {
+        outline: 3px solid rgba(229, 0, 120, .25);
+        outline-offset: 2px;
+    }
+
+    .record-attendance-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .record-guidance-card {
+        padding: 22px 20px;
+    }
+
+    .record-guidance-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        background: var(--ra-pink-soft);
+        color: var(--ra-primary);
+        font-size: 20px;
+    }
+
+    .record-guidance-card h3 {
+        margin: 0 0 8px;
+        color: var(--ra-plum);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .record-guidance-card > p {
+        margin: 0 0 20px;
+        color: var(--ra-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .record-guidance-list {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+    }
+
+    .record-guidance-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+    }
+
+    .record-guidance-number {
+        display: grid;
+        place-items: center;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        border-radius: 9px;
+        background: #f7f1f6;
+        color: var(--ra-primary);
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .record-guidance-item strong {
+        display: block;
+        margin: 1px 0 4px;
+        color: var(--ra-plum);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .record-guidance-item p {
+        margin: 0;
+        color: var(--ra-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .record-security-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px;
+        background: #fff9fc;
+    }
+
+    .record-security-icon {
+        color: var(--ra-primary);
+        font-size: 21px;
+    }
+
+    .record-security-card strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--ra-plum);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .record-security-card p {
+        margin: 0;
+        color: var(--ra-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 1000px) {
+        .record-attendance-layout {
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 16px;
+        }
+
+        .record-attendance-form {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .record-attendance-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .record-attendance-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .record-attendance-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .record-attendance-heading {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .record-attendance-icon {
+            flex-basis: 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            font-size: 22px;
+        }
+
+        .record-attendance-back {
+            width: 100%;
+        }
+
+        .record-attendance-card-header,
+        .record-attendance-form {
+            padding: 17px;
+        }
+
+        .record-attendance-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .record-attendance-form-footer {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .record-save-btn,
+        .record-cancel-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

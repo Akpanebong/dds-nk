@@ -1,0 +1,29 @@
+﻿{% extends 'module_base.html' %}
+{% load humanize %}{% load static %}
+{% block title %}FY{{ year|stringformat:'s'|slice:'-2:' }} IPTT | DDS-NK{% endblock %}
+{% block module_brand %}<i class="bi bi-table"></i> MEAL IPTT{% endblock %}
+{% block crumb %}<span class="module-label meal-text">FY{{ year|stringformat:'s'|slice:'-2:' }} TRACKER</span><h1>IPTT</h1>{% endblock %}
+{% block content %}
+{% include 'meal/_tracker_styles.html' %}
+<div class="tracker-shell">
+    <div class="tracker-hero"><div class="eyebrow">FY{{ year|stringformat:'s'|slice:'-2:' }} integrated performance tracking table</div><h1>Quarterly targets, budgets and results</h1><p>Select a financial year and quarter to drive every MEAL view.</p></div>
+    <div class="tracker-actions mb-3">
+        <form method="get" class="d-flex gap-2 align-items-end">
+            <div><label class="form-label" for="year">Financial year</label><select id="year" name="year" class="form-select" onchange="this.form.submit()">{% for item in years %}<option value="{{ item }}"{% if item == year %} selected{% endif %}>FY{{ item|stringformat:'s'|slice:'-2:' }}</option>{% endfor %}</select></div>
+            <div><label class="form-label" for="quarter">Selected quarter</label><select id="quarter" name="quarter" class="form-select" onchange="this.form.submit()">{% for item in quarters %}<option value="{{ item }}"{% if item == quarter %} selected{% endif %}>{{ item }}</option>{% endfor %}</select></div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-funnel me-1"></i>Apply</button>
+        </form>
+    </div>
+    {% include 'meal/_tracker_nav.html' %}
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-xl-3"><div class="tracker-kpi"><span class="label">Quarter</span><span class="value">{{ quarter }}</span><div class="meta">FY{{ year|stringformat:'s'|slice:'-2:' }} selected view</div></div></div>
+        <div class="col-6 col-xl-3"><div class="tracker-kpi"><span class="label">Outputs</span><span class="value">{{ output_rows|length }}</span><div class="meta">Programme output areas</div></div></div>
+        <div class="col-6 col-xl-3"><div class="tracker-kpi"><span class="label">Indicators</span><span class="value">{{ rows|length }}</span><div class="meta">Quarter plan lines</div></div></div>
+        <div class="col-6 col-xl-3"><div class="tracker-kpi"><span class="label">Financial year</span><span class="value">FY{{ year|stringformat:'s'|slice:'-2:' }}</span><div class="meta">Selected planning cycle</div></div></div>
+    </div>
+    <div class="tracker-card"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3>IPTT â€” {{ quarter }}</h3><div class="muted">Targets, planned budget, expense and results by indicator.</div></div><a class="btn btn-sm btn-outline-primary" href="{% url 'meal:output_dashboard' %}?quarter={{ quarter }}">Open dashboard <i class="bi bi-arrow-right ms-1"></i></a></div>
+        <div class="table-responsive"><table class="table tracker-table align-middle"><thead><tr><th>Output</th><th>Indicator</th><th class="num">Target</th><th class="num">Result</th><th class="num">Planned budget</th><th class="num">Expense</th><th>Achievement</th></tr></thead><tbody>{% for row in rows %}<tr><td><strong>{{ row.output.code }}</strong><small>{{ row.output.title|truncatechars:46 }}</small></td><td><strong>{{ row.code }}</strong><small>{{ row.title|truncatechars:80 }}</small></td><td class="num">{{ row.target|floatformat:0 }}</td><td class="num">{{ row.result|floatformat:0 }}</td><td class="num">{{ row.planned_budget|floatformat:0|intcomma }}</td><td class="num">{{ row.budget_expense|floatformat:0|intcomma }}</td><td><div class="tracker-progress"><span style="width:{{ row.achievement }}%"></span></div><small>{{ row.achievement }}%</small></td></tr>{% empty %}<tr><td colspan="7" class="text-center py-5 text-muted">No quarter plan data loaded for this financial year.</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+</div>
+{% endblock %}
+

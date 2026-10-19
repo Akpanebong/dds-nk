@@ -1,0 +1,7 @@
+<div class="tracker-tabs">
+    <a class="btn btn-outline-secondary {% if request.resolver_match.url_name == 'iptt' %}active{% endif %}" href="{% url 'meal:iptt' %}?quarter={{ quarter }}&year={{ year }}"><i class="bi bi-table me-1"></i>IPTT</a>
+    <a class="btn btn-outline-secondary {% if request.resolver_match.url_name == 'output_dashboard' %}active{% endif %}" href="{% url 'meal:output_dashboard' %}?quarter={{ quarter }}&year={{ year }}"><i class="bi bi-bar-chart-line me-1"></i>Output dashboard</a>
+    <a class="btn btn-outline-secondary {% if request.resolver_match.url_name == 'finance' %}active{% endif %}" href="{% url 'meal:finance' %}?quarter={{ quarter }}&year={{ year }}"><i class="bi bi-cash-stack me-1"></i>Finance</a>
+    <a class="btn btn-outline-secondary {% if request.resolver_match.url_name == 'fy26_output' %}active{% endif %}" href="{% url 'meal:fy26_output' %}?year={{ year }}"><i class="bi bi-graph-up-arrow me-1"></i>FY{{ year|stringformat:'s'|slice:'-2:' }} output</a>
+    <a class="btn btn-success" href="{% url 'meal:tracker_export' %}?quarter={{ quarter }}&year={{ year }}"><i class="bi bi-file-earmark-excel me-1"></i>Export Excel</a>
+</div>

@@ -1,0 +1,1554 @@
+{% extends 'vsla/base.html' %}
+{% load humanize %}
+
+{% block title %}VSLA Intelligence Dashboard | DDS-NK THRIVE{% endblock %}
+
+{% block vsla_content %}
+
+<div class="vsla-dashboard">
+
+    <!-- Dashboard header -->
+    <section class="vsla-hero">
+        <div class="vsla-hero-content">
+            <div class="vsla-eyebrow">
+                <span class="vsla-eyebrow-dot"></span>
+                DDS-NK THRIVE · LIVELIHOODS & FINANCIAL INCLUSION
+            </div>
+
+            <h1>VSLA Intelligence Dashboard</h1>
+            <p>
+                Monitor community savings, member participation, lending activity
+                and social protection across Village Savings and Loan Associations.
+            </p>
+
+            <div class="vsla-hero-meta">
+                <span><i class="bi bi-shield-check"></i> Financial overview</span>
+                <span><i class="bi bi-graph-up-arrow"></i> Portfolio insights</span>
+            </div>
+        </div>
+
+        <div class="vsla-hero-actions">
+            <a class="vsla-btn vsla-btn-light" href="{% url 'vsla:member_create' %}">
+                <i class="bi bi-person-plus"></i>
+                Register Member
+            </a>
+            <a class="vsla-btn vsla-btn-outline text-white" href="{% url 'vsla:savings_create' %}">
+                <i class="bi bi-plus-circle"></i>
+                Record Savings
+            </a>
+        </div>
+
+        <div class="vsla-hero-decoration" aria-hidden="true">
+            <i class="bi bi-pie-chart-fill"></i>
+        </div>
+    </section>
+
+    <!-- Primary portfolio indicators -->
+    <section class="vsla-section">
+        <div class="vsla-section-heading">
+            <div>
+                <span class="vsla-section-kicker">PORTFOLIO OVERVIEW</span>
+                <h2>Financial and operational indicators</h2>
+                <p>A consolidated view of groups, members, savings and credit.</p>
+            </div>
+            <span class="vsla-live-label">
+                <span></span> Dashboard summary
+            </span>
+        </div>
+
+        <div class="row g-3">
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Registered Groups</span>
+                        <span class="vsla-kpi-icon icon-plum">
+                            <i class="bi bi-people-fill"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value">{{ total_groups|intcomma }}</div>
+                    <div class="vsla-kpi-foot">
+                        <span class="vsla-kpi-accent">{{ active_groups|intcomma }}</span>
+                        active groups
+                    </div>
+                    <div class="vsla-kpi-track">
+                        <span style="width: {% if total_groups %}{% widthratio active_groups total_groups 100 %}{% else %}0{% endif %}%"></span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Active Members</span>
+                        <span class="vsla-kpi-icon icon-magenta">
+                            <i class="bi bi-person-check-fill"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value">{{ active_members|intcomma }}</div>
+                    <div class="vsla-kpi-foot">
+                        <span class="vsla-kpi-accent">{{ total_members|intcomma }}</span>
+                        registered members
+                    </div>
+                    <div class="vsla-kpi-track">
+                        <span style="width: {% if total_members %}{% widthratio active_members total_members 100 %}{% else %}0{% endif %}%"></span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Net Savings</span>
+                        <span class="vsla-kpi-icon icon-green">
+                            <i class="bi bi-wallet2"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value vsla-kpi-money">
+                        <small>UGX</small> {{ net_savings|floatformat:0|intcomma }}
+                    </div>
+                    <div class="vsla-kpi-foot">Deposits less withdrawals and share-outs</div>
+                    <div class="vsla-kpi-indicator">
+                        <i class="bi bi-arrow-left-right"></i>
+                        Posted savings transactions
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Outstanding Loans</span>
+                        <span class="vsla-kpi-icon icon-orange">
+                            <i class="bi bi-cash-stack"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value vsla-kpi-money">
+                        <small>UGX</small> {{ outstanding_loans|floatformat:0|intcomma }}
+                    </div>
+                    <div class="vsla-kpi-foot">
+                        <span class="vsla-kpi-accent">{{ pending_loans|intcomma }}</span>
+                        awaiting review
+                    </div>
+                    <div class="vsla-kpi-indicator">
+                        <i class="bi bi-clock-history"></i>
+                        Disbursed loans only
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Total Savings Deposits</span>
+                        <span class="vsla-kpi-icon icon-green">
+                            <i class="bi bi-piggy-bank-fill"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value vsla-kpi-money">
+                        <small>UGX</small> {{ total_savings|floatformat:0|intcomma }}
+                    </div>
+                    <div class="vsla-kpi-foot">Cumulative posted deposits</div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Loan Disbursements</span>
+                        <span class="vsla-kpi-icon icon-plum">
+                            <i class="bi bi-bank"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value vsla-kpi-money">
+                        <small>UGX</small> {{ loan_disbursed|floatformat:0|intcomma }}
+                    </div>
+                    <div class="vsla-kpi-foot">Disbursed and closed loan principal</div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Social Fund Balance</span>
+                        <span class="vsla-kpi-icon icon-magenta">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value vsla-kpi-money">
+                        <small>UGX</small> {{ social_fund_balance|floatformat:0|intcomma }}
+                    </div>
+                    <div class="vsla-kpi-foot">Contributions less support payments</div>
+                </article>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <article class="vsla-kpi">
+                    <div class="vsla-kpi-top">
+                        <span class="vsla-kpi-label">Groups in Operation</span>
+                        <span class="vsla-kpi-icon icon-blue">
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </span>
+                    </div>
+                    <div class="vsla-kpi-value">
+                        {% if total_groups %}
+                            {% widthratio active_groups total_groups 100 %}<small class="vsla-percent">%</small>
+                        {% else %}
+                            0<small class="vsla-percent">%</small>
+                        {% endif %}
+                    </div>
+                    <div class="vsla-kpi-foot">Active groups as a share of all groups</div>
+                </article>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="vsla-section">
+        <div class="vsla-section-heading">
+            <div>
+                <span class="vsla-section-kicker">DATA & PERFORMANCE</span>
+                <h2>Portfolio analytics</h2>
+                <p>Visual summaries of group status, savings movement and loan exposure.</p>
+            </div>
+        </div>
+
+        <div class="row g-3">
+
+            <div class="col-lg-4">
+                <article class="vsla-panel vsla-chart-panel">
+                    <div class="vsla-panel-heading">
+                        <div>
+                            <h3>Group Portfolio</h3>
+                            <p>Distribution by group status</p>
+                        </div>
+                        <span class="vsla-panel-icon"><i class="bi bi-pie-chart"></i></span>
+                    </div>
+                    <div class="vsla-chart-wrap">
+                        <canvas id="groupChart" aria-label="Groups by status" role="img"></canvas>
+                    </div>
+                    <div class="vsla-chart-foot">
+                        <span>All registered groups</span>
+                        <strong>{{ total_groups|intcomma }} groups</strong>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-lg-4">
+                <article class="vsla-panel vsla-chart-panel">
+                    <div class="vsla-panel-heading">
+                        <div>
+                            <h3>Savings Movement</h3>
+                            <p>Posted deposits versus outflows</p>
+                        </div>
+                        <span class="vsla-panel-icon"><i class="bi bi-bar-chart-line"></i></span>
+                    </div>
+                    <div class="vsla-chart-wrap">
+                        <canvas id="savingsChart" aria-label="Savings deposits and withdrawals" role="img"></canvas>
+                    </div>
+                    <div class="vsla-chart-foot">
+                        <span>Net savings</span>
+                        <strong>UGX {{ net_savings|floatformat:0|intcomma }}</strong>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-lg-4">
+                <article class="vsla-panel vsla-chart-panel">
+                    <div class="vsla-panel-heading">
+                        <div>
+                            <h3>Loan Position</h3>
+                            <p>Outstanding exposure and estimated recovery</p>
+                        </div>
+                        <span class="vsla-panel-icon"><i class="bi bi-graph-up"></i></span>
+                    </div>
+                    <div class="vsla-chart-wrap">
+                        <canvas id="loanChart" aria-label="Outstanding and estimated recovered loans" role="img"></canvas>
+                    </div>
+                    <div class="vsla-chart-foot">
+                        <span>Outstanding exposure</span>
+                        <strong>UGX {{ outstanding_loans|floatformat:0|intcomma }}</strong>
+                    </div>
+                </article>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Financial activity and loan portfolio -->
+    <section class="vsla-section">
+        <div class="vsla-section-heading">
+            <div>
+                <span class="vsla-section-kicker">RECENT ACTIVITY</span>
+                <h2>Transactions and loan applications</h2>
+                <p>Review the latest recorded financial activity and loan requests.</p>
+            </div>
+        </div>
+
+        <div class="row g-3">
+
+            <!-- Recent savings -->
+            <div class="col-xl-7">
+                <article class="vsla-panel h-100">
+                    <div class="vsla-panel-heading vsla-activity-heading">
+                        <div>
+                            <h3>Recent Savings Transactions</h3>
+                            <p>Latest posted deposits, withdrawals and share-outs</p>
+                        </div>
+                        <a href="{% url 'vsla:savings' %}" class="vsla-view-link">
+                            View Ledger <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table vsla-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Member / Group</th>
+                                    <th>Transaction</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_savings %}
+                                <tr>
+                                    <td class="vsla-date-cell">
+                                        {{ tx.transaction_date|date:"d M Y" }}
+                                    </td>
+                                    <td>
+                                        <div class="vsla-person-name">{{ tx.member.full_name }}</div>
+                                        <div class="vsla-secondary-text">{{ tx.group.name }}</div>
+                                    </td>
+                                    <td>
+                                        {% if tx.transaction_type == "deposit" %}
+                                            <span class="vsla-type-badge type-deposit">
+                                                <i class="bi bi-arrow-down-left-circle"></i>
+                                                {{ tx.get_transaction_type_display }}
+                                            </span>
+                                        {% elif tx.transaction_type == "withdrawal" %}
+                                            <span class="vsla-type-badge type-withdrawal">
+                                                <i class="bi bi-arrow-up-right-circle"></i>
+                                                {{ tx.get_transaction_type_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="vsla-type-badge type-shareout">
+                                                <i class="bi bi-arrow-left-right"></i>
+                                                {{ tx.get_transaction_type_display }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end vsla-amount">
+                                        UGX {{ tx.amount|floatformat:0|intcomma }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="vsla-empty-state">
+                                            <i class="bi bi-receipt"></i>
+                                            <strong>No savings transactions yet</strong>
+                                            <p>Posted savings transactions will appear here.</p>
+                                            <a href="{% url 'vsla:savings_create' %}" class="vsla-empty-link">
+                                                Record a transaction
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Recent loans -->
+            <div class="col-xl-5">
+                <article class="vsla-panel h-100">
+                    <div class="vsla-panel-heading vsla-activity-heading">
+                        <div>
+                            <h3>Loan Applications</h3>
+                            <p>Recently created loans and current status</p>
+                        </div>
+                        <a href="{% url 'vsla:loans' %}" class="vsla-view-link">
+                            View Portfolio <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="vsla-loan-list">
+                        {% for loan in recent_loans %}
+                        <div class="vsla-loan-item">
+                            <div class="vsla-loan-main">
+                                <a href="{% url 'vsla:loan_detail' loan.loan_no %}" class="vsla-loan-number">
+                                    {{ loan.loan_no }}
+                                </a>
+
+                                <div class="vsla-secondary-text">
+                                    {{ loan.member.full_name }}
+                                </div>
+                                <div class="vsla-secondary-text">
+                                    <i class="bi bi-people me-1"></i>{{ loan.group.name }}
+                                </div>
+
+                                <span class="vsla-status-badge status-{{ loan.status|slugify }}">
+                                    {{ loan.get_status_display }}
+                                </span>
+                            </div>
+
+                            <div class="vsla-loan-amount">
+                                <span>Loan amount</span>
+                                <strong>UGX {{ loan.principal|floatformat:0|intcomma }}</strong>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="vsla-empty-state">
+                            <i class="bi bi-cash-stack"></i>
+                            <strong>No loan applications yet</strong>
+                            <p>New loan applications will appear here.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Quick actions -->
+    <section class="vsla-quick-actions">
+        <div>
+            <span class="vsla-section-kicker">QUICK ACCESS</span>
+            <h2>Manage VSLA operations</h2>
+            <p>Continue to the relevant workflow to maintain your records.</p>
+        </div>
+
+        <div class="vsla-quick-action-links">
+            <a href="{% url 'vsla:member_create' %}">
+                <span><i class="bi bi-person-plus"></i></span>
+                Register member
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="{% url 'vsla:savings_create' %}">
+                <span><i class="bi bi-wallet2"></i></span>
+                Record savings
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="{% url 'vsla:savings' %}">
+                <span><i class="bi bi-journal-text"></i></span>
+                Savings ledger
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="{% url 'vsla:loans' %}">
+                <span><i class="bi bi-cash-stack"></i></span>
+                Loan portfolio
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+</div>
+
+{{ chart_data|json_script:"vsla-chart-data" }}
+
+<style>
+    .vsla-dashboard {
+        --vd-primary: #d95f02;
+        --vd-primary-dark: #a94600;
+        --vd-plum: #14213d;
+        --vd-muted: #526174;
+        --vd-border: #d8e0e8;
+        --vd-soft-pink: #fff4e9;
+        --vd-bg: #f5f7fb;
+        --vd-green: #d95f02;
+        --vd-orange: #d95f02;
+        --vd-blue: #3768a5;
+
+        color: var(--vd-plum);
+        padding-bottom: 28px;
+    }
+
+    .vsla-dashboard,
+    .vsla-dashboard * {
+        box-sizing: border-box;
+    }
+
+    .vsla-dashboard .vsla-hero {
+        position: relative;
+        isolation: isolate;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        overflow: hidden;
+        padding: 32px;
+        margin-bottom: 30px;
+        border-radius: 18px;
+        background: linear-gradient(120deg, #14213d 0%, #a94600 55%, #d95f02 100%);
+        color: #fff;
+    }
+
+    .vsla-hero-content,
+    .vsla-hero-actions {
+        position: relative;
+        z-index: 2;
+    }
+
+    .vsla-hero-content {
+        max-width: 700px;
+    }
+
+    .vsla-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 15px;
+        color: #ffd8ec;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.3px;
+        line-height: 1.7;
+    }
+
+    .vsla-eyebrow-dot {
+        flex: 0 0 7px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #ff8fc7;
+    }
+
+    .vsla-hero h1 {
+        margin: 0 0 12px;
+        color: #fff;
+        font-size: clamp(25px, 3vw, 35px);
+        font-weight: 850;
+        letter-spacing: -.8px;
+        line-height: 1.2;
+    }
+
+    .vsla-hero-content > p {
+        max-width: 650px;
+        margin: 0;
+        color: #f1e6ee;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    .vsla-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-top: 20px;
+    }
+
+    .vsla-hero-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #f9e8f1;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .vsla-hero-meta i {
+        color: #ff9bcf;
+        font-size: 14px;
+    }
+
+    .vsla-hero-actions {
+        display: flex;
+        flex: 0 0 auto;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 175px;
+    }
+
+    .vsla-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 11px 15px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 750;
+        text-align: center;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .vsla-btn-light {
+        background: #fff;
+        color: var(--vd-plum);
+    }
+
+    .vsla-btn-light:hover {
+        background: #ffe7f3;
+        color: var(--vd-primary-dark);
+    }
+
+    .vsla-btn-outline {
+        border-color: rgba(255,255,255,.55);
+        background: rgba(255,255,255,.06);
+        color: #fff;
+    }
+
+    .vsla-btn-outline:hover {
+        background: rgba(255,255,255,.15);
+        color: #fff;
+    }
+
+    .vsla-hero-decoration {
+        position: absolute;
+        z-index: 1;
+        right: 200px;
+        bottom: -90px;
+        color: rgba(255,255,255,.045);
+        font-size: 290px;
+        pointer-events: none;
+    }
+
+    .vsla-section {
+        margin-bottom: 30px;
+    }
+
+    .vsla-section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 17px;
+    }
+
+    .vsla-section-kicker {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--vd-primary);
+        font-size: 9px;
+        font-weight: 850;
+        letter-spacing: 1.5px;
+    }
+
+    .vsla-section-heading h2,
+    .vsla-quick-actions h2 {
+        margin: 0 0 6px;
+        color: var(--vd-plum);
+        font-size: 19px;
+        font-weight: 850;
+        letter-spacing: -.3px;
+    }
+
+    .vsla-section-heading p,
+    .vsla-quick-actions > div > p {
+        margin: 0;
+        color: var(--vd-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .vsla-live-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 11px;
+        border: 1px solid var(--vd-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--vd-muted);
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .vsla-live-label > span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--vd-green);
+    }
+
+    .vsla-kpi {
+        height: 100%;
+        min-height: 156px;
+        padding: 19px;
+        border: 1px solid var(--vd-border);
+        border-radius: 13px;
+        background: #fff;
+        box-shadow: 0 4px 16px rgba(59,41,56,.025);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .vsla-kpi:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(59,41,56,.07);
+    }
+
+    .vsla-kpi-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .vsla-kpi-label {
+        padding-top: 3px;
+        color: var(--vd-muted);
+        font-size: 11px;
+        font-weight: 750;
+        line-height: 1.5;
+    }
+
+    .vsla-kpi-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        font-size: 17px;
+    }
+
+    .icon-plum {
+        background: #f0eaf1;
+        color: var(--vd-plum);
+    }
+
+    .icon-magenta {
+        background: #ffe5f2;
+        color: var(--vd-primary);
+    }
+
+    .icon-green {
+        background: #e6f6ef;
+        color: var(--vd-green);
+    }
+
+    .icon-orange {
+        background: #fff0df;
+        color: var(--vd-orange);
+    }
+
+    .icon-blue {
+        background: #eaf1fb;
+        color: var(--vd-blue);
+    }
+
+    .vsla-kpi-value {
+        margin: 15px 0 6px;
+        color: var(--vd-plum);
+        font-size: clamp(23px, 2.3vw, 29px);
+        font-weight: 850;
+        letter-spacing: -.8px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .vsla-kpi-money {
+        font-size: clamp(17px, 1.8vw, 23px);
+        letter-spacing: -.5px;
+    }
+
+    .vsla-kpi-money small {
+        color: var(--vd-muted);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .2px;
+    }
+
+    .vsla-percent {
+        font-size: 15px;
+    }
+
+    .vsla-kpi-foot {
+        color: var(--vd-muted);
+        font-size: 10px;
+        line-height: 1.7;
+    }
+
+    .vsla-kpi-accent {
+        color: var(--vd-primary);
+        font-weight: 850;
+    }
+
+    .vsla-kpi-track {
+        height: 4px;
+        overflow: hidden;
+        margin-top: 13px;
+        border-radius: 20px;
+        background: #f0ebf0;
+    }
+
+    .vsla-kpi-track span {
+        display: block;
+        height: 100%;
+        max-width: 100%;
+        border-radius: inherit;
+        background: var(--vd-primary);
+    }
+
+    .vsla-kpi-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 9px;
+        color: var(--vd-muted);
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+    .vsla-kpi-indicator i {
+        color: var(--vd-primary);
+    }
+
+    .vsla-panel {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--vd-border);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(59,41,56,.025);
+    }
+
+    .vsla-chart-panel {
+        padding: 21px;
+    }
+
+    .vsla-panel-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 19px;
+    }
+
+    .vsla-panel-heading h3 {
+        margin: 0 0 6px;
+        color: var(--vd-plum);
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    .vsla-panel-heading p {
+        margin: 0;
+        color: var(--vd-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .vsla-panel-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 35px;
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        background: var(--vd-soft-pink);
+        color: var(--vd-primary);
+        font-size: 16px;
+    }
+
+    .vsla-chart-wrap {
+        position: relative;
+        width: 100%;
+        height: 225px;
+    }
+
+    .vsla-chart-wrap canvas {
+        max-width: 100%;
+    }
+
+    .vsla-chart-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 15px;
+        margin-top: 14px;
+        border-top: 1px solid var(--vd-border);
+        color: var(--vd-muted);
+        font-size: 10px;
+    }
+
+    .vsla-chart-foot strong {
+        color: var(--vd-plum);
+        font-size: 11px;
+        font-weight: 850;
+    }
+
+    .vsla-activity-heading {
+        padding: 21px 21px 0;
+    }
+
+    .vsla-view-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 0 0 auto;
+        color: var(--vd-primary);
+        font-size: 10px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .vsla-view-link:hover {
+        color: var(--vd-primary-dark);
+    }
+
+    .vsla-table {
+        min-width: 590px;
+        font-size: 11px;
+    }
+
+    .vsla-table thead th {
+        padding: 12px 15px;
+        border-top: 1px solid var(--vd-border);
+        border-bottom: 1px solid var(--vd-border);
+        background: #fcf9fc;
+        color: var(--vd-muted);
+        font-size: 9px;
+        font-weight: 850;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .vsla-table tbody td {
+        padding: 14px 15px;
+        border-color: #f0ebf0;
+        color: var(--vd-plum);
+        vertical-align: middle;
+    }
+
+    .vsla-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .vsla-date-cell {
+        color: var(--vd-muted) !important;
+        white-space: nowrap;
+    }
+
+    .vsla-person-name {
+        color: var(--vd-plum);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .vsla-secondary-text {
+        margin-top: 4px;
+        color: var(--vd-muted);
+        font-size: 10px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .vsla-type-badge,
+    .vsla-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        width: fit-content;
+        max-width: 100%;
+        padding: 5px 8px;
+        border-radius: 6px;
+        font-size: 9px;
+        font-weight: 800;
+        line-height: 1.5;
+    }
+
+    .type-deposit {
+        background: #e6f6ef;
+        color: #16754f;
+    }
+
+    .type-withdrawal {
+        background: #fff0e8;
+        color: #a84a19;
+    }
+
+    .type-shareout {
+        background: #f0eaf7;
+        color: #6c438e;
+    }
+
+    .vsla-amount {
+        color: var(--vd-plum) !important;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .vsla-loan-list {
+        padding: 0 21px 8px;
+    }
+
+    .vsla-loan-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 17px 0;
+        border-bottom: 1px solid #f0ebf0;
+    }
+
+    .vsla-loan-item:last-child {
+        border-bottom: 0;
+    }
+
+    .vsla-loan-main {
+        min-width: 0;
+    }
+
+    .vsla-loan-number {
+        display: inline-block;
+        margin-bottom: 3px;
+        color: var(--vd-primary);
+        font-size: 12px;
+        font-weight: 850;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+    }
+
+    .vsla-loan-number:hover {
+        color: var(--vd-primary-dark);
+        text-decoration: underline;
+    }
+
+    .vsla-loan-amount {
+        flex: 0 0 auto;
+        max-width: 48%;
+        padding-top: 2px;
+        text-align: right;
+    }
+
+    .vsla-loan-amount span {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--vd-muted);
+        font-size: 9px;
+    }
+
+    .vsla-loan-amount strong {
+        color: var(--vd-plum);
+        font-size: 11px;
+        font-weight: 850;
+        overflow-wrap: anywhere;
+    }
+
+    .status-draft {
+        background: #f0ebf0;
+        color: #625663;
+    }
+
+    .status-submitted {
+        background: #fff0dc;
+        color: #9b5a13;
+    }
+
+    .status-approved {
+        background: #eaf1ff;
+        color: #315f9b;
+    }
+
+    .status-rejected,
+    .status-defaulted {
+        background: #ffeaed;
+        color: #b4233f;
+    }
+
+    .status-disbursed {
+        background: #e4f5ec;
+        color: #16754f;
+    }
+
+    .status-closed {
+        background: #e9e6f4;
+        color: #5f4b93;
+    }
+
+    .vsla-empty-state {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        padding: 35px 18px;
+        text-align: center;
+    }
+
+    .vsla-empty-state > i {
+        display: grid;
+        place-items: center;
+        width: 47px;
+        height: 47px;
+        margin-bottom: 13px;
+        border-radius: 14px;
+        background: var(--vd-soft-pink);
+        color: var(--vd-primary);
+        font-size: 21px;
+    }
+
+    .vsla-empty-state strong {
+        color: var(--vd-plum);
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .vsla-empty-state p {
+        margin: 7px 0 0;
+        color: var(--vd-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .vsla-empty-link {
+        display: inline-block;
+        margin-top: 12px;
+        color: var(--vd-primary);
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .vsla-quick-actions {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 22px;
+        padding: 24px;
+        border: 1px solid var(--vd-border);
+        border-radius: 14px;
+        background: linear-gradient(120deg, #fff 0%, #fff7fb 100%);
+    }
+
+    .vsla-quick-actions > div:first-child {
+        max-width: 280px;
+    }
+
+    .vsla-quick-actions h2 {
+        font-size: 17px;
+    }
+
+    .vsla-quick-action-links {
+        display: grid;
+        flex: 1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        min-width: min(100%, 400px);
+    }
+
+    .vsla-quick-action-links a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        padding: 11px;
+        border: 1px solid var(--vd-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--vd-plum);
+        font-size: 10px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .vsla-quick-action-links a:hover {
+        border-color: #f1b9d8;
+        background: #fff;
+        color: var(--vd-primary);
+        transform: translateY(-1px);
+    }
+
+    .vsla-quick-action-links a > span {
+        display: grid;
+        place-items: center;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        border-radius: 8px;
+        background: var(--vd-soft-pink);
+        color: var(--vd-primary);
+        font-size: 14px;
+    }
+
+    .vsla-quick-action-links a > i:last-child {
+        margin-left: auto;
+        color: var(--vd-muted);
+    }
+
+    @media (max-width: 1100px) {
+        .vsla-hero {
+            align-items: flex-start !important;
+            flex-direction: column;
+        }
+
+        .vsla-hero-actions {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .vsla-hero-decoration {
+            right: 15px;
+            bottom: -70px;
+            font-size: 210px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .vsla-dashboard .vsla-hero {
+            padding: 23px 19px;
+            border-radius: 14px;
+        }
+
+        .vsla-hero h1 {
+            font-size: 26px;
+        }
+
+        .vsla-hero-actions {
+            width: 100%;
+        }
+
+        .vsla-hero-actions .vsla-btn {
+            flex: 1 1 150px;
+        }
+
+        .vsla-section-heading h2 {
+            font-size: 17px;
+        }
+
+        .vsla-kpi {
+            min-height: 150px;
+            padding: 14px;
+        }
+
+        .vsla-kpi-icon {
+            flex-basis: 32px;
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .vsla-kpi-label {
+            font-size: 10px;
+        }
+
+        .vsla-kpi-value {
+            font-size: 23px;
+        }
+
+        .vsla-kpi-money {
+            font-size: 16px;
+        }
+
+        .vsla-chart-panel {
+            padding: 17px;
+        }
+
+        .vsla-quick-actions {
+            padding: 18px;
+        }
+
+        .vsla-quick-actions > div:first-child {
+            max-width: none;
+        }
+
+        .vsla-quick-action-links {
+            flex-basis: 100%;
+            min-width: 0;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .vsla-eyebrow {
+            font-size: 8px;
+            letter-spacing: .7px;
+        }
+
+        .vsla-hero-meta {
+            gap: 10px;
+        }
+
+        .vsla-kpi-value {
+            font-size: 20px;
+        }
+
+        .vsla-kpi-money {
+            font-size: 14px;
+        }
+
+        .vsla-kpi-foot,
+        .vsla-kpi-indicator {
+            font-size: 9px;
+        }
+
+        .vsla-quick-action-links {
+            grid-template-columns: 1fr;
+        }
+
+        .vsla-loan-item {
+            flex-direction: column;
+        }
+
+        .vsla-loan-amount {
+            max-width: 100%;
+            text-align: left;
+        }
+    }
+</style>
+
+<style>
+    /* DDS-NK dashboard overrides: keep analytics consistent with the shared brand. */
+    .vsla-dashboard {
+        --vd-primary: #d95f02;
+        --vd-primary-dark: #a94600;
+        --vd-plum: #14213d;
+        --vd-muted: #526174;
+        --vd-border: #d8e0e8;
+        --vd-soft-pink: #fff4e9;
+        --vd-bg: #f5f7fb;
+        --vd-green: #d95f02;
+        --vd-orange: #d95f02;
+        --vd-blue: #3768a5;
+    }
+    .vsla-dashboard .vsla-hero { background: linear-gradient(120deg, #14213d 0%, #a94600 55%, #d95f02 100%); }
+    .vsla-dashboard .vsla-kpi,
+    .vsla-dashboard .vsla-panel { background: #fff; border-color: #d8e0e8; box-shadow: 0 6px 20px rgba(20,33,61,.06); }
+    .vsla-dashboard .vsla-section-kicker { color: #a94600; }
+    .vsla-dashboard .vsla-section-heading h2,
+    .vsla-dashboard .vsla-panel-heading h3,
+    .vsla-dashboard .vsla-kpi-value,
+    .vsla-dashboard .vsla-person-name,
+    .vsla-dashboard .vsla-loan-amount strong,
+    .vsla-dashboard .vsla-amount { color: #14213d; }
+    .vsla-dashboard .vsla-kpi-label,
+    .vsla-dashboard .vsla-kpi-foot,
+    .vsla-dashboard .vsla-kpi-indicator,
+    .vsla-dashboard .vsla-secondary-text,
+    .vsla-dashboard .vsla-panel-heading p,
+    .vsla-dashboard .vsla-date-cell,
+    .vsla-dashboard .vsla-loan-amount span { color: #526174 !important; }
+    .vsla-dashboard .vsla-view-link,
+    .vsla-dashboard .vsla-loan-number,
+    .vsla-dashboard .vsla-empty-link { color: #a94600; }
+    .vsla-dashboard .vsla-view-link:hover,
+    .vsla-dashboard .vsla-loan-number:hover,
+    .vsla-dashboard .vsla-empty-link:hover { color: #d95f02; }
+    .vsla-dashboard .vsla-table thead th { color: #14213d; background: #fff8f1; border-bottom-color: #f0c9a8; }
+    .vsla-dashboard .vsla-table tbody td { color: #1f2937; border-bottom-color: #e8edf2; }
+    .vsla-dashboard .vsla-quick-actions { background: linear-gradient(120deg, #fff 0%, #fff8f1 100%); border-color: #d8e0e8; }
+    .vsla-dashboard .vsla-quick-action-links a { color: #14213d; border-color: #d8e0e8; }
+    .vsla-dashboard .vsla-quick-action-links a:hover { color: #a94600; border-color: #f0c9a8; }
+    .vsla-dashboard .vsla-btn-light { color: #14213d; }
+    .vsla-dashboard .vsla-btn-light:hover { background: #fff4e9; color: #a94600; }
+    .vsla-dashboard .vsla-kpi-icon.icon-plum,
+    .vsla-dashboard .vsla-kpi-icon.icon-magenta,
+    .vsla-dashboard .vsla-kpi-icon.icon-orange { background: #fff4e9; color: #d95f02; }
+    .vsla-dashboard .vsla-kpi-icon.icon-green { background: #fff4e9; color: #d95f02; }
+    .vsla-dashboard .vsla-kpi-icon.icon-blue { background: #eaf1fb; color: #3768a5; }
+    .vsla-dashboard .vsla-panel-icon { color: #d95f02; background: #fff4e9; }
+    .vsla-dashboard .type-deposit,
+    .vsla-dashboard .type-shareout { background: #fff4e9; color: #a94600; }
+    .vsla-dashboard .type-withdrawal { background: #fff1dc; color: #80520b; }
+    .vsla-dashboard .status-approved,
+    .vsla-dashboard .status-disbursed,
+    .vsla-dashboard .status-closed { background: #fff4e9; color: #a94600; }
+    .vsla-dashboard .status-submitted { background: #fff1dc; color: #80520b; }
+    .vsla-dashboard .status-rejected,
+    .vsla-dashboard .status-defaulted { background: #fff0ee; color: #9d2e27; }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <script>
+    (function () {
+        "use strict";
+
+        const dataElement = document.getElementById("vsla-chart-data");
+
+        if (!dataElement || typeof Chart === "undefined") {
+            return;
+        }
+
+        let data;
+
+        try {
+            data = JSON.parse(dataElement.textContent);
+        } catch (error) {
+            console.error("Unable to read VSLA chart data.", error);
+            return;
+        }
+
+        const colors = {
+            magenta: "#d95f02",
+            plum: "#14213d",
+            pink: "#f0a35e",
+            green: "#d7a83d",
+            gold: "#d7a83d",
+            orange: "#a94600",
+            blue: "#527bb5",
+            muted: "#526174",
+            grid: "#d8e0e8"
+        };
+
+        const palette = [
+            colors.magenta,
+            colors.plum,
+            colors.pink,
+            colors.green,
+            colors.orange,
+            colors.blue
+        ];
+
+        const money = new Intl.NumberFormat("en-UG", {
+            maximumFractionDigits: 0
+        });
+
+        const commonPlugins = {
+            legend: {
+                position: "bottom",
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: "circle",
+                    padding: 16,
+                    color: colors.plum,
+                    font: {
+                        size: 10,
+                        family: "inherit",
+                        weight: "600"
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        const label = context.dataset.label || context.label || "";
+                        const value = context.parsed.y !== undefined
+                            ? context.parsed.y
+                            : context.parsed;
+
+                        if (typeof value === "number") {
+                            return label + ": " + money.format(value);
+                        }
+
+                        return label;
+                    }
+                }
+            }
+        };
+
+        const groupCanvas = document.getElementById("groupChart");
+
+        if (groupCanvas && Array.isArray(data.groupLabels) &&
+            Array.isArray(data.groupValues)) {
+            new Chart(groupCanvas, {
+                type: "doughnut",
+                data: {
+                    labels: data.groupLabels,
+                    datasets: [{
+                        data: data.groupValues,
+                        backgroundColor: palette,
+                        borderColor: "#ffffff",
+                        borderWidth: 3,
+                        hoverOffset: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "67%",
+                    plugins: commonPlugins
+                }
+            });
+        }
+
+        const savingsCanvas = document.getElementById("savingsChart");
+
+        if (savingsCanvas && Array.isArray(data.savingsLabels) &&
+            Array.isArray(data.savingsValues)) {
+            new Chart(savingsCanvas, {
+                type: "bar",
+                data: {
+                    labels: data.savingsLabels,
+                    datasets: [{
+                        label: "Amount (UGX)",
+                        data: data.savingsValues,
+                        backgroundColor: [
+                            colors.magenta,
+                            colors.plum
+                        ],
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        maxBarThickness: 45
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: commonPlugins.tooltip
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: colors.plum,
+                                font: { size: 10 }
+                            },
+                            border: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: colors.grid },
+                            ticks: {
+                                color: colors.muted,
+                                font: { size: 9 },
+                                callback: function (value) {
+                                    return money.format(value);
+                                }
+                            },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        const loanCanvas = document.getElementById("loanChart");
+
+        if (loanCanvas && Array.isArray(data.loanLabels) &&
+            Array.isArray(data.loanValues)) {
+            new Chart(loanCanvas, {
+                type: "doughnut",
+                data: {
+                    labels: data.loanLabels,
+                    datasets: [{
+                        data: data.loanValues,
+                        backgroundColor: [
+                            colors.magenta,
+                            colors.gold
+                        ],
+                        borderColor: "#ffffff",
+                        borderWidth: 3,
+                        hoverOffset: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "67%",
+                    plugins: commonPlugins
+                }
+            });
+        }
+    })();
+    </script>
+{% endblock %}

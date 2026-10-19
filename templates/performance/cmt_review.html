@@ -1,0 +1,314 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}CMT Approval | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .cmt-approval {
+        --cmt-primary: var(--primary-color, #e50078);
+        --cmt-plum: #3b2938;
+        --cmt-muted: #77818d;
+        --cmt-border: #e6eaf0;
+        --cmt-bg: #f7f8fb;
+        color: var(--cmt-plum);
+    }
+
+    .cmt-approval .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .cmt-approval .eyebrow {
+        color: var(--cmt-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .5rem;
+    }
+
+    .cmt-approval .page-heading h1 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        margin: 0 0 .4rem;
+    }
+
+    .cmt-approval .page-heading p {
+        color: var(--cmt-muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .cmt-approval .approval-card {
+        background: #fff;
+        border: 1px solid var(--cmt-border);
+        border-radius: 16px;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+        overflow: hidden;
+    }
+
+    .cmt-approval .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--cmt-border);
+    }
+
+    .cmt-approval .heading-icon {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        border-radius: 13px;
+        background: #fff0f7;
+        color: var(--cmt-primary);
+        font-size: 1.25rem;
+    }
+
+    .cmt-approval .card-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .25rem;
+    }
+
+    .cmt-approval .card-heading p {
+        color: var(--cmt-muted);
+        font-size: .82rem;
+        margin: 0;
+    }
+
+    .cmt-approval .card-body {
+        padding: 1.5rem;
+    }
+
+    .cmt-approval .approval-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f2d6e5;
+        border-radius: 12px;
+        background: #fff8fb;
+        color: var(--cmt-muted);
+        font-size: .84rem;
+        line-height: 1.6;
+    }
+
+    .cmt-approval .approval-notice > i {
+        color: var(--cmt-primary);
+        font-size: 1.1rem;
+        margin-top: .1rem;
+    }
+
+    .cmt-approval .form-body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .cmt-approval .form-body p {
+        margin-bottom: 1.25rem;
+    }
+
+    .cmt-approval .form-body p:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .cmt-approval .form-body label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--cmt-plum);
+        font-size: .85rem;
+        font-weight: 700;
+    }
+
+    .cmt-approval .form-body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .cmt-approval .form-body select,
+    .cmt-approval .form-body textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--cmt-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .cmt-approval .form-body textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .cmt-approval .form-body input:focus,
+    .cmt-approval .form-body select:focus,
+    .cmt-approval .form-body textarea:focus {
+        outline: none;
+        border-color: var(--cmt-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .cmt-approval .form-body input[type="checkbox"],
+    .cmt-approval .form-body input[type="radio"] {
+        accent-color: var(--cmt-primary);
+    }
+
+    .cmt-approval .form-body input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: .7rem;
+        border: 1px dashed #cbd2dc;
+        border-radius: 10px;
+        background: var(--cmt-bg);
+        font-size: .85rem;
+    }
+
+    .cmt-approval .form-body .helptext,
+    .cmt-approval .form-body .form-text {
+        display: block;
+        margin-top: .4rem;
+        color: var(--cmt-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .cmt-approval .form-body ul.errorlist {
+        list-style: none;
+        padding: 0;
+        margin: .4rem 0;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .cmt-approval .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .75rem;
+        flex-wrap: wrap;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--cmt-border);
+    }
+
+    .cmt-approval .btn-cmt {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1.15rem;
+        border-radius: 10px;
+        font-size: .88rem;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .cmt-approval .btn-cmt-primary {
+        color: #fff;
+        background: var(--cmt-primary);
+        border: 1px solid var(--cmt-primary);
+    }
+
+    .cmt-approval .btn-cmt-primary:hover {
+        color: #fff;
+        background: #c90069;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 575.98px) {
+        .cmt-approval .form-body {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .cmt-approval .card-heading,
+        .cmt-approval .card-body {
+            padding: 1rem;
+        }
+
+        .cmt-approval .form-actions {
+            flex-direction: column;
+        }
+
+        .cmt-approval .btn-cmt {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="cmt-approval">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-people me-1"></i>
+            Governance / Management Review
+        </div>
+
+        <h1>CMT Approval</h1>
+
+        <p>
+            Record the CMT review decision, provide the required supporting information,
+            and save the approval record.
+        </p>
+    </div>
+
+    <!-- Approval form -->
+    <section class="approval-card">
+
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-clipboard2-check"></i>
+            </div>
+
+            <div>
+                <h2>Approval Record</h2>
+                <p>Complete the approval details and review all entries before saving.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="approval-notice">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Review before saving</strong><br>
+                    Ensure the approval decision, comments, and any required attachments
+                    are accurate and complete. Required fields are determined by the form.
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please correct the following:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-body">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-cmt btn-cmt-primary">
+                        <i class="bi bi-check2-circle"></i>
+                        Save Approval
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

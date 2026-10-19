@@ -1,0 +1,132 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Approved Procurement Requisition - {{ requisition.number }}</title>
+    <style>
+        @page { size: A4 portrait; margin: 0.8cm 0.9cm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: #352735; font-family: Helvetica, Arial, sans-serif; font-size: 9px; line-height: 1.4; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        td, th { overflow-wrap: break-word; word-wrap: break-word; }
+        .header { border-bottom: 2px solid #a65a7a; margin-bottom: 9px; }
+        .header td { padding: 0 0 8px; vertical-align: middle; }
+        .logo-cell { width: 48px; }
+        .logo { width: 40px; height: 40px; }
+        .brand-cell { padding-left: 8px !important; }
+        .brand { color: #3b2938; font-size: 14px; font-weight: bold; letter-spacing: .5px; }
+        .brand-sub { color: #806b7a; font-size: 6.5px; letter-spacing: .7px; text-transform: uppercase; }
+        .document-cell { width: 40%; text-align: right; }
+        .document-label { color: #87452d; font-size: 7px; font-weight: bold; text-transform: uppercase; }
+        .document-number { color: #3b2938; font-size: 12px; font-weight: bold; margin: 4px 0; }
+        .approved { display: inline-block; padding: 4px 7px; border: 1px solid #c8b0bf; background: #f5edf1; color: #87452d; font-size: 6.5px; font-weight: bold; text-transform: uppercase; }
+        .section-title { margin: 9px 0 0; padding: 6px 8px; background: #3b2938; color: #fff; font-size: 7.5px; font-weight: bold; letter-spacing: .5px; text-transform: uppercase; }
+        .meta { border: 1px solid #ead8e2; border-top: 0; }
+        .meta td { width: 25%; padding: 6px 7px; border-right: 1px solid #f0e3ea; border-bottom: 1px solid #f0e3ea; vertical-align: top; }
+        .meta tr:last-child td { border-bottom: 0; }
+        .meta td:last-child { border-right: 0; }
+        .label { display: block; margin-bottom: 3px; color: #806b7a; font-size: 6.5px; font-weight: bold; text-transform: uppercase; }
+        .value { color: #352735; font-size: 8px; font-weight: bold; }
+        .items { margin-top: 5px; }
+        .items thead { display: table-header-group; }
+        .items tr { page-break-inside: avoid; }
+        .items th { padding: 6px 5px; border-bottom: 1.5px solid #a65a7a; background: #f5edf1; color: #493244; font-size: 6.8px; text-align: left; text-transform: uppercase; }
+        .items td { padding: 5px; border-bottom: 1px solid #eedfe7; font-size: 7.8px; vertical-align: top; }
+        .items tbody tr:nth-child(even) td { background: #fffafd; }
+        .num { text-align: right; white-space: nowrap; }
+        .total { width: 45%; margin: 8px 0 0 auto; }
+        .total td { padding: 7px; border: 0; background: #3b2938; color: #fff; font-size: 9px; font-weight: bold; }
+        .total .label { color: #fff; margin: 0; font-size: 8px; }
+        .approvals { margin-top: 12px; }
+        .approvals td { width: 25%; padding: 7px; border: 1px solid #e7dce3; vertical-align: top; }
+        .role { color: #806b7a; font-size: 6px; font-weight: bold; text-transform: uppercase; }
+        .name { min-height: 26px; margin-top: 5px; color: #352735; font-size: 8px; font-weight: bold; }
+        .signature-caption { margin-top: 6px; color: #806b7a; font-size: 6px; font-weight: bold; text-transform: uppercase; }
+        .signature-box { height: 35px; margin-top: 3px; padding: 2px 0 3px; border-bottom: 1px solid #b8a6b1; overflow: hidden; }
+        .signature-image { max-width: 100%; max-height: 29px; width: auto; height: auto; }
+        .signature-placeholder { height: 28px; }
+        .date { border-top: 1px solid #f0e3ea; padding-top: 5px; color: #806b7a; font-size: 6.5px; }
+        .footer { margin-top: 12px; padding-top: 6px; border-top: 1px solid #ead8e2; color: #806b7a; font-size: 6.5px; }
+    </style>
+</head>
+<body>
+    <table class="header">
+        <tr>
+            <td class="logo-cell"><img class="logo" src="{{ logo_path }}" alt="DDS-NK logo"></td>
+            <td class="brand-cell"><div class="brand">DDS-NK THRIVE</div><div class="brand-sub">Official procurement record</div></td>
+            <td class="document-cell"><div class="document-label">Approved procurement requisition</div><div class="document-number">{{ requisition.number }}</div><span class="approved">ED approved</span></td>
+        </tr>
+    </table>
+
+    <div class="section-title">Requisition information</div>
+    <table class="meta">
+        <tr>
+            <td><span class="label">Project</span><span class="value">{{ requisition.project.name|default:'-' }}</span></td>
+            <td><span class="label">Procurement plan</span><span class="value">{{ requisition.procurement.number|default:'-' }}</span></td>
+            <td><span class="label">Activity</span><span class="value">{{ requisition.activity_name|default:'-' }}</span></td>
+            <td><span class="label">Requisition date</span><span class="value">{{ requisition.date|date:'d M Y' }}</span></td>
+        </tr>
+        <tr>
+            <td><span class="label">Requester</span><span class="value">{{ requisition.issued_by.get_full_name|default:'-' }}</span></td>
+            <td><span class="label">Project head</span><span class="value">{{ requisition.project_head.get_full_name|default:'-' }}</span></td>
+            <td><span class="label">Project accountant</span><span class="value">{{ requisition.project_accountant.get_full_name|default:'-' }}</span></td>
+            <td><span class="label">Generated</span><span class="value">{{ generated_at|date:'d M Y H:i' }}</span></td>
+        </tr>
+    </table>
+
+    <div class="section-title">Requested items</div>
+    <table class="items">
+        <thead><tr><th style="width:5%">#</th><th style="width:31%">Description</th><th style="width:12%">Unit</th><th style="width:10%" class="num">Qty</th><th style="width:15%" class="num">Unit price</th><th style="width:15%" class="num">Line total</th><th style="width:12%">Delivery</th></tr></thead>
+        <tbody>
+            {% for item in requisition.items.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.unit_measure|default:'-' }}</td>
+                    <td class="num">{{ item.qty|floatformat:2 }}</td>
+                    <td class="num">UGX {{ item.unit_price|floatformat:2|intcomma }}</td>
+                    <td class="num">UGX {{ item.line_total|floatformat:2|intcomma }}</td>
+                    <td>{{ item.delivery_date|date:'d M Y'|default:'-' }}</td>
+                </tr>
+            {% empty %}<tr><td colspan="7">No requisition items recorded.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    <table class="total"><tr><td class="label">Grand total</td><td class="num">UGX {{ requisition.total|floatformat:2|intcomma }}</td></tr></table>
+
+    <div class="section-title">Approval trail</div>
+    <table class="approvals">
+        <tr>
+            <td>
+                <div class="role">Project officer / requester</div>
+                <div class="name">{{ requisition.issued_by.get_full_name|default:'-' }}</div>
+                <div class="signature-caption">Signature</div>
+                <div class="signature-box">{% if requester_signature %}<img class="signature-image" src="{{ requester_signature }}" alt="Requester signature">{% else %}<div class="signature-placeholder"></div>{% endif %}</div>
+                <div class="date">Submitted: {{ requisition.created_at|date:'d M Y H:i' }}</div>
+            </td>
+            <td>
+                <div class="role">Project head / reviewer</div>
+                <div class="name">{{ requisition.reviewed_by.get_full_name|default:'-' }}</div>
+                <div class="signature-caption">Signature</div>
+                <div class="signature-box">{% if reviewer_signature %}<img class="signature-image" src="{{ reviewer_signature }}" alt="Reviewer signature">{% else %}<div class="signature-placeholder"></div>{% endif %}</div>
+                <div class="date">Reviewed: {{ requisition.reviewed_at|date:'d M Y H:i' }}</div>
+            </td>
+            <td>
+                <div class="role">Project accountant / checker</div>
+                <div class="name">{{ requisition.checked_by.get_full_name|default:'-' }}</div>
+                <div class="signature-caption">Signature</div>
+                <div class="signature-box">{% if checker_signature %}<img class="signature-image" src="{{ checker_signature }}" alt="Checker signature">{% else %}<div class="signature-placeholder"></div>{% endif %}</div>
+                <div class="date">Checked: {{ requisition.checked_at|date:'d M Y H:i' }}</div>
+            </td>
+            <td>
+                <div class="role">Executive director / approver</div>
+                <div class="name">{{ requisition.approved_by.get_full_name|default:'-' }}</div>
+                <div class="signature-caption">Signature</div>
+                <div class="signature-box">{% if approver_signature %}<img class="signature-image" src="{{ approver_signature }}" alt="Approver signature">{% else %}<div class="signature-placeholder"></div>{% endif %}</div>
+                <div class="date">Approved: {{ requisition.approved_at|date:'d M Y H:i' }}</div>
+            </td>
+        </tr>
+    </table>
+    <div class="footer">This document was generated by the DDS-NK THRIVE procurement system after final approval. Requisition total: UGX {{ requisition.total|floatformat:2|intcomma }}.</div>
+</body>
+</html>

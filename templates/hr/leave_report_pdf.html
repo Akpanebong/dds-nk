@@ -1,0 +1,1 @@
+<!doctype html><html><body><h1>Leave report</h1>{% for row in report_rows %}<p>{{ row.leave_type }}: {{ row.approved_total_days }} used of {{ row.allotted_total_days }}</p>{% endfor %}</body></html>

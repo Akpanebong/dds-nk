@@ -1,0 +1,307 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}HR Review | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .hr-review {
+        --hr-primary: var(--primary-color, #e50078);
+        --hr-plum: #3b2938;
+        --hr-muted: #77818d;
+        --hr-border: #e6eaf0;
+        --hr-bg: #f7f8fb;
+        color: var(--hr-plum);
+    }
+
+    .hr-review .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .hr-review .eyebrow {
+        color: var(--hr-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .5rem;
+    }
+
+    .hr-review .page-heading h1 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        margin: 0 0 .4rem;
+    }
+
+    .hr-review .page-heading p {
+        color: var(--hr-muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .hr-review .review-card {
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+    }
+
+    .hr-review .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--hr-border);
+    }
+
+    .hr-review .heading-icon {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: #fff0f7;
+        color: var(--hr-primary);
+        font-size: 1.25rem;
+    }
+
+    .hr-review .card-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .25rem;
+    }
+
+    .hr-review .card-heading p {
+        color: var(--hr-muted);
+        font-size: .82rem;
+        margin: 0;
+    }
+
+    .hr-review .card-body {
+        padding: 1.5rem;
+    }
+
+    .hr-review .review-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f2d6e5;
+        border-radius: 12px;
+        background: #fff8fb;
+        color: var(--hr-muted);
+        font-size: .84rem;
+        line-height: 1.65;
+    }
+
+    .hr-review .review-notice > i {
+        color: var(--hr-primary);
+        font-size: 1.1rem;
+        margin-top: .1rem;
+    }
+
+    .hr-review .form-body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .hr-review .form-body p {
+        margin-bottom: 1.25rem;
+    }
+
+    .hr-review .form-body p {
+        grid-column: 1 / -1;
+    }
+
+    .hr-review .form-body label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--hr-plum);
+        font-size: .85rem;
+        font-weight: 750;
+    }
+
+    .hr-review .form-body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .hr-review .form-body select,
+    .hr-review .form-body textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--hr-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .hr-review .form-body textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .hr-review .form-body input:focus,
+    .hr-review .form-body select:focus,
+    .hr-review .form-body textarea:focus {
+        outline: none;
+        border-color: var(--hr-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .hr-review .form-body input[type="checkbox"],
+    .hr-review .form-body input[type="radio"] {
+        accent-color: var(--hr-primary);
+    }
+
+    .hr-review .form-body input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: .7rem;
+        border: 1px dashed #cbd2dc;
+        border-radius: 10px;
+        background: var(--hr-bg);
+        font-size: .85rem;
+    }
+
+    .hr-review .form-body .helptext,
+    .hr-review .form-body .form-text {
+        display: block;
+        margin-top: .4rem;
+        color: var(--hr-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .hr-review .form-body ul.errorlist {
+        list-style: none;
+        padding: 0;
+        margin: .4rem 0;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .hr-review .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--hr-border);
+    }
+
+    .hr-review .btn-hr {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1.2rem;
+        border: 1px solid var(--hr-primary);
+        border-radius: 10px;
+        background: var(--hr-primary);
+        color: #fff;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .hr-review .btn-hr:hover {
+        background: #c90069;
+        border-color: #c90069;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 575.98px) {
+        .hr-review .form-body {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .hr-review .card-heading,
+        .hr-review .card-body {
+            padding: 1rem;
+        }
+
+        .hr-review .form-actions,
+        .hr-review .btn-hr {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="hr-review">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-people me-1"></i>
+            Human Resources / Review & Compliance
+        </div>
+
+        <h1>HR Review</h1>
+
+        <p>
+            Review the submitted appraisal, document HR observations,
+            and record the required review outcome.
+        </p>
+    </div>
+
+    <!-- Review form -->
+    <section class="review-card">
+
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-clipboard2-check"></i>
+            </div>
+
+            <div>
+                <h2>HR Review Record</h2>
+                <p>Complete the review fields and save your assessment.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="review-notice">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Review guidance</strong><br>
+                    Check the appraisal information for completeness and consistency.
+                    Record relevant observations and ensure the selected outcome follows
+                    your organisation's HR review procedures.
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please correct the following errors:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-body">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-hr">
+                        <i class="bi bi-check2-circle"></i>
+                        Save HR Review
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

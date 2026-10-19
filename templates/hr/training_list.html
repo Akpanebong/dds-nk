@@ -1,0 +1,976 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Training Management | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-training-page">
+
+    <!-- Page heading -->
+    <div class="training-page-header">
+        <div class="training-heading">
+            <div class="training-heading-icon">
+                <i class="bi bi-mortarboard"></i>
+            </div>
+            <div>
+                <span class="training-eyebrow">HUMAN RESOURCES</span>
+                <h1>Training Management</h1>
+                <p>Coordinate staff development, learning activities, and training events.</p>
+            </div>
+        </div>
+
+        <a href="{% url 'hr:add_training' %}" class="training-primary-btn">
+            <i class="bi bi-plus-lg"></i>
+            Add Training
+        </a>
+    </div>
+
+    <!-- Summary metrics -->
+    <div class="training-stats-grid">
+        <div class="training-stat-card">
+            <div class="training-stat-top">
+                <span>Total Training Events</span>
+                <span class="training-stat-icon training-icon-plum">
+                    <i class="bi bi-journal-richtext"></i>
+                </span>
+            </div>
+            <div class="training-stat-value">{{ trainings|length }}</div>
+            <div class="training-stat-caption">Training records available</div>
+        </div>
+
+        <div class="training-stat-card">
+            <div class="training-stat-top">
+                <span>Upcoming Training</span>
+                <span class="training-stat-icon training-icon-pink">
+                    <i class="bi bi-calendar-event"></i>
+                </span>
+            </div>
+            <div class="training-stat-value" id="upcomingTrainingCount">—</div>
+            <div class="training-stat-caption">Events starting today or later</div>
+        </div>
+
+        <div class="training-stat-card">
+            <div class="training-stat-top">
+                <span>Past Training</span>
+                <span class="training-stat-icon training-icon-green">
+                    <i class="bi bi-check2-circle"></i>
+                </span>
+            </div>
+            <div class="training-stat-value" id="pastTrainingCount">—</div>
+            <div class="training-stat-caption">Events that have ended</div>
+        </div>
+    </div>
+
+    <!-- Training list -->
+    <section class="training-list-panel">
+
+        <div class="training-list-header">
+            <div>
+                <h2>Training Directory</h2>
+                <p>Browse and manage organizational learning events.</p>
+            </div>
+
+            <span class="training-count-badge">
+                <i class="bi bi-collection"></i>
+                <span id="trainingVisibleCount">{{ trainings|length }}</span> events
+            </span>
+        </div>
+
+        <!-- Search -->
+        <div class="training-toolbar">
+            <div class="training-search">
+                <i class="bi bi-search"></i>
+                <input
+                    type="search"
+                    id="trainingSearch"
+                    placeholder="Search training by title or description..."
+                    aria-label="Search training events"
+                >
+            </div>
+
+            <div class="training-filter">
+                <i class="bi bi-funnel"></i>
+                <select id="trainingDateFilter" aria-label="Filter training by date">
+                    <option value="all">All training</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="past">Past</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="training-card-grid" id="trainingCardGrid">
+
+            {% for training in trainings %}
+            <article
+                class="training-event-card"
+                data-title="{{ training.title|striptags|escape }}"
+                data-description="{{ training.description|default:''|striptags|escape }}"
+                data-start="{{ training.start_date|date:'Y-m-d' }}"
+                data-end="{{ training.end_date|date:'Y-m-d' }}"
+            >
+                <div class="training-event-top">
+                    <div class="training-event-icon">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                    <span class="training-event-status" data-training-status>
+                        <span class="training-status-dot"></span>
+                        <span class="training-status-text">Training</span>
+                    </span>
+                </div>
+
+                <div class="training-event-content">
+                    <h3>{{ training.title }}</h3>
+
+                    <div class="training-event-dates">
+                        <div class="training-date-item">
+                            <span class="training-date-icon">
+                                <i class="bi bi-calendar2-week"></i>
+                            </span>
+                            <div>
+                                <span class="training-date-label">Start date</span>
+                                <strong>{{ training.start_date|date:"d M Y" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="training-date-item">
+                            <span class="training-date-icon">
+                                <i class="bi bi-calendar2-check"></i>
+                            </span>
+                            <div>
+                                <span class="training-date-label">End date</span>
+                                <strong>{{ training.end_date|date:"d M Y" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="training-description">
+                        <span class="training-description-label">OVERVIEW</span>
+                        <p>{{ training.description|default:"No description has been provided."|truncatewords:25 }}</p>
+                    </div>
+                </div>
+
+                <div class="training-event-footer">
+                    <span class="training-event-reference">
+                        <i class="bi bi-mortarboard"></i>
+                        Staff development
+                    </span>
+
+                    <a
+                        href="{% url 'hr:training_detail_modal' training.slug %}"
+                        class="training-edit-btn js-training-detail"
+                        data-bs-toggle="modal"
+                        data-bs-target="#trainingDetailModal"
+                        aria-label="View {{ training.title }}"
+                    >
+                        <i class="bi bi-eye"></i>
+                        View
+                    </a>
+                    <a
+                        href="{% url 'hr:training_edit' training.slug %}"
+                        class="training-edit-btn"
+                        aria-label="Edit {{ training.title }}"
+                    >
+                        <i class="bi bi-pencil-square"></i>
+                        Edit
+                    </a>
+                </div>
+            </article>
+
+            {% empty %}
+            <div class="training-empty-state" id="trainingEmptyState">
+                <div class="training-empty-icon">
+                    <i class="bi bi-journal-x"></i>
+                </div>
+                <h3>No training events yet</h3>
+                <p>Training events will appear here once they have been added.</p>
+                <a href="{% url 'hr:add_training' %}" class="training-primary-btn">
+                    <i class="bi bi-plus-lg"></i>
+                    Add First Training
+                </a>
+            </div>
+            {% endfor %}
+
+            <div class="training-no-results" id="trainingNoResults" style="display:none;">
+                <i class="bi bi-search"></i>
+                <h3>No matching training events</h3>
+                <p>Try a different search term or date filter.</p>
+                <button type="button" class="training-reset-btn" id="trainingResetFilters">
+                    Clear filters
+                </button>
+            </div>
+
+        </div>
+
+        <div class="training-list-footer">
+            <span><i class="bi bi-shield-check"></i> HR training register</span>
+            <span id="trainingFooterCount">{{ trainings|length }} training events</span>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="trainingDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Training details</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body" id="trainingDetailModalBody"><div class="text-center py-4"><span class="spinner-border"></span></div></div>
+  </div></div>
+</div>
+<script>
+document.querySelectorAll('.js-training-detail').forEach(function (link) {
+  link.addEventListener('click', function (event) {
+    event.preventDefault();
+    fetch(link.href, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function (response) { return response.text(); })
+      .then(function (html) { document.getElementById('trainingDetailModalBody').innerHTML = html; });
+  });
+});
+</script>
+
+<style>
+    .hr-training-page {
+        --tr-primary: #e50078;
+        --tr-primary-dark: #b80060;
+        --tr-plum: #3b2938;
+        --tr-muted: #77717a;
+        --tr-border: #e9e4e9;
+        --tr-background: #faf8fa;
+        --tr-pink-soft: #fff0f7;
+
+        padding: 8px 0 30px;
+        color: var(--tr-plum);
+    }
+
+    .hr-training-page,
+    .hr-training-page * {
+        box-sizing: border-box;
+    }
+
+    .training-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .training-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .training-heading-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        background: var(--tr-pink-soft);
+        color: var(--tr-primary);
+        font-size: 25px;
+    }
+
+    .training-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--tr-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .training-heading h1 {
+        margin: 0;
+        color: var(--tr-plum);
+        font-size: clamp(23px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -.7px;
+    }
+
+    .training-heading p {
+        margin: 6px 0 0;
+        color: var(--tr-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .training-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 11px 17px;
+        border: 1px solid var(--tr-primary);
+        border-radius: 9px;
+        background: var(--tr-primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .training-primary-btn:hover {
+        border-color: var(--tr-primary-dark);
+        background: var(--tr-primary-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .training-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 23px;
+    }
+
+    .training-stat-card {
+        padding: 19px;
+        border: 1px solid var(--tr-border);
+        border-radius: 13px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(59, 41, 56, .035);
+    }
+
+    .training-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--tr-muted);
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .training-stat-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        font-size: 18px;
+    }
+
+    .training-icon-plum {
+        background: #f3eef3;
+        color: var(--tr-plum);
+    }
+
+    .training-icon-pink {
+        background: var(--tr-pink-soft);
+        color: var(--tr-primary);
+    }
+
+    .training-icon-green {
+        background: #eaf7ef;
+        color: #18794e;
+    }
+
+    .training-stat-value {
+        margin-top: 13px;
+        color: var(--tr-plum);
+        font-size: 30px;
+        font-weight: 850;
+        line-height: 1.1;
+        letter-spacing: -.8px;
+    }
+
+    .training-stat-caption {
+        margin-top: 7px;
+        color: var(--tr-muted);
+        font-size: 11px;
+    }
+
+    .training-list-panel {
+        overflow: hidden;
+        border: 1px solid var(--tr-border);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+    }
+
+    .training-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--tr-border);
+    }
+
+    .training-list-header h2 {
+        margin: 0 0 5px;
+        color: var(--tr-plum);
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .training-list-header p {
+        margin: 0;
+        color: var(--tr-muted);
+        font-size: 12px;
+    }
+
+    .training-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border: 1px solid var(--tr-border);
+        border-radius: 8px;
+        background: var(--tr-background);
+        color: var(--tr-muted);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .training-count-badge i {
+        color: var(--tr-primary);
+    }
+
+    .training-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 17px 24px;
+        border-bottom: 1px solid var(--tr-border);
+        background: #fdfbfd;
+    }
+
+    .training-search,
+    .training-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 42px;
+        padding: 0 12px;
+        border: 1px solid #e4dce4;
+        border-radius: 9px;
+        background: #fff;
+        color: #938793;
+    }
+
+    .training-search {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .training-search input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--tr-plum);
+        font-size: 12px;
+    }
+
+    .training-search input::placeholder {
+        color: #a49aa4;
+    }
+
+    .training-filter {
+        flex: 0 0 180px;
+    }
+
+    .training-filter select {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--tr-plum);
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .training-search:focus-within,
+    .training-filter:focus-within {
+        border-color: var(--tr-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .08);
+    }
+
+    .training-card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 17px;
+        padding: 22px;
+    }
+
+    .training-event-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--tr-border);
+        border-radius: 13px;
+        background: #fff;
+        transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .training-event-card:hover {
+        border-color: #e8b4d0;
+        box-shadow: 0 8px 23px rgba(59, 41, 56, .07);
+        transform: translateY(-2px);
+    }
+
+    .training-event-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 17px 17px 0;
+    }
+
+    .training-event-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 43px;
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        background: var(--tr-pink-soft);
+        color: var(--tr-primary);
+        font-size: 20px;
+    }
+
+    .training-event-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 9px;
+        border: 1px solid #e7dfe7;
+        border-radius: 20px;
+        background: #f8f5f8;
+        color: var(--tr-muted);
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .training-status-dot {
+        width: 7px;
+        height: 7px;
+        flex: 0 0 7px;
+        border-radius: 50%;
+        background: #938593;
+    }
+
+    .training-event-status.status-upcoming {
+        border-color: #f0c9df;
+        background: var(--tr-pink-soft);
+        color: var(--tr-primary-dark);
+    }
+
+    .training-event-status.status-upcoming .training-status-dot {
+        background: var(--tr-primary);
+    }
+
+    .training-event-status.status-ongoing {
+        border-color: #c9ead6;
+        background: #eef9f2;
+        color: #18794e;
+    }
+
+    .training-event-status.status-ongoing .training-status-dot {
+        background: #20965e;
+    }
+
+    .training-event-status.status-past {
+        border-color: #e7dfe7;
+        background: #f5f2f5;
+        color: #746775;
+    }
+
+    .training-event-content {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 16px 17px 18px;
+    }
+
+    .training-event-content h3 {
+        margin: 0 0 17px;
+        color: var(--tr-plum);
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .training-event-dates {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .training-date-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .training-date-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 30px;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #f7f2f6;
+        color: var(--tr-primary);
+        font-size: 14px;
+    }
+
+    .training-date-label {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--tr-muted);
+        font-size: 10px;
+    }
+
+    .training-date-item strong {
+        display: block;
+        color: var(--tr-plum);
+        font-size: 10px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .training-description {
+        padding-top: 14px;
+        border-top: 1px solid #f0ecf0;
+    }
+
+    .training-description-label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--tr-primary);
+        font-size: 9px;
+        font-weight: 850;
+        letter-spacing: 1px;
+    }
+
+    .training-description p {
+        margin: 0;
+        color: var(--tr-muted);
+        font-size: 11px;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    .training-event-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 13px 17px;
+        border-top: 1px solid var(--tr-border);
+        background: #fdfbfd;
+    }
+
+    .training-event-reference {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--tr-muted);
+        font-size: 10px;
+        font-weight: 650;
+    }
+
+    .training-event-reference i {
+        color: var(--tr-primary);
+        font-size: 13px;
+    }
+
+    .training-edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 7px 11px;
+        border: 1px solid #f0c6dd;
+        border-radius: 7px;
+        background: var(--tr-pink-soft);
+        color: var(--tr-primary-dark);
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .training-edit-btn:hover {
+        border-color: var(--tr-primary);
+        background: var(--tr-primary);
+        color: #fff;
+    }
+
+    .training-empty-state,
+    .training-no-results {
+        grid-column: 1 / -1;
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .training-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 15px;
+        border-radius: 17px;
+        background: var(--tr-pink-soft);
+        color: var(--tr-primary);
+        font-size: 25px;
+    }
+
+    .training-empty-state h3,
+    .training-no-results h3 {
+        margin: 0 0 7px;
+        color: var(--tr-plum);
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .training-empty-state p,
+    .training-no-results p {
+        margin: 0 0 18px;
+        color: var(--tr-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .training-no-results > i {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--tr-primary);
+        font-size: 25px;
+    }
+
+    .training-reset-btn {
+        padding: 8px 12px;
+        border: 1px solid var(--tr-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--tr-primary);
+        font-size: 11px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .training-reset-btn:hover {
+        border-color: var(--tr-primary);
+        background: var(--tr-pink-soft);
+    }
+
+    .training-list-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 14px 24px;
+        border-top: 1px solid var(--tr-border);
+        background: #fdfbfd;
+        color: var(--tr-muted);
+        font-size: 11px;
+    }
+
+    .training-list-footer span:first-child {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .training-list-footer i {
+        color: var(--tr-primary);
+    }
+
+    @media (max-width: 1150px) {
+        .training-card-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .training-stats-grid {
+            gap: 11px;
+        }
+
+        .training-stat-card {
+            padding: 15px;
+        }
+    }
+
+    @media (max-width: 650px) {
+        .training-page-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .training-heading {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .training-heading-icon {
+            flex-basis: 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            font-size: 22px;
+        }
+
+        .training-primary-btn {
+            width: 100%;
+        }
+
+        .training-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .training-stat-card {
+            padding: 16px;
+        }
+
+        .training-list-header,
+        .training-toolbar {
+            padding: 16px;
+        }
+
+        .training-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .training-filter {
+            flex-basis: auto;
+        }
+
+        .training-card-grid {
+            grid-template-columns: 1fr;
+            padding: 15px;
+            gap: 13px;
+        }
+
+        .training-list-footer {
+            padding: 13px 16px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const page = document.querySelector('.hr-training-page');
+    if (!page) return;
+
+    const cards = Array.from(page.querySelectorAll('.training-event-card'));
+    const searchInput = page.querySelector('#trainingSearch');
+    const dateFilter = page.querySelector('#trainingDateFilter');
+    const noResults = page.querySelector('#trainingNoResults');
+    const visibleCount = page.querySelector('#trainingVisibleCount');
+    const footerCount = page.querySelector('#trainingFooterCount');
+    const resetButton = page.querySelector('#trainingResetFilters');
+
+    const normalize = value => (value || '').trim().toLowerCase();
+
+    // Use local calendar dates rather than UTC to avoid date-boundary errors.
+    const now = new Date();
+    const today = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+    ].join('-');
+
+    let upcoming = 0;
+    let past = 0;
+
+    cards.forEach(card => {
+        const start = card.dataset.start || '';
+        const end = card.dataset.end || '';
+        const statusBadge = card.querySelector('[data-training-status]');
+        const statusText = card.querySelector('.training-status-text');
+
+        let status = 'Training';
+        let statusClass = '';
+
+        if (start && end && end < today) {
+            status = 'Past';
+            statusClass = 'status-past';
+            past++;
+        } else if (start && start > today) {
+            status = 'Upcoming';
+            statusClass = 'status-upcoming';
+            upcoming++;
+        } else if (start && end && start <= today && end >= today) {
+            status = 'Ongoing';
+            statusClass = 'status-ongoing';
+            upcoming++;
+        } else {
+            status = 'Date unavailable';
+        }
+
+        if (statusBadge && statusText) {
+            statusText.textContent = status;
+            if (statusClass) statusBadge.classList.add(statusClass);
+        }
+
+        card.dataset.period = status === 'Past' ? 'past' : 'upcoming';
+    });
+
+    page.querySelector('#upcomingTrainingCount').textContent = upcoming;
+    page.querySelector('#pastTrainingCount').textContent = past;
+
+    function applyFilters() {
+        const query = normalize(searchInput.value);
+        const period = dateFilter.value;
+        let visible = 0;
+
+        cards.forEach(card => {
+            const searchableText = normalize(
+                (card.dataset.title || '') + ' ' +
+                (card.dataset.description || '')
+            );
+
+            const matchesSearch = searchableText.includes(query);
+            const matchesPeriod = period === 'all' ||
+                card.dataset.period === period;
+            const matches = matchesSearch && matchesPeriod;
+
+            card.style.display = matches ? '' : 'none';
+
+            if (matches) visible++;
+        });
+
+        visibleCount.textContent = visible;
+        footerCount.textContent = visible + ' of ' + cards.length + ' training events';
+
+        if (noResults) {
+            noResults.style.display =
+                cards.length > 0 && visible === 0 ? '' : 'none';
+        }
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    dateFilter.addEventListener('change', applyFilters);
+
+    if (resetButton) {
+        resetButton.addEventListener('click', function () {
+            searchInput.value = '';
+            dateFilter.value = 'all';
+            applyFilters();
+            searchInput.focus();
+        });
+    }
+
+    applyFilters();
+});
+</script>
+{% endblock %}

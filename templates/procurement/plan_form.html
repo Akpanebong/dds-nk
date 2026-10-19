@@ -1,0 +1,1502 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">PROCUREMENT</span>
+    <h1 class="mb-0">{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .procurement-plan {
+        --pp-primary: #e50078;
+        --pp-primary-dark: #bd005f;
+        --pp-gold: #ff7900;
+        --pp-ink: #3b2938;
+        --pp-muted: #765f70;
+        --pp-border: #f0d8e4;
+        --pp-surface: #ffffff;
+        --pp-background: #fff8f5;
+        color: var(--pp-ink);
+        font-size: .9rem;
+    }
+
+    .procurement-plan *,
+    .procurement-plan *::before,
+    .procurement-plan *::after {
+        box-sizing: border-box;
+    }
+
+    .procurement-plan .plan-intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        padding: 1.1rem 1.2rem;
+        border: 1px solid var(--pp-border);
+        border-left: 4px solid var(--pp-primary);
+        border-radius: 14px;
+        background: linear-gradient(135deg, #fff, #fff4f8);
+        box-shadow: 0 8px 22px rgb(119 34 83 / 6%);
+    }
+
+    .procurement-plan .plan-intro h2 {
+        font-size: 1.2rem;
+        font-weight: 750;
+        margin: 0 0 .35rem;
+    }
+
+    .procurement-plan .plan-intro p {
+        color: var(--pp-muted);
+        margin: 0;
+        line-height: 1.65;
+        max-width: 680px;
+    }
+
+    .procurement-plan .source-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .5rem .75rem;
+        border: 1px solid #ffc2dd;
+        border-radius: 8px;
+        background: #fff0f6;
+        color: var(--pp-primary-dark);
+        font-size: .75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .procurement-plan .plan-panel {
+        background: var(--pp-surface);
+        border: 1px solid var(--pp-border);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 3px 12px rgb(15 23 42 / 3%);
+    }
+
+    .procurement-plan .section-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.2rem 1.4rem;
+        border-bottom: 1px solid var(--pp-border);
+        background: linear-gradient(180deg, #fff, #fff8fb);
+    }
+
+    .procurement-plan .section-heading-main {
+        display: flex;
+        gap: .85rem;
+        align-items: flex-start;
+    }
+
+    .procurement-plan .section-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 11px;
+        background: #fff0f6;
+        color: var(--pp-primary);
+        font-size: 1.15rem;
+    }
+
+    .procurement-plan .section-heading h3 {
+        font-size: 1rem;
+        font-weight: 750;
+        margin: .1rem 0 .35rem;
+    }
+
+    .procurement-plan .section-heading p {
+        color: var(--pp-muted);
+        font-size: .82rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .procurement-plan .section-body {
+        padding: 1.4rem;
+    }
+
+    .procurement-plan .form-label {
+        color: #334155;
+        font-size: .81rem;
+        font-weight: 700;
+        margin-bottom: .45rem;
+    }
+
+    .procurement-plan .required-mark {
+        color: #dc2626;
+    }
+
+    .procurement-plan .form-control,
+    .procurement-plan .form-select {
+        width: 100%;
+        min-height: 43px;
+        border: 1px solid #d8e1e9;
+        border-radius: 8px;
+        background-color: #fff;
+        color: #18323a;
+        font-size: .86rem;
+        box-shadow: none;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .procurement-plan textarea.form-control {
+        min-height: 95px;
+        resize: vertical;
+    }
+
+    .procurement-plan .form-control:focus,
+    .procurement-plan .form-select:focus {
+        border-color: var(--pp-primary);
+        box-shadow: 0 0 0 3px rgb(229 0 120 / 12%);
+    }
+
+    .procurement-plan .form-control[readonly] {
+        background: #f1f5f9;
+        color: #475569;
+        cursor: default;
+    }
+
+    .procurement-plan .field-help {
+        display: block;
+        color: var(--pp-muted);
+        font-size: .74rem;
+        line-height: 1.5;
+        margin-top: .4rem;
+    }
+
+    .procurement-plan .field-errors,
+    .procurement-plan .form-errors {
+        color: #b91c1c;
+        font-size: .79rem;
+        margin-top: .4rem;
+    }
+
+    .procurement-plan .form-errors {
+        padding: .85rem 1rem;
+        margin-bottom: 1.25rem;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 9px;
+    }
+
+    .procurement-plan .form-errors ul {
+        margin: .4rem 0 0;
+        padding-left: 1.25rem;
+    }
+
+    .procurement-plan .form-errors p:last-child {
+        margin-bottom: 0;
+    }
+
+    .procurement-plan .item-count {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .65rem;
+        border-radius: 7px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: .75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .procurement-plan .plan-item-row {
+        border: 1px solid var(--pp-border);
+        border-radius: 12px;
+        padding: 1.15rem;
+        margin-bottom: 1rem;
+        background: #fff;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .procurement-plan .plan-item-row:hover {
+        border-color: #cbd5e1;
+    }
+
+    .procurement-plan .plan-item-row.is-removed {
+        display: none !important;
+    }
+
+    .procurement-plan .item-topline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .75rem;
+        margin-bottom: 1.1rem;
+        padding-bottom: .8rem;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+    .procurement-plan .item-title {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        font-size: .88rem;
+        font-weight: 750;
+    }
+
+    .procurement-plan .item-number {
+        width: 29px;
+        height: 29px;
+        flex: 0 0 29px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: #fff0f6;
+        color: var(--pp-primary);
+        font-size: .78rem;
+    }
+
+    .procurement-plan .line-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        padding-top: .9rem;
+        border-top: 1px dashed #dbe3eb;
+    }
+
+    .procurement-plan .line-total-label {
+        color: var(--pp-muted);
+        font-size: .8rem;
+    }
+
+    .procurement-plan .line-total {
+        display: inline-block;
+        color: var(--pp-ink);
+        font-size: .95rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .procurement-plan .item-remove-btn,
+    .procurement-plan .item-remove-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: .4rem .65rem;
+        border: 1px solid #fecaca;
+        border-radius: 7px;
+        background: #fff;
+        color: #b91c1c;
+        font-size: .76rem;
+        font-weight: 650;
+        cursor: pointer;
+    }
+
+    .procurement-plan .item-remove-btn:hover,
+    .procurement-plan .item-remove-toggle:hover {
+        background: #fef2f2;
+    }
+
+    .procurement-plan .item-remove-toggle input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .procurement-plan .item-remove-toggle input:focus-visible + .budget-remove-switch {
+        outline: 2px solid var(--pp-primary);
+        outline-offset: 3px;
+    }
+
+    .procurement-plan .budget-remove-switch {
+        display: none;
+    }
+
+    .procurement-plan .item-remove-toggle:has(input:checked) {
+        border-color: #94a3b8;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .procurement-plan .budget-remove-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .procurement-plan .add-item-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        border: 1px solid #ffc2dd;
+        border-radius: 8px;
+        padding: .6rem .85rem;
+        background: #fff;
+        color: var(--pp-primary);
+        font-size: .8rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .procurement-plan .add-item-btn:hover {
+        background: #fff0f6;
+        border-color: var(--pp-primary);
+    }
+
+    .procurement-plan .empty-items {
+        padding: 2.25rem 1rem;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        text-align: center;
+        color: var(--pp-muted);
+        background: #fbfdfe;
+    }
+
+    .procurement-plan .empty-items i {
+        display: block;
+        margin-bottom: .7rem;
+        font-size: 1.8rem;
+        color: #94a3b8;
+    }
+
+    .procurement-plan .empty-items strong {
+        display: block;
+        color: #334155;
+        margin-bottom: .3rem;
+    }
+
+    .procurement-plan .empty-items p {
+        margin: 0;
+        font-size: .82rem;
+    }
+
+    .procurement-plan .plan-total-card {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .procurement-plan .total-box {
+        padding: 1.2rem;
+        border: 1px solid var(--pp-border);
+        border-radius: 12px;
+        background: #f8fafc;
+        min-width: 0;
+    }
+
+    .procurement-plan .total-box.remaining-box {
+        background: #fff7ed;
+        border-color: #ffd7b5;
+    }
+
+    .procurement-plan .total-label {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        color: var(--pp-muted);
+        font-size: .78rem;
+        font-weight: 650;
+        margin-bottom: .6rem;
+    }
+
+    .procurement-plan .total-value {
+        display: block;
+        font-size: clamp(1.15rem, 2.5vw, 1.65rem);
+        font-weight: 800;
+        letter-spacing: -.025em;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+    }
+
+    .procurement-plan .total-box.remaining-box .total-value {
+        color: var(--pp-primary-dark);
+    }
+
+    .procurement-plan .total-value.text-danger {
+        color: #b91c1c !important;
+    }
+
+    .procurement-plan .total-value.text-success {
+        color: #bd005f !important;
+    }
+
+    .procurement-plan .budget-status {
+        margin-top: 1rem;
+        padding: .8rem 1rem;
+        border-radius: 8px;
+        font-size: .8rem;
+        line-height: 1.6;
+    }
+
+    .procurement-plan .budget-status.status-warning {
+        background: #fff7ed;
+        color: #9a3412;
+        border: 1px solid #fed7aa;
+    }
+
+    .procurement-plan .budget-status.status-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .procurement-plan .budget-status.status-success {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .procurement-plan .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--pp-border);
+    }
+
+    .procurement-plan .form-actions .btn {
+        min-height: 43px;
+        padding: .65rem 1.1rem;
+        border-radius: 8px;
+        font-size: .84rem;
+        font-weight: 700;
+    }
+
+    .procurement-plan .btn-primary {
+        background: var(--pp-primary);
+        border-color: var(--pp-primary);
+    }
+
+    .procurement-plan .btn-primary:hover:not(:disabled) {
+        background: var(--pp-primary-dark);
+        border-color: var(--pp-primary-dark);
+    }
+
+    .procurement-plan .btn-primary:disabled {
+        cursor: not-allowed;
+        opacity: .6;
+    }
+
+    .procurement-plan .loading-indicator {
+        display: none;
+        color: var(--pp-muted);
+        font-size: .78rem;
+        margin-top: .5rem;
+    }
+
+    .procurement-plan .loading-indicator.is-visible {
+        display: block;
+    }
+
+    .procurement-plan .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .procurement-plan .section-heading,
+        .procurement-plan .section-body {
+            padding: 1rem;
+        }
+
+        .procurement-plan .section-heading {
+            flex-wrap: wrap;
+        }
+
+        .procurement-plan .plan-total-card {
+            grid-template-columns: 1fr;
+        }
+
+        .procurement-plan .form-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .procurement-plan .form-actions .btn {
+            width: 100%;
+        }
+
+        .procurement-plan .add-item-btn {
+            justify-content: center;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .procurement-plan * {
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="procurement-plan">
+
+    <div class="plan-intro">
+        <div>
+            <h2>Procurement Plan</h2>
+            <p>
+                Define the procurement scope, select the approved project
+                budget, and itemize the goods or services required for the
+                selected fiscal period.
+            </p>
+        </div>
+
+        <span class="source-badge">
+            <i class="bi bi-shield-check" aria-hidden="true"></i>
+            Approved budget source
+        </span>
+    </div>
+
+    <form
+        method="post"
+        id="procurementPlanForm"
+        data-budget-url="{% url 'procurement:project_budget_info' 0 %}"
+        data-product-url="{% url 'procurement:product_info' 0 %}"
+        novalidate
+    >
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors" role="alert">
+                <strong>
+                    <i class="bi bi-exclamation-triangle me-1"
+                       aria-hidden="true"></i>
+                    Please correct the following errors.
+                </strong>
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="plan-panel" aria-labelledby="scopeHeading">
+
+            <div class="section-heading">
+                <div class="section-heading-main">
+                    <div class="section-icon">
+                        <i class="bi bi-clipboard2-check"
+                           aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h3 id="scopeHeading">Plan scope and budget</h3>
+                        <p>
+                            Select the project and financial period.
+                            Donor and approved budget details are retrieved
+                            from the project budget source.
+                        </p>
+                    </div>
+                </div>
+
+                <span class="item-count">
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                    Budget-controlled
+                </span>
+            </div>
+
+            <div class="section-body">
+
+                <div class="row g-3">
+                    {% for field in form %}
+                        <div class="{% if field.name == 'description' or field.name == 'notes' %}col-12{% else %}col-md-6{% endif %}">
+
+                            <label
+                                class="form-label"
+                                for="{{ field.id_for_label }}"
+                            >
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                    <span class="required-mark">*</span>
+                                {% endif %}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.name == 'budget' %}
+                                <span class="field-help">
+                                    <i class="bi bi-info-circle me-1"
+                                       aria-hidden="true"></i>
+                                    Retrieved from the approved project
+                                    budget. This value determines the
+                                    maximum permitted plan total.
+                                </span>
+                            {% elif field.name == 'donor' %}
+                                <span class="field-help">
+                                    Donor information is derived from
+                                    the selected project budget.
+                                </span>
+                            {% endif %}
+
+                            {% if field.help_text and field.name != 'budget' and field.name != 'donor' %}
+                                <span class="field-help">
+                                    {{ field.help_text }}
+                                </span>
+                            {% endif %}
+
+                            {% if field.errors %}
+                                <div class="field-errors" role="alert">
+                                    {% for error in field.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div
+                    id="budgetLoading"
+                    class="loading-indicator"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <i class="bi bi-arrow-repeat me-1"
+                       aria-hidden="true"></i>
+                    Retrieving the approved project budget...
+                </div>
+
+                <div
+                    id="budgetLoadError"
+                    class="budget-status status-warning"
+                    role="alert"
+                    hidden
+                ></div>
+
+            </div>
+        </section>
+
+        <section class="plan-panel" aria-labelledby="itemsHeading">
+
+            <div class="section-heading">
+                <div class="section-heading-main">
+                    <div class="section-icon">
+                        <i class="bi bi-cart3" aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h3 id="itemsHeading">Procurement items</h3>
+                        <p>
+                            Select a product, confirm its unit price,
+                            and specify the required quantity.
+                            Line totals and the overall budget balance
+                            update automatically.
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="add-item-btn"
+                    data-add-plan-item
+                >
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    Add item
+                </button>
+            </div>
+
+            <div class="section-body">
+
+                {% if formset.non_form_errors %}
+                    <div class="form-errors" role="alert">
+                        {{ formset.non_form_errors }}
+                    </div>
+                {% endif %}
+
+                {{ formset.management_form }}
+
+                <div id="planItems">
+                    {% for item in formset %}
+                        <div
+                            class="plan-item-row"
+                            data-item-row
+                            data-existing-item="{% if item.instance.pk %}true{% else %}false{% endif %}"
+                        >
+                            {{ item.id }}
+
+                            {% if item.non_field_errors %}
+                                <div class="form-errors" role="alert">
+                                    {{ item.non_field_errors }}
+                                </div>
+                            {% endif %}
+
+                            <div class="item-topline">
+                                <div class="item-title">
+                                    <span class="item-number"
+                                          data-item-number>
+                                        {{ forloop.counter }}
+                                    </span>
+                                    <span>Procurement item</span>
+                                </div>
+
+                                {% if item.DELETE %}
+                                    <label class="item-remove-toggle">
+                                        <span class="budget-remove-copy">
+                                            <i class="bi bi-trash3"
+                                               aria-hidden="true"></i>
+                                            <span>Remove item</span>
+                                        </span>
+
+                                        {{ item.DELETE }}
+                                        <span class="budget-remove-switch"
+                                              aria-hidden="true"></span>
+                                    </label>
+                                {% else %}
+                                    <button
+                                        type="button"
+                                        class="item-remove-btn"
+                                        data-remove-item
+                                    >
+                                        <i class="bi bi-trash3"
+                                           aria-hidden="true"></i>
+                                        Remove
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                            <div class="row g-3">
+                                {% for field in item.visible_fields %}
+                                    {% if field.name != 'DELETE' %}
+                                        <div class="{% if field.name == 'description' or field.name == 'product' %}col-6{% else %}col-md-3{% endif %}">
+
+                                            <label
+                                                class="form-label"
+                                                for="{{ field.id_for_label }}"
+                                            >
+                                                {{ field.label }}
+
+                                                {% if field.field.required %}
+                                                    <span class="required-mark">*</span>
+                                                {% endif %}
+                                            </label>
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <span class="field-help">
+                                                    {{ field.help_text }}
+                                                </span>
+                                            {% endif %}
+
+                                            {% if field.errors %}
+                                                <div class="field-errors"
+                                                     role="alert">
+                                                    {% for error in field.errors %}
+                                                        <div>{{ error }}</div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <div class="line-summary">
+                                <span class="line-total-label">
+                                    <i class="bi bi-calculator me-1"
+                                       aria-hidden="true"></i>
+                                    Estimated line total
+                                </span>
+
+                                <strong class="line-total"
+                                        aria-live="polite">0.00</strong>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div id="emptyPlanItems"
+                     class="empty-items"
+                     hidden>
+                    <i class="bi bi-cart-x" aria-hidden="true"></i>
+                    <strong>No active procurement items</strong>
+                    <p>Add an item to begin building your procurement plan.</p>
+                </div>
+
+                <template id="planItemTemplate">
+                    <div
+                        class="plan-item-row"
+                        data-item-row
+                        data-new-item="true"
+                    >
+                        <div class="item-topline">
+                            <div class="item-title">
+                                <span class="item-number"
+                                      data-item-number></span>
+                                <span>Procurement item</span>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="item-remove-btn"
+                                data-remove-item
+                            >
+                                <i class="bi bi-trash3"
+                                   aria-hidden="true"></i>
+                                Remove
+                            </button>
+                        </div>
+
+                        <div class="row g-3">
+                            {% for field in formset.empty_form.visible_fields %}
+                                {% if field.name != 'DELETE' %}
+                                    <div class="{% if field.name == 'description' or field.name == 'product' %}col-6{% else %}col-md-3{% endif %}">
+
+                                        <label
+                                            class="form-label"
+                                            for="{{ field.id_for_label }}"
+                                        >
+                                            {{ field.label }}
+
+                                            {% if field.field.required %}
+                                                <span class="required-mark">*</span>
+                                            {% endif %}
+                                        </label>
+
+                                        {{ field }}
+
+                                        {% if field.help_text %}
+                                            <span class="field-help">
+                                                {{ field.help_text }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="line-summary">
+                            <span class="line-total-label">
+                                <i class="bi bi-calculator me-1"
+                                   aria-hidden="true"></i>
+                                Estimated line total
+                            </span>
+
+                            <strong class="line-total"
+                                    aria-live="polite">0.00</strong>
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            name="{{ formset.empty_form.DELETE.html_name }}"
+                            id="{{ formset.empty_form.DELETE.id_for_label }}"
+                            class="item-delete-input visually-hidden"
+                            tabindex="-1"
+                            aria-hidden="true"
+                        >
+                    </div>
+                </template>
+
+                <div class="plan-total-card">
+
+                    <div class="total-box">
+                        <div class="total-label">
+                            <i class="bi bi-receipt"
+                               aria-hidden="true"></i>
+                            Overall item total
+                        </div>
+
+                        <strong class="total-value"
+                                id="planTotal">0.00</strong>
+                    </div>
+
+                    <div class="total-box remaining-box">
+                        <div class="total-label">
+                            <i class="bi bi-wallet2"
+                               aria-hidden="true"></i>
+                            Remaining budget
+                        </div>
+
+                        <strong class="total-value"
+                                id="planRemaining">0.00</strong>
+                    </div>
+
+                </div>
+
+                <div
+                    id="budgetStatus"
+                    class="budget-status"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                ></div>
+
+                <div class="form-actions">
+                    <button
+                        type="button"
+                        class="add-item-btn"
+                        data-add-plan-item
+                    >
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        Add item
+                    </button>
+
+                    <a
+                        href="{% if plan %}{% url 'procurement:plan_detail' plan.slug %}{% else %}{% url 'procurement:plans' %}{% endif %}"
+                        class="btn btn-light border"
+                    >
+                        <i class="bi bi-arrow-left me-1"
+                           aria-hidden="true"></i>
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="submitPlan"
+                    >
+                        <i class="bi bi-send me-1"
+                           aria-hidden="true"></i>
+                        Submit for review
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
+
+    const form = document.getElementById('procurementPlanForm');
+
+    if (!form) return;
+
+    const project = document.getElementById('id_project');
+    const fiscalYear = document.getElementById('id_fiscal_year');
+    const period = document.getElementById('id_budget_period');
+    const donor = document.getElementById('id_donor');
+    const budget = document.getElementById('id_budget');
+
+    const items = document.getElementById('planItems');
+    const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+    const template = document.getElementById('planItemTemplate');
+    const addButtons = form.querySelectorAll('[data-add-plan-item]');
+
+    const planTotal = document.getElementById('planTotal');
+    const planRemaining = document.getElementById('planRemaining');
+    const submit = document.getElementById('submitPlan');
+
+    const budgetLoading = document.getElementById('budgetLoading');
+    const budgetLoadError = document.getElementById('budgetLoadError');
+    const budgetStatus = document.getElementById('budgetStatus');
+    const emptyItems = document.getElementById('emptyPlanItems');
+
+    const moneyFormatter = new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    let budgetRequestId = 0;
+    let budgetLoaded = false;
+    let budgetError = false;
+    let submitting = false;
+
+    function money(value) {
+        return 'UGX ' + moneyFormatter.format(
+            Number.isFinite(value) ? value : 0
+        );
+    }
+
+    function numberValue(input) {
+        if (!input || input.value.trim() === '') return 0;
+
+        const value = Number(input.value);
+
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    function endpoint(templateUrl, id) {
+        // Named URLs include a suffix after the placeholder, for example
+        // /projects/0/budget-info/. Replacing only a trailing /0/ left the
+        // placeholder unchanged and caused the budget request to return 404.
+        return templateUrl.replace('/0/', '/' + encodeURIComponent(id) + '/');
+    }
+
+    async function fetchJSON(url) {
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('The server returned HTTP ' + response.status + '.');
+        }
+
+        const data = await response.json();
+
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+            throw new Error('The server returned an invalid response.');
+        }
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        return data;
+    }
+
+    function setStatus(element, message, type) {
+        element.textContent = message;
+        element.className = 'budget-status status-' + type;
+        element.hidden = !message;
+    }
+
+    function isDeleted(row) {
+        const deleteInput = row.querySelector(
+            'input[name$="-DELETE"]'
+        );
+
+        return Boolean(
+            row.classList.contains('is-removed') ||
+            (deleteInput && deleteInput.checked)
+        );
+    }
+
+    function activeRows() {
+        return Array.from(
+            items.querySelectorAll('[data-item-row]')
+        ).filter(row => !isDeleted(row));
+    }
+
+    function updateItemNumbers() {
+        let count = 0;
+
+        items.querySelectorAll('[data-item-row]').forEach(row => {
+            if (isDeleted(row)) return;
+
+            count += 1;
+
+            const number = row.querySelector('[data-item-number]');
+
+            if (number) number.textContent = count;
+        });
+
+        emptyItems.hidden = count > 0;
+    }
+
+    function recalculate() {
+        let total = 0;
+        let invalidItem = false;
+
+        activeRows().forEach(row => {
+            const qtyInput = row.querySelector('[name$="-qty"]');
+            const priceInput = row.querySelector(
+                '[name$="-est_unit_cost"]'
+            );
+
+            const qty = numberValue(qtyInput);
+            const price = numberValue(priceInput);
+
+            if (
+                (qtyInput && qtyInput.value !== '' &&
+                    (!Number.isFinite(Number(qtyInput.value)) ||
+                     Number(qtyInput.value) < 0)) ||
+                (priceInput && priceInput.value !== '' &&
+                    (!Number.isFinite(Number(priceInput.value)) ||
+                     Number(priceInput.value) < 0))
+            ) {
+                invalidItem = true;
+            }
+
+            const line = qty * price;
+
+            total += line;
+
+            const lineElement = row.querySelector('.line-total');
+
+            if (lineElement) {
+                lineElement.textContent = money(line);
+            }
+        });
+
+        const availableBudget = numberValue(budget);
+        const remaining = availableBudget - total;
+
+        planTotal.textContent = money(total);
+        planRemaining.textContent = money(remaining);
+
+        planRemaining.classList.toggle(
+            'text-danger',
+            remaining < 0
+        );
+
+        planRemaining.classList.toggle(
+            'text-success',
+            remaining >= 0
+        );
+
+        updateItemNumbers();
+
+        if (budgetError) {
+            setStatus(
+                budgetStatus,
+                'The approved budget could not be retrieved. Refresh the project selection or fiscal period before submitting.',
+                'warning'
+            );
+        } else if (!budgetLoaded) {
+            setStatus(
+                budgetStatus,
+                'Select a project and fiscal period to retrieve the approved budget.',
+                'warning'
+            );
+        } else if (remaining < 0) {
+            setStatus(
+                budgetStatus,
+                'The procurement total exceeds the available budget by ' +
+                    money(Math.abs(remaining)) +
+                    '. Reduce quantities or unit costs before submitting.',
+                'danger'
+            );
+        } else if (invalidItem) {
+            setStatus(
+                budgetStatus,
+                'One or more quantities or unit costs contain invalid values. Correct them before submitting.',
+                'warning'
+            );
+        } else {
+            setStatus(
+                budgetStatus,
+                'The procurement total is within the retrieved budget. Remaining balance: ' +
+                    money(remaining) + '.',
+                'success'
+            );
+        }
+
+        const canSubmit =
+            budgetLoaded &&
+            !budgetError &&
+            !invalidItem &&
+            remaining >= 0 &&
+            !submitting;
+
+        submit.disabled = !canSubmit;
+    }
+
+    async function loadBudget() {
+        const requestId = ++budgetRequestId;
+
+        budgetLoaded = false;
+        budgetError = false;
+
+        budgetLoading.classList.add('is-visible');
+        budgetLoadError.hidden = true;
+
+        if (donor) donor.value = '';
+        if (budget) budget.value = '';
+
+        recalculate();
+
+        if (!project || !project.value) {
+            budgetLoading.classList.remove('is-visible');
+            recalculate();
+            return;
+        }
+
+        if (!fiscalYear || !fiscalYear.value ||
+            !period || !period.value) {
+            budgetLoading.classList.remove('is-visible');
+            recalculate();
+            return;
+        }
+
+        const url = endpoint(
+            form.dataset.budgetUrl,
+            project.value
+        ) +
+            '?fiscal_year=' + encodeURIComponent(fiscalYear.value) +
+            '&period=' + encodeURIComponent(period.value);
+
+        try {
+            const data = await fetchJSON(url);
+
+            if (requestId !== budgetRequestId) return;
+
+            if (data.budget === null ||
+                data.budget === undefined ||
+                data.budget === '') {
+                throw new Error(
+                    'No approved budget was returned for this project and period.'
+                );
+            }
+
+            const approvedBudget = Number(data.budget);
+
+            if (!Number.isFinite(approvedBudget) || approvedBudget < 0) {
+                throw new Error('The approved budget value is invalid.');
+            }
+
+            if (donor) donor.value = data.donor || '';
+
+            if (budget) {
+                budget.value = String(approvedBudget);
+            }
+
+            budgetLoaded = true;
+            budgetError = false;
+
+        } catch (error) {
+            if (requestId !== budgetRequestId) return;
+
+            budgetLoaded = false;
+            budgetError = true;
+
+            budgetLoadError.textContent =
+                'Unable to retrieve the approved project budget: ' +
+                error.message;
+
+            budgetLoadError.hidden = false;
+
+        } finally {
+            if (requestId === budgetRequestId) {
+                budgetLoading.classList.remove('is-visible');
+                recalculate();
+            }
+        }
+    }
+
+    async function loadProduct(row) {
+        const select = row.querySelector('[name$="-product"]');
+
+        if (!select || !select.value) return;
+
+        const productId = select.value;
+
+        /*
+         * Each row has its own request counter so a slow response
+         * cannot overwrite the details of a subsequently selected product.
+         */
+        row.dataset.productRequest =
+            String((Number(row.dataset.productRequest) || 0) + 1);
+
+        const requestId = row.dataset.productRequest;
+
+        try {
+            const data = await fetchJSON(
+                endpoint(form.dataset.productUrl, productId)
+            );
+
+            if (row.dataset.productRequest !== requestId) return;
+            if (select.value !== productId) return;
+            if (isDeleted(row)) return;
+
+            const price = row.querySelector(
+                '[name$="-est_unit_cost"]'
+            );
+
+            const description = row.querySelector(
+                '[name$="-description"]'
+            );
+
+            const unit = row.querySelector(
+                '[name$="-unit_measure"]'
+            );
+
+            if (price && data.unit_price !== null &&
+                data.unit_price !== undefined) {
+                price.value = String(data.unit_price);
+            }
+
+            if (description && !description.value.trim()) {
+                description.value = data.name || '';
+            }
+
+            if (unit && !unit.value && data.unit) {
+                unit.value = data.unit;
+            }
+
+            recalculate();
+
+        } catch (error) {
+            console.error('Unable to load product information:', error);
+
+            setStatus(
+                budgetStatus,
+                'Product details could not be retrieved. Check the product selection and unit cost before submitting.',
+                'warning'
+            );
+        }
+    }
+
+    function bindRow(row) {
+        const product = row.querySelector('[name$="-product"]');
+
+        if (product) {
+            product.addEventListener('change', function () {
+                loadProduct(row);
+            });
+        }
+
+        row.querySelectorAll(
+            'input:not([name$="-DELETE"]), select, textarea'
+        ).forEach(function (field) {
+            field.addEventListener('input', recalculate);
+            field.addEventListener('change', recalculate);
+        });
+
+        const removeButton = row.querySelector('[data-remove-item]');
+
+        if (removeButton) {
+            removeButton.addEventListener('click', function () {
+                const deleteInput = row.querySelector(
+                    'input[name$="-DELETE"]'
+                );
+
+                if (deleteInput) {
+                    deleteInput.checked = true;
+                }
+
+                row.classList.add('is-removed');
+                recalculate();
+            });
+        }
+
+        const deleteInput = row.querySelector(
+            'input[name$="-DELETE"]'
+        );
+
+        if (deleteInput) {
+            deleteInput.addEventListener('change', function () {
+                row.classList.toggle(
+                    'is-removed',
+                    deleteInput.checked
+                );
+
+                recalculate();
+            });
+
+            if (deleteInput.checked) {
+                row.classList.add('is-removed');
+            }
+        }
+    }
+
+    function addItem() {
+        if (!totalForms || !template) return;
+
+        const index = Number.parseInt(totalForms.value, 10);
+
+        if (!Number.isInteger(index) || index < 0) {
+            console.error('Invalid formset management form.');
+            return;
+        }
+
+        const html = template.innerHTML.replace(
+            /__prefix__/g,
+            String(index)
+        );
+
+        items.insertAdjacentHTML('beforeend', html);
+
+        totalForms.value = String(index + 1);
+
+        const newRow = items.lastElementChild;
+
+        if (newRow) {
+            bindRow(newRow);
+
+            const firstInput = newRow.querySelector(
+                'select, input:not([type="hidden"]), textarea'
+            );
+
+            if (firstInput) firstInput.focus();
+        }
+
+        recalculate();
+    }
+
+    /*
+     * Initialise existing rows and restore deletion state.
+     */
+    items.querySelectorAll('[data-item-row]').forEach(bindRow);
+
+    addButtons.forEach(function (button) {
+        button.addEventListener('click', addItem);
+    });
+
+    [project, fiscalYear, period].forEach(function (field) {
+        if (field) {
+            field.addEventListener('change', loadBudget);
+        }
+    });
+
+    /*
+     * Budget and donor fields are populated by the approved-budget
+     * endpoint. Read-only presentation is not a security boundary;
+     * the Django view must validate the authoritative budget again.
+     */
+    if (donor) donor.readOnly = true;
+    if (budget) budget.readOnly = true;
+
+    form.addEventListener('submit', function (event) {
+        recalculate();
+
+        if (submit.disabled || !budgetLoaded || budgetError) {
+            event.preventDefault();
+
+            setStatus(
+                budgetStatus,
+                budgetError
+                    ? 'Submission is blocked because the approved budget could not be verified.'
+                    : 'Submission is blocked until a valid project budget is available and the plan total is within budget.',
+                'warning'
+            );
+
+            budgetStatus.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            return;
+        }
+
+        if (submitting) {
+            event.preventDefault();
+            return;
+        }
+
+        submitting = true;
+        submit.disabled = true;
+
+        submit.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" ' +
+            'aria-hidden="true"></span>Submitting...';
+    });
+
+    recalculate();
+    loadBudget();
+});
+</script>
+{% endblock %}

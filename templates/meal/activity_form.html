@@ -1,0 +1,947 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | DDS-NK{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Data Records</span>
+    </a>
+
+    <a href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+
+{% endblock %}
+
+
+{% block crumb %}
+
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>
+        MEAL
+    </span>
+
+    <h1>{{ title }}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
+    <div class="d-flex flex-column flex-lg-row
+                justify-content-between align-items-lg-center
+                gap-3 mb-4">
+
+        <div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-bar-chart-line me-1"></i>
+                    MEAL
+                </span>
+
+                {% if form.instance.pk %}
+
+                    <span class="badge rounded-pill
+                                 bg-primary-subtle text-primary
+                                 border border-primary-subtle">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Edit Activity
+                    </span>
+
+                {% else %}
+
+                    <span class="badge rounded-pill
+                                 bg-success-subtle text-success
+                                 border border-success-subtle">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        New Activity
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {{ title }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                Configure the activity, indicator, targets and reporting
+                requirements for the DDS-NK MEAL framework.
+            </p>
+
+        </div>
+
+        <a href="{% url cancel_url %}"
+           class="btn btn-outline-secondary d-inline-flex
+                  align-items-center gap-2">
+
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Activities</span>
+
+        </a>
+
+    </div>
+
+
+    <!-- =========================================================
+         FORM PANEL
+    ========================================================== -->
+    <div class="panel form-panel">
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- =================================================
+                 FORM ERRORS
+            ================================================== -->
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger border-0 rounded-3
+                            d-flex align-items-start gap-3 mb-4">
+
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+
+                    <div>
+
+                        <div class="fw-bold mb-1">
+                            Please review the form
+                        </div>
+
+                        {% for error in form.non_field_errors %}
+                            <div class="small">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 1. ACTIVITY IDENTITY
+            ================================================== -->
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-clipboard2-check"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1 fw-bold">
+                            Activity Identity
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Define the activity code, name, type and
+                            strategic output to which it belongs.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- Activity Type -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.activity_type.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.activity_type.label }}
+
+                            {% if form.activity_type.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.activity_type }}
+
+                        {% if form.activity_type.help_text %}
+                            <div class="form-text">
+                                {{ form.activity_type.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.activity_type.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.activity_type.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Activity Code -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.code.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.code.label }}
+
+                            {% if form.code.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.code }}
+
+                        {% if form.code.help_text %}
+                            <div class="form-text">
+                                {{ form.code.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.code.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Activity Title — FULL WIDTH -->
+                    <div class="col-12">
+
+                        <label for="{{ form.title.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.title.label }}
+
+                            {% if form.title.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.title }}
+
+                        {% if form.title.help_text %}
+                            <div class="form-text">
+                                {{ form.title.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Output -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.output.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.output.label }}
+
+                            {% if form.output.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.output }}
+
+                        {% if form.output.help_text %}
+                            <div class="form-text">
+                                {{ form.output.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.output.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.output.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Indicator Type -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.indicator_type.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.indicator_type.label }}
+
+                            {% if form.indicator_type.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.indicator_type }}
+
+                        {% if form.indicator_type.help_text %}
+                            <div class="form-text">
+                                {{ form.indicator_type.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.indicator_type.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.indicator_type.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 2. INDICATOR DEFINITION
+            ================================================== -->
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1 fw-bold">
+                            Indicator Definition
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Define exactly what this activity will measure.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- Indicator — FULL WIDTH -->
+                    {% if form.indicator_text %}
+
+                        <div class="col-12">
+
+                            <label for="{{ form.indicator_text.id_for_label }}"
+                                   class="form-label fw-semibold">
+
+                                {{ form.indicator_text.label }}
+
+                                {% if form.indicator_text.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ form.indicator_text }}
+
+                            {% if form.indicator_text.help_text %}
+                                <div class="form-text">
+                                    {{ form.indicator_text.help_text }}
+                                </div>
+                            {% endif %}
+
+                            {% if form.indicator_text.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.indicator_text.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Numerator -->
+                    <div class="col-12 col-md-4">
+
+                        <label for="{{ form.numerator.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.numerator.label }}
+
+                            {% if form.numerator.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.numerator }}
+
+                        {% if form.numerator.help_text %}
+                            <div class="form-text">
+                                {{ form.numerator.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.numerator.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.numerator.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Denominator -->
+                    <div class="col-12 col-md-4">
+
+                        <label for="{{ form.denominator.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.denominator.label }}
+
+                            {% if form.denominator.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.denominator }}
+
+                        {% if form.denominator.help_text %}
+                            <div class="form-text">
+                                {{ form.denominator.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.denominator.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.denominator.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Unit -->
+                    <div class="col-12 col-md-4">
+
+                        <label for="{{ form.unit.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.unit.label }}
+
+                            {% if form.unit.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.unit }}
+
+                        {% if form.unit.help_text %}
+                            <div class="form-text">
+                                {{ form.unit.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.unit.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.unit.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 3. BASELINE & TARGETS
+            ================================================== -->
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1 fw-bold">
+                            Baseline &amp; Targets
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Establish the starting point and planned
+                            performance level for the activity.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- Baseline -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.baseline.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.baseline.label }}
+
+                            {% if form.baseline.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.baseline }}
+
+                        {% if form.baseline.help_text %}
+                            <div class="form-text">
+                                {{ form.baseline.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.baseline.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.baseline.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Target -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.target.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.target.label }}
+
+                            {% if form.target.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.target }}
+
+                        {% if form.target.help_text %}
+                            <div class="form-text">
+                                {{ form.target.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.target.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.target.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Quarter -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.quarter.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.quarter.label }}
+
+                            {% if form.quarter.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.quarter }}
+
+                        {% if form.quarter.help_text %}
+                            <div class="form-text">
+                                {{ form.quarter.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.quarter.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.quarter.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Reporting Frequency -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.reporting_frequency.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.reporting_frequency.label }}
+
+                            {% if form.reporting_frequency.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.reporting_frequency }}
+
+                        {% if form.reporting_frequency.help_text %}
+                            <div class="form-text">
+                                {{ form.reporting_frequency.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.reporting_frequency.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.reporting_frequency.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 4. DATA COLLECTION & RESPONSIBILITY
+            ================================================== -->
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-database-check"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1 fw-bold">
+                            Data Collection &amp; Responsibility
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Specify where the data comes from and who is
+                            responsible for reporting it.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- Data Source -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.data_source.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.data_source.label }}
+
+                            {% if form.data_source.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.data_source }}
+
+                        {% if form.data_source.help_text %}
+                            <div class="form-text">
+                                {{ form.data_source.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.data_source.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.data_source.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Responsible -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.responsible.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.responsible.label }}
+
+                            {% if form.responsible.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.responsible }}
+
+                        {% if form.responsible.help_text %}
+                            <div class="form-text">
+                                {{ form.responsible.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.responsible.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.responsible.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 5. NOTES & STATUS
+            ================================================== -->
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1 fw-bold">
+                            Notes &amp; Status
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Add supporting guidance and control whether
+                            this activity is currently active.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- Notes — FULL WIDTH -->
+                    <div class="col-12">
+
+                        <label for="{{ form.notes.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.notes.label }}
+
+                            {% if form.notes.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.notes }}
+
+                        {% if form.notes.help_text %}
+                            <div class="form-text">
+                                {{ form.notes.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.notes.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Active -->
+                    <div class="col-12">
+
+                        <div class="border rounded-3 bg-light p-3">
+
+                            <div class="form-check form-switch">
+
+                                {{ form.active }}
+
+                                <label class="form-check-label fw-semibold"
+                                       for="{{ form.active.id_for_label }}">
+
+                                    {{ form.active.label }}
+
+                                </label>
+
+                            </div>
+
+                            {% if form.active.help_text %}
+                                <div class="form-text ms-4">
+                                    {{ form.active.help_text }}
+                                </div>
+                            {% endif %}
+
+                            {% if form.active.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.active.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 FORM ACTIONS
+            ================================================== -->
+            <div class="form-actions border-top pt-4 mt-4">
+
+                <div class="d-flex flex-column flex-sm-row
+                            justify-content-between
+                            align-items-sm-center
+                            gap-3">
+
+                    <div class="small text-muted">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        Fields marked with
+                        <span class="text-danger fw-bold">*</span>
+                        are required.
+
+                    </div>
+
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+
+                        <a href="{% url cancel_url %}"
+                           class="btn btn-light border
+                                  d-inline-flex align-items-center
+                                  justify-content-center gap-2">
+
+                            <i class="bi bi-x-lg"></i>
+                            <span>Cancel</span>
+
+                        </a>
+
+
+                        <button type="submit"
+                                class="btn btn-primary px-4
+                                       d-inline-flex align-items-center
+                                       justify-content-center gap-2">
+
+                            <i class="bi bi-check2-circle"></i>
+
+                            <span>
+                                {% if form.instance.pk %}
+                                    Save Changes
+                                {% else %}
+                                    Create Activity
+                                {% endif %}
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

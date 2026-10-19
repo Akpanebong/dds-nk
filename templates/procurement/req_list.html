@@ -1,0 +1,743 @@
+
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Procurement Requisitions | DDS-NK{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">PROCUREMENT</span>
+    <h1>Procurement requisitions</h1>
+{% endblock %}
+
+{% block content %}
+<div class="procurement-requisitions container-fluid py-3 py-lg-4">
+
+    <!-- Page heading -->
+    <div class="page-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <div class="page-eyebrow">
+                <i class="bi bi-cart-check me-1"></i>
+                PROCUREMENT MANAGEMENT
+            </div>
+
+            <h2 class="page-title mb-1">Procurement requisitions</h2>
+
+            <p class="page-subtitle mb-0">
+                Review, search and track procurement requests across projects.
+            </p>
+        </div>
+
+        <a href="{% url 'procurement:req_create' %}"
+           class="btn btn-procurement-primary">
+            <i class="bi bi-plus-lg me-2"></i>
+            New requisition
+        </a>
+    </div>
+
+    <!-- Summary and search -->
+    <section class="requisition-panel mb-4">
+
+        <div class="panel-top d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+            <div>
+                <h3 class="panel-title mb-1">
+                    <i class="bi bi-list-check me-2"></i>
+                    Requisition register
+                </h3>
+                <p class="panel-description mb-0">
+                    Search by requisition number, project or other indexed details.
+                </p>
+            </div>
+
+            <form method="get"
+                  class="requisition-search"
+                  role="search">
+
+                <div class="search-input-wrap">
+                    <i class="bi bi-search search-icon"></i>
+
+                    <input
+                        type="search"
+                        name="search"
+                        class="form-control"
+                        value="{{ request.GET.search|default:'' }}"
+                        placeholder="Search requisitions or projects..."
+                        aria-label="Search requisitions or projects">
+                </div>
+
+                <button type="submit" class="btn btn-search">
+                    Search
+                </button>
+
+                {% if request.GET.search %}
+                    <a href="{{ request.path }}"
+                       class="btn btn-reset"
+                       title="Clear search"
+                       aria-label="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="register-meta">
+            <span>
+                <i class="bi bi-folder2-open me-1"></i>
+                Requisition records
+            </span>
+
+            {% if is_paginated %}
+                <span class="meta-count">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% endif %}
+
+            {% if request.GET.search %}
+                <span class="search-indicator">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filter: "{{ request.GET.search }}"
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Requisition table -->
+        <div class="table-responsive requisition-table-wrap">
+            <table class="table requisition-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Requisition</th>
+                        <th scope="col">Project</th>
+                        <th scope="col">Requested by</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Total</th>
+                        <th scope="col" class="text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in requisitions %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'procurement:req_detail' item.slug %}"
+                                   class="requisition-number">
+                                    <i class="bi bi-file-earmark-text me-2"></i>
+                                    {{ item.number|default:"ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â" }}
+                                </a>
+                            </td>
+
+                            <td>
+                                <div class="project-name">
+                                    {{ item.project.name|default:"Unassigned project" }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="requester-name">
+                                    {{ item.issued_by|default:"ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â" }}
+                                </div>
+                            </td>
+
+                            <td>
+                                {% with status=item.status|stringformat:"s" %}
+                                    {% with status_lower=status|lower %}
+                                        <span class="status-badge
+                                            {% if status_lower == 'approved' or status_lower == 'completed' or status_lower == 'paid' %}
+                                                status-success
+                                            {% elif status_lower == 'rejected' or status_lower == 'cancelled' or status_lower == 'canceled' %}
+                                                status-danger
+                                            {% elif status_lower == 'pending' or status_lower == 'submitted' or status_lower == 'under_review' or status_lower == 'under review' %}
+                                                status-warning
+                                            {% elif status_lower == 'draft' %}
+                                                status-neutral
+                                            {% else %}
+                                                status-info
+                                            {% endif %}">
+                                            <span class="status-dot"></span>
+                                            {{ status|default:"Unknown"|title }}
+                                        </span>
+                                    {% endwith %}
+                                {% endwith %}
+                            </td>
+
+                            <td class="text-end">
+                                <span class="requisition-total">
+                                    UGX {{ item.total|default_if_none:0|floatformat:2|intcomma }}
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+                                <a href="{% url 'procurement:req_detail' item.slug %}"
+                                   class="btn btn-view"
+                                   aria-label="View requisition {{ item.number }}"
+                                   title="View requisition">
+                                    <i class="bi bi-arrow-up-right"></i>
+                                    <span>View</span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <i class="bi bi-inbox"></i>
+                                    </div>
+
+                                    <h4>
+                                        {% if request.GET.search %}
+                                            No matching requisitions
+                                        {% else %}
+                                            No requisitions available
+                                        {% endif %}
+                                    </h4>
+
+                                    <p>
+                                        {% if request.GET.search %}
+                                            Try another search term or clear the current filter.
+                                        {% else %}
+                                            Procurement requisitions will appear here when they are created.
+                                        {% endif %}
+                                    </p>
+
+                                    {% if request.GET.search %}
+                                        <a href="{{ request.path }}"
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                            Clear search
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'procurement:req_create' %}"
+                                           class="btn btn-procurement-primary btn-sm">
+                                            <i class="bi bi-plus-lg me-1"></i>
+                                            Create requisition
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="pagination-footer">
+                <div class="pagination-info">
+                    Showing page
+                    <strong>{{ page_obj.number }}</strong>
+                    of
+                    <strong>{{ page_obj.paginator.num_pages }}</strong>
+                </div>
+
+                <nav aria-label="Requisition pagination">
+                    <ul class="pagination mb-0">
+
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{% if request.GET.search %}search={{ request.GET.search|urlencode }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+                                   aria-label="Previous page">
+                                    <i class="bi bi-chevron-left me-1"></i>
+                                    Previous
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="bi bi-chevron-left me-1"></i>
+                                    Previous
+                                </span>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ page_obj.number }}</span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{% if request.GET.search %}search={{ request.GET.search|urlencode }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                                   aria-label="Next page">
+                                    Next
+                                    <i class="bi bi-chevron-right ms-1"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    Next
+                                    <i class="bi bi-chevron-right ms-1"></i>
+                                </span>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+
+    </section>
+
+</div>
+
+<style>
+/* =========================================================
+   DDS-NK PROCUREMENT REQUISITIONS
+   Scoped styles: do not affect other modules
+   ========================================================= */
+
+.procurement-requisitions {
+    --proc-primary: #d95f02;
+    --proc-primary-dark: #a94600;
+    --proc-text: #3f3a40;
+    --proc-muted: #756d75;
+    --proc-border: #e8edf4;
+    --proc-surface: #ffffff;
+    --proc-background: #fbf9fa;
+
+    color: var(--proc-text);
+    min-width: 0;
+}
+
+.procurement-requisitions .page-eyebrow {
+    color: var(--proc-primary);
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    margin-bottom: .45rem;
+}
+
+.procurement-requisitions .page-title {
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -.035em;
+    color: #18343a;
+}
+
+.procurement-requisitions .page-subtitle {
+    color: var(--proc-muted);
+    font-size: .86rem;
+    line-height: 1.6;
+}
+
+.procurement-requisitions .btn-procurement-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: .7rem 1rem;
+    border: 1px solid var(--proc-primary);
+    border-radius: 10px;
+    background: var(--proc-primary);
+    color: #fff;
+    font-size: .83rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 3px 8px rgba(232, 93, 4, .16);
+    transition: background .2s ease, transform .2s ease;
+}
+
+.procurement-requisitions .btn-procurement-primary:hover {
+    background: var(--proc-primary-dark);
+    border-color: var(--proc-primary-dark);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.procurement-requisitions .requisition-panel {
+    overflow: hidden;
+    background: var(--proc-surface);
+    border: 1px solid var(--proc-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(24, 50, 58, .035);
+}
+
+.procurement-requisitions .panel-top {
+    padding: 1.25rem 1.35rem;
+    border-bottom: 1px solid var(--proc-border);
+}
+
+.procurement-requisitions .panel-title {
+    color: #20373d;
+    font-size: .98rem;
+    font-weight: 800;
+}
+
+.procurement-requisitions .panel-title i {
+    color: var(--proc-primary);
+}
+
+.procurement-requisitions .panel-description {
+    color: var(--proc-muted);
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
+.procurement-requisitions .requisition-search {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    max-width: 510px;
+}
+
+.procurement-requisitions .search-input-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.procurement-requisitions .search-icon {
+    position: absolute;
+    top: 50%;
+    left: .85rem;
+    z-index: 2;
+    color: #87969b;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.procurement-requisitions .search-input-wrap .form-control {
+    min-height: 42px;
+    padding: .65rem .8rem .65rem 2.4rem;
+    border: 1px solid #eadbd5;
+    border-radius: 9px;
+    background: #fffaf8;
+    font-size: .81rem;
+}
+
+.procurement-requisitions .search-input-wrap .form-control:focus {
+    background: #fff;
+    border-color: var(--proc-primary);
+    box-shadow: 0 0 0 .2rem rgba(232, 93, 4, .12);
+}
+
+.procurement-requisitions .btn-search {
+    min-height: 42px;
+    padding: .6rem 1rem;
+    border-radius: 9px;
+    background: #fff0e6;
+    border: 1px solid #f6c9b7;
+    color: var(--proc-primary-dark);
+    font-size: .8rem;
+    font-weight: 750;
+}
+
+.procurement-requisitions .btn-search:hover {
+    background: #ffe2d2;
+}
+
+.procurement-requisitions .btn-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 42px;
+    border: 1px solid var(--proc-border);
+    border-radius: 9px;
+    color: #65777d;
+}
+
+.procurement-requisitions .register-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .65rem 1.2rem;
+    padding: .85rem 1.35rem;
+    background: #fffaf8;
+    border-bottom: 1px solid var(--proc-border);
+    color: var(--proc-muted);
+    font-size: .74rem;
+}
+
+.procurement-requisitions .meta-count {
+    font-weight: 700;
+    color: #42575e;
+}
+
+.procurement-requisitions .search-indicator {
+    color: var(--proc-primary-dark);
+    overflow-wrap: anywhere;
+}
+
+.procurement-requisitions .requisition-table {
+    min-width: 760px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.procurement-requisitions .requisition-table thead th {
+    padding: .9rem 1rem;
+    background: #fff8f5;
+    border-bottom: 1px solid var(--proc-border);
+    color: #64767c;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.procurement-requisitions .requisition-table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #edf1f2;
+    font-size: .81rem;
+    vertical-align: middle;
+}
+
+.procurement-requisitions .requisition-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.procurement-requisitions .requisition-table tbody tr {
+    transition: background .15s ease;
+}
+
+.procurement-requisitions .requisition-table tbody tr:hover {
+    background: #fff8f5;
+}
+
+.procurement-requisitions .requisition-number {
+    display: inline-flex;
+    align-items: center;
+    color: var(--proc-primary-dark);
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.procurement-requisitions .requisition-number:hover {
+    color: var(--proc-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.procurement-requisitions .requisition-number i {
+    color: #78979a;
+}
+
+.procurement-requisitions .project-name {
+    color: #344a50;
+    font-weight: 650;
+    max-width: 260px;
+    overflow-wrap: anywhere;
+}
+
+.procurement-requisitions .requester-name {
+    color: #52666c;
+}
+
+.procurement-requisitions .requisition-total {
+    color: #263e43;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.procurement-requisitions .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .42rem;
+    padding: .38rem .65rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: .69rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.procurement-requisitions .status-dot {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.procurement-requisitions .status-success {
+    color: #b83220;
+    background: #fff0e6;
+    border-color: #f6c9b7;
+}
+
+.procurement-requisitions .status-danger {
+    color: #b42318;
+    background: #fff0ef;
+    border-color: #f7d4d1;
+}
+
+.procurement-requisitions .status-warning {
+    color: #c2410c;
+    background: #fff0e6;
+    border-color: #f6c9b7;
+}
+
+.procurement-requisitions .status-neutral {
+    color: #5f6c72;
+    background: #f0f3f4;
+    border-color: #e0e6e8;
+}
+
+.procurement-requisitions .status-info {
+    color: #b83220;
+    background: #fff0e6;
+    border-color: #f6c9b7;
+}
+
+.procurement-requisitions .btn-view {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 34px;
+    padding: .4rem .7rem;
+    border: 1px solid #f2c8b8;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--proc-primary-dark);
+    font-size: .73rem;
+    font-weight: 750;
+}
+
+.procurement-requisitions .btn-view:hover {
+    background: #fff0e6;
+    border-color: #f2b59d;
+}
+
+.procurement-requisitions .empty-state {
+    padding: 3.25rem 1rem;
+    text-align: center;
+}
+
+.procurement-requisitions .empty-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    margin: 0 auto 1rem;
+    border-radius: 18px;
+    background: #fff0e6;
+    color: var(--proc-primary);
+    font-size: 1.65rem;
+}
+
+.procurement-requisitions .empty-state h4 {
+    margin-bottom: .45rem;
+    color: #263e43;
+    font-size: .98rem;
+    font-weight: 800;
+}
+
+.procurement-requisitions .empty-state p {
+    max-width: 420px;
+    margin: 0 auto 1rem;
+    color: var(--proc-muted);
+    font-size: .8rem;
+    line-height: 1.7;
+}
+
+.procurement-requisitions .pagination-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.35rem;
+    border-top: 1px solid var(--proc-border);
+    background: #fff;
+}
+
+.procurement-requisitions .pagination-info {
+    color: var(--proc-muted);
+    font-size: .76rem;
+}
+
+.procurement-requisitions .pagination-info strong {
+    color: #344a50;
+}
+
+.procurement-requisitions .pagination .page-link {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    border-color: #e1e8ea;
+    color: #40575d;
+    font-size: .75rem;
+    font-weight: 650;
+}
+
+.procurement-requisitions .pagination .page-item.active .page-link {
+    background: var(--proc-primary);
+    border-color: var(--proc-primary);
+    color: #fff;
+}
+
+.procurement-requisitions .pagination .page-item.disabled .page-link {
+    color: #a1adb1;
+    background: #f8fafb;
+}
+
+@media (max-width: 767.98px) {
+    .procurement-requisitions .panel-top {
+        padding: 1rem;
+    }
+
+    .procurement-requisitions .requisition-search {
+        max-width: none;
+    }
+
+    .procurement-requisitions .register-meta {
+        padding: .8rem 1rem;
+    }
+
+    .procurement-requisitions .pagination-footer {
+        padding: 1rem;
+    }
+
+    .procurement-requisitions .pagination-footer nav {
+        width: 100%;
+    }
+
+    .procurement-requisitions .pagination {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 420px) {
+    .procurement-requisitions .requisition-search {
+        flex-wrap: wrap;
+    }
+
+    .procurement-requisitions .search-input-wrap {
+        flex-basis: 100%;
+    }
+
+    .procurement-requisitions .btn-search {
+        flex: 1;
+    }
+
+    .procurement-requisitions .btn-reset {
+        flex: 0 0 42px;
+    }
+}
+</style>
+<style>
+    .procurement-requisitions .register-meta,
+    .procurement-requisitions .requisition-table thead th { background: #f7fbfa; }
+    .procurement-requisitions .btn-procurement-primary { background: #d95f02; border-color: #d95f02; box-shadow: 0 3px 8px rgba(217, 95, 2, .14); }
+    .procurement-requisitions .btn-procurement-primary:hover { background: #a94600; border-color: #a94600; }
+    .procurement-requisitions .status-success,
+    .procurement-requisitions .status-warning,
+    .procurement-requisitions .status-info { color: #a94600; background: #fff1e8; border-color: #f2c29f; }
+    .procurement-requisitions .btn-view { border-color: #f2c29f; color: #a94600; }
+    .procurement-requisitions .btn-view:hover { background: #fff1e8; border-color: #e8a66e; }
+    .procurement-requisitions .empty-state-icon { background: #fff1e8; color: #d95f02; }
+</style>
+
+{% endblock %}

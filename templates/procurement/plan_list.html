@@ -1,0 +1,763 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Procurement Plans | DDS-NK THRIVE{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-clipboard2-check me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1 class="mb-0">Procurement Plans</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --plan-primary: #e50078;
+        --plan-primary-dark: #bd0063;
+        --plan-plum: #3b2938;
+        --plan-muted: #777789;
+        --plan-border: #e8eaf0;
+        --plan-surface: #ffffff;
+        --plan-background: #f8f9fc;
+        --plan-success: #16845b;
+        --plan-danger: #c93645;
+        --plan-warning: #b66a08;
+    }
+
+    .plans-page {
+        padding-bottom: 2rem;
+        color: var(--plan-plum);
+    }
+
+    .plans-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 1.6rem;
+        margin-bottom: 1.4rem;
+        border: 1px solid var(--plan-border);
+        border-radius: 18px;
+        background: linear-gradient(115deg, #fff 0%, #fff5fa 100%);
+    }
+
+    .plans-hero::after {
+        content: "";
+        position: absolute;
+        top: -75px;
+        right: -35px;
+        width: 190px;
+        height: 190px;
+        border-radius: 50%;
+        background: rgba(229, 0, 120, .055);
+        pointer-events: none;
+    }
+
+    .plans-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        margin-bottom: .65rem;
+        color: var(--plan-primary);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .plans-hero h2 {
+        margin: 0 0 .55rem;
+        color: var(--plan-plum);
+        font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+        font-weight: 850;
+    }
+
+    .plans-hero p {
+        max-width: 690px;
+        margin: 0;
+        color: var(--plan-muted);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .plans-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 42px;
+        padding: .65rem 1rem;
+        border-radius: 9px;
+        font-size: .84rem;
+        font-weight: 750;
+        text-decoration: none;
+        transition: background .2s ease, border-color .2s ease;
+    }
+
+    .plans-btn-primary {
+        border: 1px solid var(--plan-primary);
+        background: var(--plan-primary);
+        color: #fff;
+    }
+
+    .plans-btn-primary:hover {
+        border-color: var(--plan-primary-dark);
+        background: var(--plan-primary-dark);
+        color: #fff;
+    }
+
+    .plans-btn-outline {
+        border: 1px solid var(--plan-border);
+        background: #fff;
+        color: var(--plan-plum);
+    }
+
+    .plans-btn-outline:hover {
+        border-color: var(--plan-primary);
+        background: #fff7fb;
+        color: var(--plan-primary-dark);
+    }
+
+    .plans-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .plans-search {
+        flex: 1;
+        min-width: min(100%, 280px);
+        max-width: 590px;
+    }
+
+    .plans-search .input-group {
+        overflow: hidden;
+        border: 1px solid var(--plan-border);
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .plans-search .input-group:focus-within {
+        border-color: var(--plan-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .08);
+    }
+
+    .plans-search .input-group-text {
+        padding-left: .95rem;
+        border: 0;
+        background: #fff;
+        color: var(--plan-muted);
+    }
+
+    .plans-search .form-control {
+        min-height: 44px;
+        border: 0;
+        box-shadow: none;
+        font-size: .86rem;
+    }
+
+    .plans-search .btn {
+        margin: 4px;
+        border: 0;
+        border-radius: 7px !important;
+        background: var(--plan-plum);
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .plans-search .btn:hover {
+        background: var(--plan-primary-dark);
+    }
+
+    .plans-results-label {
+        color: var(--plan-muted);
+        font-size: .8rem;
+    }
+
+    .plans-panel {
+        overflow: hidden;
+        border: 1px solid var(--plan-border);
+        border-radius: 16px;
+        background: var(--plan-surface);
+        box-shadow: 0 5px 20px rgba(35, 26, 44, .035);
+    }
+
+    .plans-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 1.2rem 1.4rem;
+        border-bottom: 1px solid var(--plan-border);
+    }
+
+    .plans-panel-header h3 {
+        margin: 0 0 .3rem;
+        color: var(--plan-plum);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .plans-panel-header p {
+        margin: 0;
+        color: var(--plan-muted);
+        font-size: .8rem;
+    }
+
+    .plans-table {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    .plans-table thead th {
+        padding: .95rem 1rem;
+        border-bottom: 1px solid var(--plan-border);
+        background: #faf9fc;
+        color: #747184;
+        font-size: .69rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .plans-table tbody td {
+        padding: 1.05rem 1rem;
+        border-bottom: 1px solid #f0f1f5;
+        color: #514b59;
+        font-size: .84rem;
+    }
+
+    .plans-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .plans-table tbody tr:hover {
+        background: #fffafd;
+    }
+
+    .plan-number {
+        display: inline-block;
+        color: var(--plan-primary-dark);
+        font-weight: 850;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-number:hover {
+        color: var(--plan-plum);
+        text-decoration: underline;
+    }
+
+    .plan-meta {
+        display: block;
+        margin-top: .35rem;
+        color: var(--plan-muted);
+        font-size: .75rem;
+        line-height: 1.5;
+    }
+
+    .plan-project {
+        display: block;
+        min-width: 150px;
+        color: var(--plan-plum);
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-amount {
+        color: var(--plan-plum);
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .plan-progress-cell {
+        min-width: 210px;
+    }
+
+    .plan-progress-label {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .6rem;
+        margin-bottom: .55rem;
+        font-size: .75rem;
+    }
+
+    .plan-status-text {
+        color: #61596a;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-progress-number {
+        color: var(--plan-plum);
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .plan-progress-track {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #eeeef3;
+    }
+
+    .plan-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        transition: width .3s ease;
+    }
+
+    .plan-progress-fill.is-approved {
+        background: var(--plan-success);
+    }
+
+    .plan-progress-fill.is-rejected {
+        background: var(--plan-danger);
+    }
+
+    .plan-progress-fill.is-pending {
+        background: var(--plan-primary);
+    }
+
+    .plan-progress-fill.is-draft {
+        background: #89909f;
+    }
+
+    .plan-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin-top: .55rem;
+        padding: .28rem .55rem;
+        border: 1px solid var(--plan-border);
+        border-radius: 6px;
+        background: #faf9fc;
+        color: #625b6a;
+        font-size: .68rem;
+        font-weight: 750;
+    }
+
+    .plan-status-badge.is-approved {
+        border-color: #ccebdc;
+        background: #edfaf3;
+        color: #16754f;
+    }
+
+    .plan-status-badge.is-rejected {
+        border-color: #f4d1d5;
+        background: #fff0f1;
+        color: #b52f3c;
+    }
+
+    .plan-status-badge.is-pending {
+        border-color: #f4cfe3;
+        background: #fff1f8;
+        color: var(--plan-primary-dark);
+    }
+
+    .plan-status-badge.is-draft {
+        border-color: #e1e3e9;
+        background: #f4f5f8;
+        color: #626b7b;
+    }
+
+    .plan-view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: .5rem .75rem;
+        border: 1px solid var(--plan-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--plan-plum);
+        font-size: .78rem;
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .plan-view-btn:hover {
+        border-color: var(--plan-primary);
+        background: #fff5fa;
+        color: var(--plan-primary-dark);
+    }
+
+    .plans-empty {
+        padding: 3rem 1rem !important;
+        text-align: center;
+    }
+
+    .plans-empty-icon {
+        display: grid;
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 1rem;
+        place-items: center;
+        border-radius: 16px;
+        background: #fff0f7;
+        color: var(--plan-primary);
+        font-size: 1.45rem;
+    }
+
+    .plans-empty h4 {
+        margin-bottom: .4rem;
+        color: var(--plan-plum);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .plans-empty p {
+        margin: 0 auto 1.2rem;
+        max-width: 390px;
+        color: var(--plan-muted);
+        font-size: .83rem;
+        line-height: 1.6;
+    }
+
+    .plans-footer-note {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        margin-top: 1rem;
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--plan-border);
+        border-radius: 12px;
+        background: #fff;
+        color: var(--plan-muted);
+        font-size: .8rem;
+        line-height: 1.6;
+    }
+
+    .plans-footer-note i {
+        margin-top: .1rem;
+        color: var(--plan-primary);
+        font-size: 1rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .plans-hero {
+            padding: 1.2rem;
+        }
+
+        .plans-hero-actions {
+            width: 100%;
+        }
+
+        .plans-hero-actions .plans-btn {
+            flex: 1;
+        }
+
+        .plans-toolbar {
+            align-items: stretch;
+        }
+
+        .plans-search {
+            max-width: none;
+        }
+
+        .plans-results-label {
+            width: 100%;
+        }
+
+        .plans-panel-header {
+            padding: 1rem;
+        }
+
+        .plans-table thead th,
+        .plans-table tbody td {
+            padding: .85rem .8rem;
+        }
+    }
+</style>
+
+<div class="plans-page">
+
+    <!-- Page introduction -->
+    <section class="plans-hero">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-4">
+            <div class="flex-grow-1" style="min-width: 0;">
+                <div class="plans-eyebrow">
+                    <i class="bi bi-diagram-3"></i>
+                    Procurement planning and governance
+                </div>
+
+                <h2>Procurement Plan Register</h2>
+
+                <p>
+                    Monitor annual procurement plans from Project Head submission
+                    through review and Executive Director approval. Track planned
+                    expenditure and workflow progress from one central register.
+                </p>
+            </div>
+
+            <div class="plans-hero-actions d-flex flex-wrap gap-2">
+                <a
+                    href="{% url 'procurement:plan_create' %}"
+                    class="plans-btn plans-btn-primary"
+                >
+                    <i class="bi bi-plus-lg"></i>
+                    Create New Plan
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and results controls -->
+    <div class="plans-toolbar">
+        <form method="get" class="plans-search" role="search">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ query|default:'' }}"
+                    class="form-control"
+                    placeholder="Search plan number, project or fiscal year..."
+                    aria-label="Search procurement plans"
+                >
+
+                <button class="btn" type="submit">
+                    Search
+                </button>
+            </div>
+        </form>
+
+        {% if query %}
+            <a
+                href="{% url 'procurement:plan_create' %}"
+                class="plans-btn plans-btn-outline"
+                onclick="event.preventDefault(); window.location.href=window.location.pathname;"
+            >
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Clear search
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Plans register -->
+    <section class="plans-panel">
+        <div class="plans-panel-header">
+            <div>
+                <h3>
+                    <i class="bi bi-list-check me-2"
+                       style="color: var(--plan-primary);"></i>
+                    Procurement Plans
+                </h3>
+
+                <p>
+                    Review plan references, project ownership, budget totals,
+                    and approval workflow progress.
+                </p>
+            </div>
+
+            <span class="plans-results-label">
+                <i class="bi bi-shield-check me-1"></i>
+                Controlled procurement register
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table plans-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Plan reference</th>
+                        <th scope="col">Project / requester</th>
+                        <th scope="col">Plan total</th>
+                        <th scope="col">Workflow progress</th>
+                        <th scope="col" class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for plan in plans %}
+                        <tr>
+                            <!-- Plan reference -->
+                            <td>
+                                <a
+                                    href="{% url 'procurement:plan_detail' plan.slug %}"
+                                    class="plan-number"
+                                >
+                                    {{ plan.number }}
+                                </a>
+
+                                <span class="plan-meta">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    FY {{ plan.fiscal_year }}
+                                    <span class="mx-1">·</span>
+                                    {{ plan.get_budget_period_display }}
+                                </span>
+
+                                <span class="plan-status-badge
+                                    {% if plan.status == 'approved' %}
+                                        is-approved
+                                    {% elif 'rejected' in plan.status %}
+                                        is-rejected
+                                    {% elif plan.status == 'draft' %}
+                                        is-draft
+                                    {% else %}
+                                        is-pending
+                                    {% endif %}
+                                ">
+                                    {% if plan.status == 'approved' %}
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    {% elif 'rejected' in plan.status %}
+                                        <i class="bi bi-x-circle-fill"></i>
+                                    {% elif plan.status == 'draft' %}
+                                        <i class="bi bi-pencil-square"></i>
+                                    {% else %}
+                                        <i class="bi bi-hourglass-split"></i>
+                                    {% endif %}
+
+                                    {{ plan.get_status_display }}
+                                </span>
+                            </td>
+
+                            <!-- Project and requester -->
+                            <td>
+                                <span class="plan-project">
+                                    <i class="bi bi-folder2-open me-1"
+                                       style="color: var(--plan-primary);"></i>
+                                    {{ plan.project.name }}
+                                </span>
+
+                                <span class="plan-meta">
+                                    <i class="bi bi-person me-1"></i>
+                                    {{ plan.requester|default:"Not assigned" }}
+                                </span>
+                            </td>
+
+                            <!-- Total -->
+                            <td>
+                                <span class="plan-amount">
+                                    UGX {{ plan.total_amount|default_if_none:0|floatformat:2|intcomma }}
+                                </span>
+                            </td>
+
+                            <!-- Progress -->
+                            <td class="plan-progress-cell">
+                                <div class="plan-progress-label">
+                                    <span class="plan-status-text">
+                                        {{ plan.get_status_display }}
+                                    </span>
+
+                                    <span class="plan-progress-number">
+                                        {{ plan.progress_percentage|default_if_none:0 }}%
+                                    </span>
+                                </div>
+
+                                <div
+                                    class="plan-progress-track"
+                                    role="progressbar"
+                                    aria-label="Workflow progress for {{ plan.number }}"
+                                    aria-valuenow="{{ plan.progress_percentage|default_if_none:0 }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                >
+                                    <div
+                                        class="plan-progress-fill
+                                            {% if plan.status == 'approved' %}
+                                                is-approved
+                                            {% elif 'rejected' in plan.status %}
+                                                is-rejected
+                                            {% elif plan.status == 'draft' %}
+                                                is-draft
+                                            {% else %}
+                                                is-pending
+                                            {% endif %}
+                                        "
+                                        style="width: {{ plan.progress_percentage|default_if_none:0 }}%;"
+                                    ></div>
+                                </div>
+                            </td>
+
+                            <!-- Action -->
+                            <td class="text-end">
+                                <a
+                                    class="plan-view-btn"
+                                    href="{% url 'procurement:plan_detail' plan.slug %}"
+                                    aria-label="View procurement plan {{ plan.number }}"
+                                >
+                                    View details
+                                    <i class="bi bi-arrow-up-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="plans-empty">
+                                <div class="plans-empty-icon">
+                                    <i class="bi bi-clipboard2-x"></i>
+                                </div>
+
+                                <h4>
+                                    {% if query %}
+                                        No matching procurement plans
+                                    {% else %}
+                                        No procurement plans yet
+                                    {% endif %}
+                                </h4>
+
+                                <p>
+                                    {% if query %}
+                                        No plans match your current search.
+                                        Try another plan number, project name,
+                                        or fiscal year.
+                                    {% else %}
+                                        Start the planning process by creating
+                                        a procurement plan for a project and
+                                        budget period.
+                                    {% endif %}
+                                </p>
+
+                                {% if query %}
+                                    <a
+                                        href="{{ request.path }}"
+                                        class="plans-btn plans-btn-outline"
+                                    >
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                        Clear search
+                                    </a>
+                                {% else %}
+                                    <a
+                                        href="{% url 'procurement:plan_create' %}"
+                                        class="plans-btn plans-btn-primary"
+                                    >
+                                        <i class="bi bi-plus-lg"></i>
+                                        Create First Plan
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="plans-footer-note">
+        <i class="bi bi-info-circle"></i>
+        <div>
+            <strong>Workflow guidance.</strong>
+            Plan status and progress are displayed using the values supplied
+            by the Django view and model. Approval decisions should remain
+            enforced by the server-side workflow and permissions.
+        </div>
+    </div>
+
+</div>
+{% endblock %}

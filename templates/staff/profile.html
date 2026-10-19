@@ -1,0 +1,1280 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Staff Profile | DDS-NK THRIVE{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/staff-profile.css' %}">
+
+<style>
+    /* =========================================================
+       DDS-NK THRIVE — STAFF PROFILE
+       Scoped styles to avoid affecting other application pages.
+       ========================================================= */
+
+    .profile-page {
+        --sp-pink: #e50078;
+        --sp-pink-dark: #c90069;
+        --sp-pink-soft: #fff0f7;
+        --sp-plum: #3b2938;
+        --sp-plum-light: #563e53;
+        --sp-text: #344054;
+        --sp-muted: #667085;
+        --sp-border: #e4e7ec;
+        --sp-surface: #ffffff;
+        --sp-canvas: #f8f7fa;
+        --sp-danger: #b42318;
+        color: var(--sp-text);
+        padding-bottom: 2rem;
+    }
+
+    .profile-page *,
+    .profile-page *::before,
+    .profile-page *::after {
+        box-sizing: border-box;
+    }
+
+    .profile-page button,
+    .profile-page input,
+    .profile-page select,
+    .profile-page textarea {
+        font: inherit;
+    }
+
+    .profile-page .profile-hero {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        overflow: hidden;
+        padding: clamp(1.4rem, 3vw, 2.25rem);
+        margin-bottom: 1.5rem;
+        color: #fff;
+        background: linear-gradient(125deg, #3b2938 0%, #56364e 65%, #851451 100%);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(59, 41, 56, .12);
+    }
+
+    .profile-page .profile-hero::after {
+        position: absolute;
+        right: -65px;
+        bottom: -115px;
+        width: 280px;
+        height: 280px;
+        content: "";
+        border: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 50%;
+        box-shadow: 0 0 0 35px rgba(255,255,255,.035),
+                    0 0 0 70px rgba(255,255,255,.025);
+        pointer-events: none;
+    }
+
+    .profile-page .profile-hero-copy,
+    .profile-page .profile-identity {
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-page .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: .8rem;
+        color: #ffd2e7;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .profile-page .profile-hero h1 {
+        margin: 0 0 .65rem;
+        color: #fff;
+        font-size: clamp(1.65rem, 3vw, 2.25rem);
+        font-weight: 850;
+        letter-spacing: -.045em;
+    }
+
+    .profile-page .profile-hero-copy > p {
+        max-width: 650px;
+        margin: 0;
+        color: rgba(255,255,255,.82);
+        font-size: .91rem;
+        line-height: 1.75;
+    }
+
+    .profile-page .profile-identity {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        min-width: 220px;
+        max-width: 100%;
+        padding: .8rem 1rem;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.17);
+        border-radius: 15px;
+        backdrop-filter: blur(8px);
+    }
+
+    .profile-page .profile-identity img,
+    .profile-page .profile-initials {
+        display: grid;
+        flex: 0 0 54px;
+        width: 54px;
+        height: 54px;
+        object-fit: cover;
+        place-items: center;
+        color: #fff;
+        background: var(--sp-pink);
+        border: 2px solid rgba(255,255,255,.4);
+        border-radius: 15px;
+        font-size: 1.15rem;
+        font-weight: 850;
+    }
+
+    .profile-page .profile-identity strong,
+    .profile-page .profile-identity small {
+        display: block;
+        overflow-wrap: anywhere;
+    }
+
+    .profile-page .profile-identity strong {
+        color: #fff;
+        font-size: .91rem;
+        font-weight: 800;
+    }
+
+    .profile-page .profile-identity small {
+        margin-top: .3rem;
+        color: rgba(255,255,255,.72);
+        font-size: .76rem;
+    }
+
+    /* Main layout */
+
+    .profile-page .profile-layout {
+        display: grid;
+        grid-template-columns: 245px minmax(0, 1fr);
+        align-items: start;
+        gap: 1.25rem;
+    }
+
+    .profile-page .profile-steps,
+    .profile-page .profile-content,
+    .profile-page .profile-confirm {
+        min-width: 0;
+    }
+
+    .profile-page .profile-steps {
+        position: sticky;
+        top: 1rem;
+        padding: .8rem;
+        background: var(--sp-surface);
+        border: 1px solid var(--sp-border);
+        border-radius: 17px;
+        box-shadow: 0 5px 22px rgba(16,24,40,.035);
+    }
+
+    .profile-page .profile-step {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        width: 100%;
+        min-height: 49px;
+        padding: .7rem .75rem;
+        margin-bottom: .25rem;
+        color: #596273;
+        text-align: left;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 11px;
+        font-size: .84rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+
+    .profile-page .profile-step:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .profile-page .profile-step > span {
+        display: grid;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        place-items: center;
+        color: #777080;
+        background: #f2f0f4;
+        border-radius: 9px;
+        font-size: .72rem;
+        font-weight: 850;
+    }
+
+    .profile-page .profile-step:hover {
+        color: var(--sp-plum);
+        background: #faf7fa;
+    }
+
+    .profile-page .profile-step.active {
+        color: var(--sp-plum);
+        background: var(--sp-pink-soft);
+        border-color: #f7c8e0;
+    }
+
+    .profile-page .profile-step.active > span {
+        color: #fff;
+        background: var(--sp-pink);
+    }
+
+    .profile-page .profile-step:focus-visible,
+    .profile-page .profile-navigation button:focus-visible,
+    .profile-page .profile-confirm input:focus-visible,
+    .profile-page .profile-save:focus-visible {
+        outline: 3px solid rgba(229,0,120,.24);
+        outline-offset: 3px;
+    }
+
+    .profile-page .profile-save-note {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        padding: 1rem .7rem .55rem;
+        margin-top: .65rem;
+        color: var(--sp-muted);
+        border-top: 1px solid var(--sp-border);
+        font-size: .75rem;
+        line-height: 1.65;
+    }
+
+    .profile-page .profile-save-note i {
+        margin-top: .1rem;
+        color: var(--sp-pink);
+        font-size: 1rem;
+    }
+
+    /* Content panels */
+
+    .profile-page .profile-section {
+        display: none;
+        overflow: hidden;
+        background: var(--sp-surface);
+        border: 1px solid var(--sp-border);
+        border-radius: 18px;
+        box-shadow: 0 5px 22px rgba(16,24,40,.035);
+    }
+
+    .profile-page .profile-section.active {
+        display: block;
+        animation: sp-enter .2s ease-out;
+    }
+
+    @keyframes sp-enter {
+        from { opacity: .55; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-page .section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--sp-border);
+    }
+
+    .profile-page .section-heading h2 {
+        margin: .35rem 0 .45rem;
+        color: var(--sp-plum);
+        font-size: 1.22rem;
+        font-weight: 850;
+        letter-spacing: -.025em;
+    }
+
+    .profile-page .section-heading p {
+        margin: 0;
+        color: var(--sp-muted);
+        font-size: .84rem;
+        line-height: 1.65;
+    }
+
+    .profile-page .section-kicker {
+        color: var(--sp-pink);
+        font-size: .69rem;
+        font-weight: 850;
+        letter-spacing: .12em;
+    }
+
+    .profile-page .section-heading > i {
+        display: grid;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        color: var(--sp-pink);
+        background: var(--sp-pink-soft);
+        border-radius: 14px;
+        font-size: 1.4rem;
+    }
+
+    .profile-page .profile-section-body {
+        padding: 1.5rem;
+    }
+
+    .profile-page .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.15rem;
+        padding: 1.5rem;
+    }
+
+    .profile-page .profile-field {
+        min-width: 0;
+    }
+
+    .profile-page .profile-field.full-field {
+        grid-column: 1 / -1;
+    }
+
+    .profile-page .profile-field > label:not(.profile-boolean) {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--sp-text);
+        font-size: .82rem;
+        font-weight: 750;
+        line-height: 1.45;
+    }
+
+    .profile-page .profile-field input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    .profile-page .profile-field select,
+    .profile-page .profile-field textarea,
+    .profile-page .profile-grid > p input:not([type="checkbox"]):not([type="radio"]),
+    .profile-page .profile-grid > p select,
+    .profile-page .profile-grid > p textarea {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: .7rem .8rem;
+        color: var(--sp-text);
+        background: #fff;
+        border: 1px solid #d9dce3;
+        border-radius: 10px;
+        font-size: .86rem;
+        line-height: 1.5;
+        transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .profile-page .profile-field textarea,
+    .profile-page .profile-grid > p textarea {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    .profile-page .profile-field input[type="file"] {
+        padding: .55rem;
+        background: var(--sp-canvas);
+    }
+
+    .profile-page .profile-field input:focus,
+    .profile-page .profile-field select:focus,
+    .profile-page .profile-field textarea:focus,
+    .profile-page .profile-grid > p input:focus,
+    .profile-page .profile-grid > p select:focus,
+    .profile-page .profile-grid > p textarea:focus {
+        border-color: var(--sp-pink);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(229,0,120,.09);
+    }
+
+    .profile-page .field-help,
+    .profile-page .profile-field .helptext {
+        display: block;
+        margin-top: .4rem;
+        color: var(--sp-muted);
+        font-size: .75rem;
+        line-height: 1.55;
+    }
+
+    .profile-page .field-error,
+    .profile-page .profile-field .errorlist {
+        display: block;
+        margin: .4rem 0 0;
+        color: var(--sp-danger);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .profile-page .profile-field .errorlist {
+        padding-left: 1.1rem;
+    }
+
+    .profile-page .profile-field .errorlist li {
+        margin-bottom: .2rem;
+    }
+
+    /* Boolean fields */
+
+    .profile-page .profile-field.is-boolean {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .profile-page .profile-boolean {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: 70px;
+        padding: .8rem .9rem;
+        background: #faf9fb;
+        border: 1px solid var(--sp-border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .profile-page .profile-boolean:hover {
+        background: #fff8fc;
+        border-color: #efb9d7;
+    }
+
+    .profile-page .profile-boolean:has(input:checked) {
+        background: var(--sp-pink-soft);
+        border-color: #efb9d7;
+    }
+
+    .profile-page .profile-boolean:has(input:focus-visible) {
+        outline: 3px solid rgba(229,0,120,.16);
+        outline-offset: 2px;
+    }
+
+    .profile-page .profile-boolean input[type="checkbox"],
+    .profile-page .profile-boolean input[type="radio"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .profile-page .boolean-check {
+        display: inline-flex;
+        flex: 0 0 23px;
+        align-items: center;
+        justify-content: center;
+        width: 23px;
+        height: 23px;
+        margin-right: .8rem;
+        color: #fff;
+        background: #fff;
+        border: 2px solid #b8c0cc;
+        border-radius: 7px;
+        transition: background .18s ease, border-color .18s ease;
+    }
+
+    .profile-page .boolean-check i {
+        opacity: 0;
+        font-size: .8rem;
+        font-weight: 900;
+    }
+
+    .profile-page .profile-boolean input:checked + .boolean-check {
+        background: var(--sp-pink);
+        border-color: var(--sp-pink);
+    }
+
+    .profile-page .profile-boolean input:checked + .boolean-check i {
+        opacity: 1;
+    }
+
+    .profile-page .boolean-copy {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: .2rem;
+    }
+
+    .profile-page .boolean-label {
+        color: var(--sp-text);
+        font-size: .83rem;
+        font-weight: 750;
+        line-height: 1.4;
+    }
+
+    .profile-page .boolean-description {
+        color: var(--sp-muted);
+        font-size: .74rem;
+        line-height: 1.5;
+    }
+
+    .profile-page .boolean-required {
+        color: var(--sp-danger);
+    }
+
+    /* Read-only staff information */
+
+    .profile-page .read-only-strip {
+        display: grid;
+        grid-template-columns: minmax(0,1fr) minmax(0,1.3fr);
+        gap: 0;
+        margin: 0 1.5rem 1.5rem;
+        overflow: hidden;
+        background: var(--sp-canvas);
+        border: 1px solid var(--sp-border);
+        border-radius: 12px;
+    }
+
+    .profile-page .read-only-item {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        min-width: 0;
+        padding: 1rem;
+    }
+
+    .profile-page .read-only-item + .read-only-item {
+        border-left: 1px solid var(--sp-border);
+    }
+
+    .profile-page .read-only-item span {
+        color: var(--sp-muted);
+        font-size: .73rem;
+        font-weight: 650;
+    }
+
+    .profile-page .read-only-item strong {
+        color: var(--sp-plum);
+        font-size: .85rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    /* Formset partial containers */
+
+    .profile-page .profile-formset-wrap {
+        padding: 1.5rem;
+    }
+
+    .profile-page .profile-formset-wrap + .profile-formset-wrap {
+        padding-top: 0;
+    }
+
+    /* Section navigation */
+
+    .profile-page .profile-navigation {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+        padding: 1rem 0;
+    }
+
+    .profile-page .profile-navigation button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: .65rem 1rem;
+        border-radius: 10px;
+        font-size: .83rem;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .profile-page .profile-navigation .btn-light {
+        color: var(--sp-plum);
+        background: #fff;
+        border: 1px solid var(--sp-border);
+    }
+
+    .profile-page .profile-navigation .btn-light:hover:not(:disabled) {
+        background: var(--sp-canvas);
+    }
+
+    .profile-page .profile-navigation .btn-primary,
+    .profile-page .profile-save {
+        color: #fff;
+        background: var(--sp-pink);
+        border: 1px solid var(--sp-pink);
+    }
+
+    .profile-page .profile-navigation .btn-primary:hover,
+    .profile-page .profile-save:hover:not(:disabled) {
+        color: #fff;
+        background: var(--sp-pink-dark);
+        border-color: var(--sp-pink-dark);
+    }
+
+    .profile-page .profile-navigation button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    /* Final confirmation */
+
+    .profile-page .profile-confirm {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.25rem;
+        margin-top: .5rem;
+        padding: 1.15rem 1.25rem;
+        background: #fff;
+        border: 1px solid var(--sp-border);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(16,24,40,.04);
+    }
+
+    .profile-page .profile-confirm > label {
+        display: flex;
+        align-items: flex-start;
+        gap: .7rem;
+        max-width: 690px;
+        margin: 0;
+        color: #475467;
+        font-size: .82rem;
+        line-height: 1.6;
+        cursor: pointer;
+    }
+
+    .profile-page .profile-confirm input[type="checkbox"] {
+        flex: 0 0 19px;
+        width: 19px;
+        height: 19px;
+        margin-top: .15rem;
+        accent-color: var(--sp-pink);
+        cursor: pointer;
+    }
+
+    .profile-page .profile-save {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: .75rem 1.15rem;
+        border-radius: 11px;
+        font-size: .84rem;
+        font-weight: 800;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background .18s ease, opacity .18s ease;
+    }
+
+    .profile-page .profile-save:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    .profile-page .profile-form-errors {
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        color: var(--sp-danger);
+        background: #fff5f4;
+        border: 1px solid #f5c5c0;
+        border-radius: 12px;
+        font-size: .84rem;
+    }
+
+    .profile-page .profile-form-errors ul {
+        padding-left: 1.2rem;
+        margin: .4rem 0 0;
+    }
+
+    .profile-page .profile-form-errors a {
+        color: var(--sp-danger);
+        font-weight: 700;
+    }
+
+    .profile-page .profile-form-errors a:focus-visible {
+        outline: 2px solid var(--sp-danger);
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 1000px) {
+        .profile-page .profile-layout {
+            grid-template-columns: 205px minmax(0,1fr);
+            gap: 1rem;
+        }
+
+        .profile-page .profile-step {
+            gap: .55rem;
+            padding: .65rem .55rem;
+            font-size: .79rem;
+        }
+
+        .profile-page .profile-step > span {
+            flex-basis: 28px;
+            width: 28px;
+            height: 28px;
+        }
+    }
+
+    @media (max-width: 760px) {
+        .profile-page .profile-layout {
+            grid-template-columns: minmax(0,1fr);
+        }
+
+        .profile-page .profile-steps {
+            position: static;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: .35rem;
+            padding: .6rem;
+        }
+
+        .profile-page .profile-step {
+            min-height: 45px;
+            margin: 0;
+        }
+
+        .profile-page .profile-save-note {
+            grid-column: 1 / -1;
+            margin-top: .35rem;
+        }
+
+        .profile-page .profile-confirm {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .profile-page .profile-save {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .profile-page .profile-hero {
+            padding: 1.25rem;
+            border-radius: 15px;
+        }
+
+        .profile-page .profile-identity {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .profile-page .profile-grid {
+            grid-template-columns: minmax(0,1fr);
+            gap: 1rem;
+            padding: 1.1rem;
+        }
+
+        .profile-page .section-heading {
+            padding: 1.1rem;
+        }
+
+        .profile-page .section-heading > i {
+            flex-basis: 40px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.15rem;
+        }
+
+        .profile-page .read-only-strip {
+            grid-template-columns: minmax(0,1fr);
+            margin: 0 1.1rem 1.1rem;
+        }
+
+        .profile-page .read-only-item + .read-only-item {
+            border-top: 1px solid var(--sp-border);
+            border-left: 0;
+        }
+
+        .profile-page .profile-formset-wrap,
+        .profile-page .profile-section-body {
+            padding: 1.1rem;
+        }
+
+        .profile-page .profile-formset-wrap + .profile-formset-wrap {
+            padding-top: 0;
+        }
+
+        .profile-page .profile-steps {
+            grid-template-columns: minmax(0,1fr);
+        }
+
+        .profile-page .profile-navigation button {
+            flex: 1;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .profile-page *,
+        .profile-page *::before,
+        .profile-page *::after {
+            scroll-behavior: auto !important;
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block body %}
+<div class="profile-page">
+
+    <!-- Profile header -->
+    <header class="profile-hero">
+        <div class="profile-hero-copy">
+            <span class="eyebrow">
+                <i class="bi bi-person-check" aria-hidden="true"></i>
+                Staff Self-Service
+            </span>
+
+            <h1>My staff profile</h1>
+
+            <p>
+                Review and maintain your staff information, contact details,
+                qualifications, emergency contacts and payment information.
+                Review your entries before submitting your updates.
+            </p>
+        </div>
+
+        <div class="profile-identity">
+            {% if request.user.photo %}
+                <img src="{{ request.user.photo.url }}" alt="Profile photo">
+            {% else %}
+                <div class="profile-initials" aria-hidden="true">
+                    {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                </div>
+            {% endif %}
+
+            <div>
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                <small>{{ request.user.staff_reg_no|default:"Staff profile" }}</small>
+            </div>
+        </div>
+    </header>
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        id="staff-profile-form"
+    >
+        {% csrf_token %}
+
+        {% if forms.profile_form.non_field_errors or forms.personal_form.non_field_errors or forms.bank_form.non_field_errors %}
+            <div class="profile-form-errors" role="alert">
+                <strong>Please review the form errors below.</strong>
+                <ul>
+                    {% for error in forms.profile_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    {% for error in forms.personal_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    {% for error in forms.bank_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="profile-layout">
+
+            <!-- Section navigation -->
+            <aside class="profile-steps" aria-label="Profile sections">
+                <button type="button" class="profile-step active" data-section="identity" aria-current="step">
+                    <span>01</span> Identity
+                </button>
+
+                <button type="button" class="profile-step" data-section="personal">
+                    <span>02</span> Personal details
+                </button>
+
+                <button type="button" class="profile-step" data-section="contact">
+                    <span>03</span> Contact &amp; addresses
+                </button>
+
+                <button type="button" class="profile-step" data-section="family">
+                    <span>04</span> Family &amp; emergency
+                </button>
+
+                <button type="button" class="profile-step" data-section="career">
+                    <span>05</span> Education &amp; experience
+                </button>
+
+                <button type="button" class="profile-step" data-section="banking">
+                    <span>06</span> Bank details
+                </button>
+
+                <div class="profile-save-note">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    <span>Keep your information accurate. Access and review are governed by organizational HR procedures.</span>
+                </div>
+            </aside>
+
+            <main class="profile-content">
+
+                <!-- 01 Identity -->
+                <section class="profile-section active" id="identity" aria-labelledby="identity-heading">
+                    <div class="section-heading">
+                        <div>
+                            <span class="section-kicker">STEP 01 OF 06</span>
+                            <h2 id="identity-heading">Identity</h2>
+                            <p>Maintain your basic account information and profile identity.</p>
+                        </div>
+                        <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="profile-grid">
+                        {% for field in forms.profile_form %}
+                            <div class="profile-field {% if field.field.widget.input_type == 'checkbox' %}is-boolean{% endif %}">
+                                {% if field.field.widget.input_type == "checkbox" %}
+                                    <label class="profile-boolean" for="{{ field.id_for_label }}">
+                                        {{ field }}
+                                        <span class="boolean-check"><i class="bi bi-check2" aria-hidden="true"></i></span>
+                                        <span class="boolean-copy">
+                                            <span class="boolean-label">
+                                                {{ field.label }}{% if field.field.required %}<span class="boolean-required"> *</span>{% endif %}
+                                            </span>
+                                            {% if field.help_text %}<span class="boolean-description">{{ field.help_text }}</span>{% endif %}
+                                        </span>
+                                    </label>
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}">
+                                        {{ field.label }}{% if field.field.required %}<span class="boolean-required"> *</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <small class="field-error">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="read-only-strip">
+                        <div class="read-only-item">
+                            <span>Staff registration number</span>
+                            <strong>{{ request.user.staff_reg_no|default:"Not assigned" }}</strong>
+                        </div>
+                        <div class="read-only-item">
+                            <span>Department</span>
+                            <strong>{{ request.user.department|default:"Not assigned" }}</strong>
+                        </div>
+                        <div class="read-only-item">
+                            <span>Supervisor</span>
+                            <strong>{{ request.user.supervised_by|default:"Not assigned" }}</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 02 Personal details -->
+                <section class="profile-section" id="personal" aria-labelledby="personal-heading">
+                    <div class="section-heading">
+                        <div>
+                            <span class="section-kicker">STEP 02 OF 06</span>
+                            <h2 id="personal-heading">Personal details</h2>
+                            <p>Review your personal information for accurate HR records.</p>
+                        </div>
+                        <i class="bi bi-person-vcard" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="profile-grid">
+                        {% for field in forms.personal_form %}
+                            <div class="profile-field {% if field.field.widget.input_type == 'checkbox' %}is-boolean{% endif %}">
+                                {% if field.field.widget.input_type == "checkbox" %}
+                                    <label class="profile-boolean" for="{{ field.id_for_label }}">
+                                        {{ field }}
+                                        <span class="boolean-check"><i class="bi bi-check2" aria-hidden="true"></i></span>
+                                        <span class="boolean-copy">
+                                            <span class="boolean-label">
+                                                {{ field.label }}{% if field.field.required %}<span class="boolean-required"> *</span>{% endif %}
+                                            </span>
+                                            {% if field.help_text %}<span class="boolean-description">{{ field.help_text }}</span>{% endif %}
+                                        </span>
+                                    </label>
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}">
+                                        {{ field.label }}{% if field.field.required %}<span class="boolean-required"> *</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <small class="field-error">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- 03 Contact and addresses -->
+                <section class="profile-section" id="contact" aria-labelledby="contact-heading">
+                    <div class="section-heading">
+                        <div>
+                            <span class="section-kicker">STEP 03 OF 06</span>
+                            <h2 id="contact-heading">Contact &amp; addresses</h2>
+                            <p>Maintain your address records and contact channels.</p>
+                        </div>
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="profile-formset-wrap">
+                        {% include "staff/_formset.html" with formset=forms.addresses title="Addresses" icon="bi-geo-alt" empty_text="Add an address" %}
+                    </div>
+
+                    <div class="profile-formset-wrap">
+                        {% include "staff/_formset.html" with formset=forms.contacts title="Contact channels" icon="bi-telephone" empty_text="Add a contact channel" %}
+                    </div>
+                </section>
+
+                <!-- 04 Family and emergency -->
+                <section class="profile-section" id="family" aria-labelledby="family-heading">
+                    <div class="section-heading">
+                        <div>
+                            <span class="section-kicker">STEP 04 OF 06</span>
+                            <h2 id="family-heading">Family &amp; emergency</h2>
+                            <p>Maintain emergency contact and dependant records where applicable.</p>
+                        </div>
+                        <i class="bi bi-people" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="profile-formset-wrap">
+                        {% include "staff/_formset.html" with formset=forms.emergency title="Emergency contacts" icon="bi-heart-pulse" empty_text="Add an emergency contact" %}
+                    </div>
+
+                    <div class="profile-formset-wrap">
+                        {% include "staff/_formset.html" with formset=forms.dependants title="Dependants" icon="bi-people" empty_text="Add a dependant" %}
+                    </div>
+                </section>
+
+                <!-- 05 Education and experience -->
+                <section class="profile-section" id="career" aria-labelledby="career-heading">
+                    <div class="section-heading">
+                        <div>
+                            <span class="section-kicker">STEP 05 OF 06</span>
+                            <h2 id="career-heading">Education &amp; experience</h2>
+                            <p>Keep your qualifications and employment history up to date.</p>
+                        </div>
+                        <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="profile-formset-wrap">
+                        {% include "staff/_formset.html" with formset=forms.education title="Education history" icon="bi-mortarboard" empty_text="Add education" %}
+                    </div>
+
+                    <div class="profile-formset-wrap">
+                        {% include "staff/_formset.html" with formset=forms.experience title="Work experience" icon="bi-briefcase" empty_text="Add work experience" %}
+                    </div>
+                </section>
+
+                <!-- 06 Bank details -->
+                <section class="profile-section" id="banking" aria-labelledby="banking-heading">
+                    <div class="section-heading">
+                        <div>
+                            <span class="section-kicker">STEP 06 OF 06</span>
+                            <h2 id="banking-heading">Bank details</h2>
+                            <p>Review payment information required for authorized HR or Finance processes.</p>
+                        </div>
+                        <i class="bi bi-bank" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="profile-grid">
+                        {% for field in forms.bank_form %}
+                            <div class="profile-field {% if field.field.widget.input_type == 'checkbox' %}is-boolean{% endif %}">
+                                {% if field.field.widget.input_type == "checkbox" %}
+                                    <label class="profile-boolean" for="{{ field.id_for_label }}">
+                                        {{ field }}
+                                        <span class="boolean-check"><i class="bi bi-check2" aria-hidden="true"></i></span>
+                                        <span class="boolean-copy">
+                                            <span class="boolean-label">
+                                                {{ field.label }}{% if field.field.required %}<span class="boolean-required"> *</span>{% endif %}
+                                            </span>
+                                            {% if field.help_text %}<span class="boolean-description">{{ field.help_text }}</span>{% endif %}
+                                        </span>
+                                    </label>
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}">
+                                        {{ field.label }}{% if field.field.required %}<span class="boolean-required"> *</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <small class="field-error">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- Section navigation -->
+                <nav class="profile-navigation" aria-label="Profile section navigation">
+                    <button type="button" class="btn btn-light" id="previous-section" disabled>
+                        <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
+                        Back
+                    </button>
+
+                    <button type="button" class="btn btn-primary" id="next-section">
+                        Continue
+                        <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                    </button>
+                </nav>
+            </main>
+        </div>
+
+        <!-- Confirmation and save -->
+        <div class="profile-confirm">
+            <label for="confirm_update">
+                <input type="checkbox" name="confirm_update" id="confirm_update">
+                <span>
+                    I confirm that the information I have provided is accurate
+                    and may be used for official staff records in accordance
+                    with organizational policy.
+                </span>
+            </label>
+
+            <button type="submit" class="profile-save" id="save-profile" disabled>
+                <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                Confirm &amp; save profile
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+(() => {
+    "use strict";
+
+    const form = document.getElementById("staff-profile-form");
+
+    if (!form) return;
+
+    const sections = Array.from(
+        form.querySelectorAll(".profile-section")
+    );
+
+    const steps = Array.from(
+        form.querySelectorAll(".profile-step")
+    );
+
+    const previous = document.getElementById("previous-section");
+    const next = document.getElementById("next-section");
+    const confirmation = document.getElementById("confirm_update");
+    const save = document.getElementById("save-profile");
+
+    if (!sections.length || !steps.length) return;
+
+    let current = 0;
+
+    function renderSection(index, shouldScroll = true) {
+        current = Math.max(0, Math.min(index, sections.length - 1));
+
+        sections.forEach((section, i) => {
+            const active = i === current;
+            section.classList.toggle("active", active);
+            section.setAttribute("aria-hidden", active ? "false" : "true");
+
+            if ("inert" in section) {
+                section.inert = !active;
+            }
+        });
+
+        steps.forEach((step, i) => {
+            const active = i === current;
+            step.classList.toggle("active", active);
+
+            if (active) {
+                step.setAttribute("aria-current", "step");
+            } else {
+                step.removeAttribute("aria-current");
+            }
+        });
+
+        previous.disabled = current === 0;
+        next.disabled = current === sections.length - 1;
+
+        next.innerHTML = current === sections.length - 1
+            ? '<i class="bi bi-check2 me-2" aria-hidden="true"></i>Last section'
+            : 'Continue <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>';
+
+        if (shouldScroll) {
+            const top = form.getBoundingClientRect().top + window.scrollY - 20;
+
+            window.scrollTo({
+                top: Math.max(0, top),
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                    ? "auto"
+                    : "smooth"
+            });
+        }
+    }
+
+    steps.forEach((step, index) => {
+        step.addEventListener("click", () => renderSection(index));
+    });
+
+    previous.addEventListener("click", () => {
+        renderSection(current - 1);
+    });
+
+    next.addEventListener("click", () => {
+        if (current < sections.length - 1) {
+            renderSection(current + 1);
+        }
+    });
+
+    confirmation.addEventListener("change", () => {
+        save.disabled = !confirmation.checked;
+    });
+
+    /*
+     * Find validation errors across the main forms and included formsets.
+     * Open the relevant section so errors are not hidden from the user.
+     */
+    const errorElement = form.querySelector(
+        ".field-error, .errorlist, .is-invalid, [aria-invalid='true']"
+    );
+
+    if (errorElement) {
+        const section = errorElement.closest(".profile-section");
+
+        if (section) {
+            const index = sections.indexOf(section);
+
+            if (index >= 0) {
+                renderSection(index, false);
+            }
+        }
+    } else {
+        renderSection(0, false);
+    }
+
+    /*
+     * Prevent accidental submission until the user has confirmed.
+     * The confirmation checkbox is a user acknowledgement, not a
+     * substitute for server-side validation or authorization.
+     */
+    form.addEventListener("submit", (event) => {
+        if (!confirmation.checked) {
+            event.preventDefault();
+            save.disabled = false;
+            confirmation.focus();
+            return;
+        }
+
+        save.disabled = true;
+        save.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Saving profile…';
+    });
+
+})();
+</script>
+{% endblock %}

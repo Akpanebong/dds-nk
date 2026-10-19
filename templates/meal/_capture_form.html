@@ -1,0 +1,1 @@
+<form id="modal-capture-form" method="post" action="{% url 'meal:activity_capture' activity.pk %}">{% csrf_token %}<p class="text-muted">{{ activity.get_activity_type_display }} · {{ activity.reporting_frequency|default:'No frequency set' }}</p>{{ form.as_p }}<button class="btn btn-primary w-100">Submit data</button></form>

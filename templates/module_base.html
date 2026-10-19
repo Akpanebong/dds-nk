@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<style>
+    .sidebar-toggle { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 1px solid #e8edf4; border-radius: 10px; background: #fff; color: #d95f02; font-size: 20px; }
+    /* Keep shared form panels centred in the available workspace. */
+    .content .form-panel { width: 100%; margin-left: auto; margin-right: auto; }
+    @media (min-width: 901px) {
+        .sidebar, .workspace, .content { transition: width .2s ease, flex-basis .2s ease, padding .2s ease; }
+        .app-shell.sidebar-collapsed .sidebar { width: 76px; flex-basis: 76px; }
+        .app-shell.sidebar-collapsed .content { padding-left: clamp(30px, 4vw, 72px); padding-right: clamp(30px, 4vw, 72px); }
+        .app-shell.sidebar-collapsed .content .form-panel { max-width: none; }
+        .app-shell.sidebar-collapsed .sidebar-section-label,
+        .app-shell.sidebar-collapsed .sidebar nav a > span:not(.nav-group-icon),
+        .app-shell.sidebar-collapsed .side-footer a > span,
+        .app-shell.sidebar-collapsed .nav-group-toggle > span:not(.nav-group-icon),
+        .app-shell.sidebar-collapsed .nav-group-chevron,
+        .app-shell.sidebar-collapsed .sidebar-dropdown summary > span,
+        .app-shell.sidebar-collapsed .sidebar-dropdown summary > .ms-auto,
+        .app-shell.sidebar-collapsed .sidebar-dropdown > a,
+        .app-shell.sidebar-collapsed .sidebar-action-label { display: none; }
+        .app-shell.sidebar-collapsed .sidebar nav a,
+        .app-shell.sidebar-collapsed .side-footer a,
+        .app-shell.sidebar-collapsed .nav-group-toggle,
+        .app-shell.sidebar-collapsed .sidebar-dropdown summary { justify-content: center; gap: 0; }
+        .app-shell.sidebar-collapsed .sidebar nav a.active { box-shadow: none; }
+        .app-shell.sidebar-collapsed .sidebar .nav-group > .collapse { padding-left: 0; border-left: 0; }
+        .app-shell.sidebar-collapsed .sidebar-action-wrap { padding-left: 0 !important; padding-right: 0 !important; }
+        .app-shell.sidebar-collapsed .sidebar-action-wrap a { justify-content: center; gap: 0; }
+        .app-shell.sidebar-collapsed .sidebar-action-wrap a i { margin-right: 0 !important; }
+    }
+    @media (max-width: 900px) { .sidebar-toggle { display: inline-flex; } }
+</style>
+
+<div class="app-shell">
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
+    <aside class="sidebar" id="sidebar" aria-label="Application navigation">
+
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav" aria-label="Workspace navigation">
+
+            {% if request.path|slice:':6' == '/meal/' %}
+
+                <!-- =========================
+                     CORE MEAL
+                ========================== -->
+                <div class="sidebar-section-label">
+                    <span>MEAL</span>
+                </div>
+
+                <a
+                    href="{% url 'meal:dashboard' %}"
+                    class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                >
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:hierarchy' %}"
+                    class="{% if request.resolver_match.url_name == 'hierarchy' or request.resolver_match.url_name == 'objective_list' %}active{% endif %}"
+                >
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Framework</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:output_list' %}"
+                    class="{% if request.resolver_match.url_name == 'output_list' %}active{% endif %}"
+                >
+                    <i class="bi bi-boxes"></i>
+                    <span>Outputs</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:activities' %}"
+                    class="{% if request.resolver_match.url_name == 'activities' or request.resolver_match.url_name == 'activity_create' or request.resolver_match.url_name == 'activity_update' %}active{% endif %}"
+                >
+                    <i class="bi bi-list-check"></i>
+                    <span>Activities</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:records' %}"
+                    class="{% if request.resolver_match.url_name == 'records' or request.resolver_match.url_name == 'record_update' or request.resolver_match.url_name == 'review_record' %}active{% endif %}"
+                >
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Data Records</span>
+                </a>
+
+
+                <!-- =========================
+                     FY TRACKER
+                ========================== -->
+                <div class="sidebar-section-label">
+                    <span>FY TRACKER</span>
+                </div>
+
+                <a
+                    href="{% url 'meal:quarterplan_list' %}"
+                    class="{% if 'quarterplan' in request.resolver_match.url_name %}active{% endif %}"
+                >
+                    <i class="bi bi-calendar3"></i>
+                    <span>Quarter Plans</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:iptt' %}"
+                    class="{% if request.resolver_match.url_name == 'iptt' %}active{% endif %}"
+                >
+                    <i class="bi bi-table"></i>
+                    <span>IPTT</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:output_dashboard' %}"
+                    class="{% if request.resolver_match.url_name == 'output_dashboard' %}active{% endif %}"
+                >
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span>Output Dashboard</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:finance' %}"
+                    class="{% if request.resolver_match.url_name == 'finance' %}active{% endif %}"
+                >
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Finance</span>
+                </a>
+
+                <a
+                    href="{% url 'meal:fy26_output' %}"
+                    class="{% if request.resolver_match.url_name == 'fy26_output' %}active{% endif %}"
+                >
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>FY Output</span>
+                </a>
+
+
+            {% elif request.path|slice:':4' == '/hr/' %}
+
+                {% include 'hr/_sidebar.html' %}
+
+            {% else %}
+
+                {% block nav %}{% endblock %}
+
+            {% endif %}
+
+        </nav>
+
+
+        <!-- Sidebar Footer -->
+        <div class="side-footer">
+
+            <a
+                href="{% url 'portal' %}"
+                title="Return to all workspaces"
+            >
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span>All Workspaces</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN WORKSPACE
+    ========================================================== -->
+    <section class="workspace">
+
+        <!-- Header -->
+        <header class="workspace-head">
+
+            <!-- Mobile Sidebar Toggle -->
+            <button
+                type="button"
+                class="mobile-toggle sidebar-toggle"
+                id="sidebarToggle"
+                aria-label="Toggle navigation sidebar"
+                aria-controls="sidebar"
+                aria-expanded="false"
+            >
+                <i class="bi bi-list"></i>
+            </button>
+
+
+            <!-- Breadcrumb / Page Identity -->
+            <div class="workspace-identity">
+                {% block crumb %}{% endblock %}
+            </div>
+
+
+            <!-- User -->
+            <div
+                class="head-user"
+                title="Signed in user"
+            >
+                <span class="status-dot" aria-hidden="true"></span>
+
+                <span class="head-user-name">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+            </div>
+
+        </header>
+
+
+        <!-- Page Content -->
+        <main class="content" id="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     SIDEBAR MOBILE BEHAVIOUR
+========================================================== -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const shell = document.querySelector('.app-shell');
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebarToggle');
+
+    if (!shell || !sidebar || !toggle) return;
+
+    const storageKey = 'dds-sidebar-collapsed';
+    const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
+
+    if (!isMobile() && window.localStorage.getItem(storageKey) === 'true') {
+        shell.classList.add('sidebar-collapsed');
+        toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    toggle.addEventListener('click', function () {
+        if (isMobile()) {
+            const isOpen = sidebar.classList.toggle('open');
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        } else {
+            const isCollapsed = shell.classList.toggle('sidebar-collapsed');
+            window.localStorage.setItem(storageKey, isCollapsed ? 'true' : 'false');
+            toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        }
+
+    });
+
+
+    /*
+     * Close the mobile sidebar after selecting
+     * a navigation item.
+     */
+    sidebar.querySelectorAll('a').forEach(function (link) {
+
+        link.addEventListener('click', function () {
+
+            if (window.innerWidth <= 900) {
+                sidebar.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+        });
+
+    });
+
+
+    /*
+     * Close sidebar when clicking outside it
+     * on smaller screens.
+     */
+    document.addEventListener('click', function (event) {
+
+        if (window.innerWidth > 991) return;
+
+        if (
+            sidebar.classList.contains('open') &&
+            !sidebar.contains(event.target) &&
+            !toggle.contains(event.target)
+        ) {
+            sidebar.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+
+    });
+
+
+    /*
+     * Reset mobile state when returning to desktop.
+     */
+    window.addEventListener('resize', function () {
+
+        if (window.innerWidth > 900) {
+            sidebar.classList.remove('open');
+            toggle.setAttribute('aria-expanded', shell.classList.contains('sidebar-collapsed') ? 'false' : 'true');
+        }
+
+    });
+
+});
+</script>
+
+{% endblock %}

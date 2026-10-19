@@ -1,0 +1,494 @@
+{% extends 'module_base.html' %}
+
+{% block title %}Orientation Plan Details | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="orientation-plan-detail">
+
+    <style>
+        .orientation-plan-detail {
+            --op-pink: #e50078;
+            --op-plum: #3b2938;
+            --op-muted: #77808c;
+            --op-border: #e9e7ec;
+            --op-soft: #f8f7fa;
+            color: var(--op-plum);
+            padding-bottom: 2rem;
+        }
+
+        .orientation-plan-detail * {
+            box-sizing: border-box;
+        }
+
+        .orientation-plan-detail .op-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            background: linear-gradient(120deg, #3b2938, #56364d 70%, #8f1458);
+            border-radius: 20px;
+        }
+
+        .orientation-plan-detail .op-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .65rem;
+            color: #ffd3e8;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .orientation-plan-detail .op-hero h1 {
+            margin: 0 0 .55rem;
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .orientation-plan-detail .op-hero p {
+            max-width: 600px;
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .orientation-plan-detail .op-hero-icon {
+            display: grid;
+            flex: 0 0 76px;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 22px;
+            font-size: 2rem;
+        }
+
+        .orientation-plan-detail .op-panel {
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--op-border);
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .045);
+        }
+
+        .orientation-plan-detail .op-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.35rem 1.5rem;
+            border-bottom: 1px solid var(--op-border);
+        }
+
+        .orientation-plan-detail .op-panel-header h2 {
+            margin: 0;
+            color: var(--op-plum);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .orientation-plan-detail .op-panel-header p {
+            margin: .35rem 0 0;
+            color: var(--op-muted);
+            font-size: .84rem;
+        }
+
+        .orientation-plan-detail .op-staff-card {
+            display: flex;
+            align-items: center;
+            gap: 1.15rem;
+            padding: 1.5rem;
+        }
+
+        .orientation-plan-detail .op-staff-avatar {
+            display: grid;
+            flex: 0 0 64px;
+            width: 64px;
+            height: 64px;
+            place-items: center;
+            color: var(--op-pink);
+            background: #fff0f7;
+            border: 1px solid #f8d4e7;
+            border-radius: 18px;
+            font-size: 1.8rem;
+        }
+
+        .orientation-plan-detail .op-field-label {
+            display: block;
+            margin-bottom: .35rem;
+            color: var(--op-muted);
+            font-size: .74rem;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .orientation-plan-detail .op-staff-name {
+            margin: 0;
+            color: var(--op-plum);
+            font-size: 1.2rem;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .orientation-plan-detail .op-staff-caption {
+            margin: .35rem 0 0;
+            color: var(--op-muted);
+            font-size: .85rem;
+        }
+
+        .orientation-plan-detail .op-session-count {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .45rem .75rem;
+            color: var(--op-pink);
+            background: #fff0f7;
+            border-radius: 10px;
+            font-size: .8rem;
+            font-weight: 800;
+        }
+
+        .orientation-plan-detail .op-session-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .orientation-plan-detail .op-session-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            min-width: 0;
+            padding: 1.15rem;
+            background: #fff;
+            border: 1px solid var(--op-border);
+            border-radius: 15px;
+            transition: border-color .2s ease, box-shadow .2s ease,
+                        transform .2s ease;
+        }
+
+        .orientation-plan-detail .op-session-card:hover {
+            border-color: #f0a6ce;
+            box-shadow: 0 8px 22px rgba(59, 41, 56, .06);
+            transform: translateY(-2px);
+        }
+
+        .orientation-plan-detail .op-session-icon {
+            display: grid;
+            flex: 0 0 44px;
+            width: 44px;
+            height: 44px;
+            place-items: center;
+            color: var(--op-pink);
+            background: #fff0f7;
+            border-radius: 12px;
+            font-size: 1.2rem;
+        }
+
+        .orientation-plan-detail .op-session-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .orientation-plan-detail .op-session-number {
+            display: block;
+            margin-bottom: .35rem;
+            color: var(--op-muted);
+            font-size: .7rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .orientation-plan-detail .op-session-content h3 {
+            margin: 0 0 .85rem;
+            color: var(--op-plum);
+            font-size: .98rem;
+            font-weight: 800;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .orientation-plan-detail .op-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            max-width: 100%;
+            padding: .4rem .7rem;
+            color: #8c0750;
+            background: #fff0f7;
+            border: 1px solid #f7c6df;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .orientation-plan-detail .op-empty {
+            padding: 2.75rem 1.25rem;
+            text-align: center;
+        }
+
+        .orientation-plan-detail .op-empty-icon {
+            display: grid;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            place-items: center;
+            color: var(--op-pink);
+            background: #fff0f7;
+            border-radius: 19px;
+            font-size: 1.8rem;
+        }
+
+        .orientation-plan-detail .op-empty h3 {
+            margin-bottom: .5rem;
+            color: var(--op-plum);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .orientation-plan-detail .op-empty p {
+            max-width: 460px;
+            margin: 0 auto;
+            color: var(--op-muted);
+            font-size: .88rem;
+            line-height: 1.7;
+        }
+
+        .orientation-plan-detail .op-note {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            margin: 0 1.5rem 1.5rem;
+            padding: 1rem 1.1rem;
+            color: #654f60;
+            background: #fff6fa;
+            border: 1px solid #f7d8e8;
+            border-radius: 12px;
+            font-size: .84rem;
+            line-height: 1.65;
+        }
+
+        .orientation-plan-detail .op-note i {
+            margin-top: .1rem;
+            color: var(--op-pink);
+            font-size: 1.05rem;
+        }
+
+        @media (max-width: 768px) {
+            .orientation-plan-detail .op-session-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .orientation-plan-detail .op-hero {
+                padding: 1.35rem;
+                border-radius: 15px;
+            }
+
+            .orientation-plan-detail .op-hero-icon {
+                display: none;
+            }
+
+            .orientation-plan-detail .op-panel-header {
+                padding: 1.1rem;
+            }
+
+            .orientation-plan-detail .op-staff-card {
+                align-items: flex-start;
+                padding: 1.1rem;
+            }
+
+            .orientation-plan-detail .op-staff-avatar {
+                flex-basis: 50px;
+                width: 50px;
+                height: 50px;
+                border-radius: 14px;
+                font-size: 1.4rem;
+            }
+
+            .orientation-plan-detail .op-session-grid {
+                padding: 1rem;
+            }
+
+            .orientation-plan-detail .op-note {
+                margin: 0 1rem 1rem;
+            }
+        }
+    </style>
+
+    <!-- Page header -->
+    <section class="op-hero">
+        <div>
+            <div class="op-eyebrow">
+                <i class="bi bi-person-workspace"></i>
+                Human Resources
+            </div>
+            <h1>Orientation Plan Details</h1>
+            <p>
+                Review the staff member's orientation plan and track
+                assigned departmental sessions and their current statuses.
+            </p>
+        </div>
+
+        <div class="op-hero-icon" aria-hidden="true">
+            <i class="bi bi-clipboard2-check"></i>
+        </div>
+    </section>
+
+    <!-- Staff information -->
+    <section class="op-panel">
+        <div class="op-panel-header">
+            <div>
+                <h2>
+                    <i class="bi bi-person-vcard me-2"
+                       style="color: var(--op-pink);"></i>
+                    Staff information
+                </h2>
+                <p>Employee associated with this orientation plan.</p>
+            </div>
+        </div>
+
+        <div class="op-staff-card">
+            <div class="op-staff-avatar" aria-hidden="true">
+                <i class="bi bi-person-badge"></i>
+            </div>
+
+            <div>
+                <span class="op-field-label">Staff member</span>
+                <h2 class="op-staff-name">
+                    {{ plan.staff|default:"Staff member not specified" }}
+                </h2>
+                <p class="op-staff-caption">
+                    <i class="bi bi-mortarboard me-1"></i>
+                    Staff orientation and development
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Departmental sessions -->
+    <section class="op-panel">
+        <div class="op-panel-header">
+            <div>
+                <h2>
+                    <i class="bi bi-calendar2-week me-2"
+                       style="color: var(--op-pink);"></i>
+                    Departmental sessions
+                </h2>
+                <p>Orientation activities associated with this plan.</p>
+            </div>
+
+            <span class="op-session-count">
+                <i class="bi bi-collection"></i>
+                {{ plan.sessions.count }} session{{ plan.sessions.count|pluralize }}
+            </span>
+        </div>
+
+        {% with sessions=plan.sessions.all %}
+            {% if sessions %}
+                <div class="op-session-grid">
+                    {% for session in sessions %}
+                        <article class="op-session-card">
+                            <div class="op-session-icon" aria-hidden="true">
+                                <i class="bi bi-building"></i>
+                            </div>
+
+                            <div class="op-session-content">
+                                <span class="op-session-number">
+                                    Session {{ forloop.counter }}
+                                </span>
+
+                                <h3>
+                                    {{ session.department|default:"Department not specified" }}
+                                </h3>
+
+                                <span class="op-field-label">
+                                    Current status
+                                </span>
+
+                                <span class="op-status">
+                                    <i class="bi bi-activity"></i>
+                                    {{ session.get_status_display }}
+                                </span>
+
+                                {% if session.department.head_id == request.user.id %}
+                                    <div class="mt-3 d-flex flex-wrap gap-2">
+                                        {% if session.status == 'awaiting_schedule' %}
+                                            <a class="btn btn-sm btn-primary" href="{% url 'hr:orientation_head_session_schedule' session.id %}">
+                                                <i class="bi bi-calendar2-plus me-1"></i>
+                                                Schedule orientation
+                                            </a>
+                                        {% elif session.status == 'scheduled' %}
+                                            <a class="btn btn-sm btn-outline-primary" href="{% url 'hr:orientation_head_session_schedule' session.id %}">
+                                                <i class="bi bi-pencil-square me-1"></i>
+                                                Reschedule
+                                            </a>
+                                            <a class="btn btn-sm btn-success" href="{% url 'hr:orientation_head_session_complete' session.id %}">
+                                                <i class="bi bi-check2-circle me-1"></i>
+                                                Mark complete
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="op-empty">
+                    <div class="op-empty-icon">
+                        <i class="bi bi-calendar2-minus"></i>
+                    </div>
+                    <h3>No orientation sessions yet</h3>
+                    <p>
+                        No departmental sessions have been added to this
+                        orientation plan. Add sessions through the relevant
+                        HR workflow when they are ready to be scheduled.
+                    </p>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="op-note">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                <strong>HR follow-up</strong>
+                <div>
+                    Ensure departmental orientation activities are recorded
+                    and session statuses are updated as the staff member
+                    progresses through the programme.
+                </div>
+            </div>
+        </div>
+
+        {% if plan.status == 'completed' and plan.staff.status == 'Probation' %}
+        <div class="p-3 border-top">
+            <form method="post" action="{% url 'hr:confirm_probation' plan.staff.pk plan.staff.slug %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check2-circle me-1"></i> Confirm staff after probation
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

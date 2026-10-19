@@ -1,0 +1,957 @@
+
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Purchase Orders | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-cart-check me-1"></i> PROCUREMENT
+    </span>
+    <h1 class="mb-0">Purchase orders</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .po-list {
+        --po-primary: #e50078;
+        --po-primary-dark: #b80060;
+        --po-ink: #302632;
+        --po-muted: #796e79;
+        --po-border: #eee7ed;
+        --po-soft: #fff3f9;
+        color: var(--po-ink);
+        padding-bottom: 2rem;
+        min-width: 0;
+    }
+
+    /* Dashboard hero */
+    .po-list .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+        border-radius: 18px;
+        color: #fff;
+        background: linear-gradient(125deg, #302431, #563047 65%, #842354);
+    }
+
+    .po-list .hero::after {
+        content: "";
+        position: absolute;
+        width: 210px;
+        height: 210px;
+        border: 32px solid rgba(255,255,255,.06);
+        border-radius: 50%;
+        right: -65px;
+        top: -100px;
+        pointer-events: none;
+    }
+
+    .po-list .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .po-list .eyebrow {
+        color: #f6bbdc;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .po-list .hero h2 {
+        font-size: clamp(1.45rem, 3vw, 2rem);
+        font-weight: 850;
+        letter-spacing: -.035em;
+    }
+
+    .po-list .hero p {
+        max-width: 660px;
+        color: rgba(255,255,255,.76);
+        font-size: .9rem;
+        line-height: 1.7;
+        margin-bottom: 0;
+    }
+
+    .po-list .hero-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 17px;
+        background: rgba(255,255,255,.1);
+        font-size: 1.8rem;
+    }
+
+    /* KPI cards */
+    .po-list .kpi-card {
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        padding: 1.3rem;
+        background: #fff;
+        border: 1px solid var(--po-border);
+        border-radius: 15px;
+        box-shadow: 0 4px 18px rgba(48,38,50,.035);
+    }
+
+    .po-list .kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .po-list .kpi-label {
+        color: var(--po-muted);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .075em;
+        text-transform: uppercase;
+    }
+
+    .po-list .kpi-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        background: var(--po-soft);
+        color: var(--po-primary);
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .po-list .kpi-value {
+        display: block;
+        margin-top: .8rem;
+        color: var(--po-ink);
+        font-size: clamp(1.25rem, 2.5vw, 1.9rem);
+        font-weight: 850;
+        letter-spacing: -.04em;
+        overflow-wrap: anywhere;
+    }
+
+    .po-list .kpi-caption {
+        margin-top: .35rem;
+        color: var(--po-muted);
+        font-size: .77rem;
+    }
+
+    /* Register panel */
+    .po-list .section-card {
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--po-border);
+        border-radius: 15px;
+        box-shadow: 0 4px 18px rgba(48,38,50,.035);
+    }
+
+    .po-list .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.25rem 1.4rem;
+        border-bottom: 1px solid var(--po-border);
+    }
+
+    .po-list .section-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .po-list .section-subtitle {
+        display: block;
+        margin-top: .35rem;
+        color: var(--po-muted);
+        font-size: .8rem;
+    }
+
+    .po-list .record-count {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .7rem;
+        border: 1px solid #f1d6e5;
+        border-radius: 30px;
+        background: var(--po-soft);
+        color: var(--po-primary-dark);
+        font-size: .76rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    /* Toolbar: all controls stay on one row */
+    .po-list .toolbar {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+        padding: 1rem 1.4rem;
+        border-bottom: 1px solid var(--po-border);
+        background: #fdfbfd;
+    }
+
+    .po-list .search-box {
+        position: relative;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .po-list .search-box > i {
+        position: absolute;
+        left: .85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #948591;
+        pointer-events: none;
+    }
+
+    .po-list .search-input {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        padding: .65rem .85rem .65rem 2.4rem;
+        border: 1px solid #e8e0e7;
+        border-radius: 9px;
+        outline: none;
+        background: #fff;
+        color: var(--po-ink);
+        font-size: .84rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .po-list .search-input:focus,
+    .po-list .filter-select:focus {
+        border-color: var(--po-primary);
+        box-shadow: 0 0 0 3px rgba(229,0,120,.09);
+    }
+
+    .po-list .filter-select {
+        display: block;
+        flex: 0 0 220px;
+        width: 220px;
+        min-width: 0;
+        height: 44px;
+        padding: .6rem 2rem .6rem .8rem;
+        border: 1px solid #e8e0e7;
+        border-radius: 9px;
+        background-color: #fff;
+        color: var(--po-ink);
+        font-size: .82rem;
+    }
+
+    .po-list .reset-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        flex: 0 0 auto;
+        height: 44px;
+        padding: .6rem .9rem;
+        border: 1px solid #e8e0e7;
+        border-radius: 9px;
+        background: #fff;
+        color: #625562;
+        font-size: .82rem;
+        font-weight: 650;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background .2s, color .2s, border-color .2s;
+    }
+
+    .po-list .reset-btn:hover {
+        border-color: #f1d6e5;
+        background: var(--po-soft);
+        color: var(--po-primary-dark);
+    }
+
+    .po-list .reset-btn:focus-visible,
+    .po-list .view-btn:focus-visible,
+    .po-list .po-reference:focus-visible {
+        outline: 3px solid rgba(229,0,120,.25);
+        outline-offset: 3px;
+    }
+
+    /* Table */
+    .po-list .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .po-list .orders-table {
+        width: 100%;
+        min-width: 800px;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .po-list .orders-table thead th {
+        padding: .95rem 1rem;
+        background: #faf7f9;
+        border-bottom: 1px solid var(--po-border);
+        color: var(--po-muted);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .065em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .po-list .orders-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1edf0;
+        vertical-align: middle;
+        font-size: .83rem;
+    }
+
+    .po-list .orders-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .po-list .orders-table tbody tr:hover {
+        background: #fffbfd;
+    }
+
+    .po-list .po-reference {
+        display: inline-flex;
+        align-items: center;
+        gap: .6rem;
+        color: var(--po-primary-dark);
+        font-weight: 800;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+    }
+
+    .po-list .po-reference:hover {
+        color: var(--po-primary);
+        text-decoration: underline;
+    }
+
+    .po-list .reference-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        background: var(--po-soft);
+        color: var(--po-primary);
+        font-size: 1rem;
+    }
+
+    .po-list .supplier-name {
+        font-weight: 750;
+        color: var(--po-ink);
+        overflow-wrap: anywhere;
+    }
+
+    .po-list .secondary-text {
+        display: block;
+        margin-top: .25rem;
+        color: var(--po-muted);
+        font-size: .74rem;
+    }
+
+    .po-list .rfq-badge,
+    .po-list .direct-badge {
+        display: inline-block;
+        padding: .35rem .55rem;
+        border-radius: 7px;
+        font-size: .75rem;
+        font-weight: 650;
+        overflow-wrap: anywhere;
+    }
+
+    .po-list .rfq-badge {
+        border: 1px solid #eae3e9;
+        background: #faf8fa;
+        color: #655766;
+    }
+
+    .po-list .direct-badge {
+        border: 1px solid #f1d6e5;
+        background: var(--po-soft);
+        color: var(--po-primary-dark);
+    }
+
+    .po-list .amount {
+        color: var(--po-ink);
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .po-list .date-text {
+        white-space: nowrap;
+        color: #554956;
+    }
+
+    .po-list .view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        min-height: 36px;
+        padding: .45rem .7rem;
+        border: 1px solid #f0d2e3;
+        border-radius: 8px;
+        background: var(--po-soft);
+        color: var(--po-primary-dark);
+        font-size: .78rem;
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all .2s ease;
+    }
+
+    .po-list .view-btn:hover {
+        background: var(--po-primary);
+        border-color: var(--po-primary);
+        color: #fff;
+    }
+
+    /* Empty states */
+    .po-list .empty-state {
+        padding: 3.5rem 1.25rem;
+        text-align: center;
+        color: var(--po-muted);
+    }
+
+    .po-list .empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        height: 68px;
+        margin-bottom: 1rem;
+        border-radius: 20px;
+        background: var(--po-soft);
+        color: var(--po-primary);
+        font-size: 1.8rem;
+    }
+
+    .po-list .empty-title {
+        color: var(--po-ink);
+        font-weight: 800;
+        font-size: 1rem;
+    }
+
+    .po-list .empty-description {
+        max-width: 420px;
+        margin: .45rem auto 0;
+        font-size: .83rem;
+        line-height: 1.7;
+    }
+
+    .po-list .table-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding: 1rem 1.4rem;
+        border-top: 1px solid var(--po-border);
+        background: #fdfbfd;
+        color: var(--po-muted);
+        font-size: .78rem;
+    }
+
+    .po-list .visually-filtered-empty {
+        display: none;
+    }
+
+    /* Medium screens: compact toolbar without wrapping */
+    @media (max-width: 767.98px) {
+        .po-list .toolbar {
+            gap: 8px;
+            padding: 1rem;
+        }
+
+        .po-list .filter-select {
+            flex-basis: 180px;
+            width: 180px;
+            font-size: .76rem;
+        }
+
+        .po-list .search-input {
+            font-size: .78rem;
+        }
+
+        .po-list .reset-btn {
+            padding-inline: .7rem;
+        }
+    }
+
+    /* Mobile: search, filter and reset remain in a single row */
+    @media (max-width: 575.98px) {
+        .po-list .hero {
+            padding: 1.25rem;
+            border-radius: 14px;
+        }
+
+        .po-list .hero-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.35rem;
+        }
+
+        .po-list .section-header,
+        .po-list .table-footer {
+            padding: 1rem;
+        }
+
+        .po-list .toolbar {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 6px;
+            padding: .85rem;
+        }
+
+        .po-list .search-box {
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: none;
+        }
+
+        .po-list .search-input {
+            height: 40px;
+            padding: .5rem .4rem .5rem 1.9rem;
+            font-size: .72rem;
+        }
+
+        .po-list .search-box > i {
+            left: .6rem;
+            font-size: .78rem;
+        }
+
+        .po-list .filter-select {
+            flex: 0 1 135px;
+            width: 135px;
+            height: 40px;
+            padding: .4rem 1.25rem .4rem .4rem;
+            font-size: .68rem;
+        }
+
+        .po-list .reset-btn {
+            flex: 0 0 38px;
+            width: 38px;
+            height: 40px;
+            padding: 0;
+            font-size: 0;
+            gap: 0;
+        }
+
+        .po-list .reset-btn i {
+            font-size: 1rem;
+        }
+
+        .po-list .kpi-card {
+            padding: .95rem;
+        }
+
+        .po-list .kpi-icon {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+
+        .po-list .kpi-label {
+            font-size: .62rem;
+        }
+
+        .po-list .kpi-value {
+            font-size: clamp(1rem, 4vw, 1.4rem);
+        }
+
+        .po-list .kpi-caption {
+            font-size: .7rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .po-list .toolbar {
+            gap: 4px;
+            padding: .65rem;
+        }
+
+        .po-list .filter-select {
+            flex-basis: 112px;
+            width: 112px;
+            font-size: .63rem;
+        }
+
+        .po-list .reset-btn {
+            flex-basis: 34px;
+            width: 34px;
+        }
+
+        .po-list .search-input {
+            font-size: .67rem;
+        }
+    }
+
+    @media print {
+        .po-list .toolbar,
+        .po-list .view-btn,
+        .po-list .reset-btn {
+            display: none !important;
+        }
+
+        .po-list .hero,
+        .po-list .section-card,
+        .po-list .kpi-card {
+            box-shadow: none;
+            break-inside: avoid;
+        }
+
+        .po-list .table-wrap {
+            overflow: visible;
+        }
+
+        .po-list .orders-table {
+            min-width: 0;
+        }
+    }
+</style>
+
+<div class="po-list">
+
+    <!-- Dashboard header -->
+    <section class="hero">
+        <div class="hero-content d-flex align-items-center justify-content-between gap-3">
+            <div>
+                <div class="eyebrow mb-2">
+                    <i class="bi bi-shield-check me-1"></i>
+                    DDS-NK THRIVE · PROCUREMENT INTELLIGENCE
+                </div>
+
+                <h2 class="mb-2">Purchase order register</h2>
+
+                <p>
+                    Monitor issued purchase orders, supplier awards, sourcing
+                    references and committed procurement values from one workspace.
+                </p>
+            </div>
+
+            <div class="hero-icon d-none d-sm-flex">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- KPI cards: side by side -->
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <span class="kpi-label">Issued purchase orders</span>
+                    <span class="kpi-icon">
+                        <i class="bi bi-receipt"></i>
+                    </span>
+                </div>
+
+                <strong class="kpi-value">
+                    {{ total_orders|default:0|intcomma }}
+                </strong>
+
+                <div class="kpi-caption">
+                    Total purchase orders recorded
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total award value</span>
+                    <span class="kpi-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </span>
+                </div>
+
+                <strong class="kpi-value">
+                    <span class="fs-6">UGX</span>
+                    {{ total_amount|default:0|floatformat:2|intcomma }}
+                </strong>
+
+                <div class="kpi-caption">
+                    Aggregate recorded purchase order value
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase order register -->
+    <section class="section-card">
+
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">
+                    <i class="bi bi-list-ul me-2"
+                       style="color: var(--po-primary);"></i>
+                    Purchase order register
+                </h3>
+
+                <span class="section-subtitle">
+                    Review supplier awards and open individual order records.
+                </span>
+            </div>
+
+            <span class="record-count">
+                <i class="bi bi-files"></i>
+                {{ orders|length }} record{{ orders|length|pluralize }}
+            </span>
+        </div>
+
+        <!-- Search and filters: one horizontal row -->
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input
+                    type="search"
+                    id="poSearch"
+                    class="search-input"
+                    placeholder="Search PO, supplier or RFQ..."
+                    aria-label="Search purchase orders"
+                    autocomplete="off">
+            </div>
+
+            <select id="poSourceFilter"
+                    class="filter-select"
+                    aria-label="Filter by sourcing method">
+                <option value="">All sourcing methods</option>
+                <option value="rfq">Competitive RFQ</option>
+                <option value="direct">Direct purchase</option>
+            </select>
+
+            <button type="button"
+                    id="poReset"
+                    class="reset-btn"
+                    aria-label="Reset search and filters"
+                    title="Reset search and filters">
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                <span>Reset</span>
+            </button>
+        </div>
+
+        <div class="table-wrap">
+            <table class="table orders-table" id="poTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Purchase order</th>
+                        <th scope="col">Supplier</th>
+                        <th scope="col">Sourcing reference</th>
+                        <th scope="col">Issue date</th>
+                        <th scope="col" class="text-end">Award amount</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for order in orders %}
+                        <tr class="po-row"
+                            data-search="{{ order.po_number|default:''|lower }} {{ order.supplier.name|default:''|lower }} {{ order.rfq.reference_no|default:''|lower }} {{ order.requisition.number|default:''|lower }}"
+                            data-source="{% if order.rfq %}rfq{% else %}direct{% endif %}">
+
+                            <td>
+                                <a class="po-reference"
+                                   href="{% url 'procurement:purchase_order_detail' order.slug %}">
+                                    <span class="reference-icon">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </span>
+
+                                    <span>
+                                        {{ order.po_number }}
+                                        <span class="secondary-text">
+                                            Purchase order record
+                                        </span>
+                                    </span>
+                                </a>
+                            </td>
+
+                            <td>
+                                <span class="supplier-name">
+                                    {{ order.supplier.name|default:"—" }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if order.rfq %}
+                                    <span class="rfq-badge">
+                                        <i class="bi bi-diagram-3 me-1"></i>
+                                        {{ order.rfq.reference_no }}
+                                    </span>
+                                {% else %}
+                                    <span class="direct-badge">
+                                        <i class="bi bi-lightning-charge me-1"></i>
+                                        Direct purchase
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="date-text">
+                                    {% if order.issue_date %}
+                                        <i class="bi bi-calendar3 me-1 text-secondary"></i>
+                                        {{ order.issue_date|date:"d M Y" }}
+                                    {% else %}
+                                        <span class="text-secondary">—</span>
+                                    {% endif %}
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <span class="amount">
+                                    UGX {{ order.final_amount|default:0|floatformat:2|intcomma }}
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <a class="view-btn"
+                                   href="{% url 'procurement:purchase_order_detail' order.slug %}"
+                                   aria-label="View purchase order {{ order.po_number }}">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="bi bi-receipt"></i>
+                                    </div>
+
+                                    <div class="empty-title">
+                                        No purchase orders yet
+                                    </div>
+
+                                    <p class="empty-description">
+                                        No purchase orders have been issued.
+                                        Orders will appear here when they are
+                                        recorded in the procurement workflow.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+                    <tr id="poNoResults" class="visually-filtered-empty">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-search"></i>
+                                </div>
+
+                                <div class="empty-title">
+                                    No matching purchase orders
+                                </div>
+
+                                <p class="empty-description">
+                                    Try a different search term or change the
+                                    sourcing-method filter.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer">
+            <span id="poVisibleCount" aria-live="polite">
+                Showing {{ orders|length }} purchase order{{ orders|length|pluralize }}
+            </span>
+
+            <span>
+                <i class="bi bi-shield-check me-1"></i>
+                DDS-NK Procurement Register
+            </span>
+        </div>
+
+    </section>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    const root = document.querySelector(".po-list");
+    if (!root) return;
+
+    const searchInput = root.querySelector("#poSearch");
+    const sourceFilter = root.querySelector("#poSourceFilter");
+    const resetButton = root.querySelector("#poReset");
+    const visibleCount = root.querySelector("#poVisibleCount");
+    const noResults = root.querySelector("#poNoResults");
+    const rows = Array.from(root.querySelectorAll("#poTable .po-row"));
+    const totalRows = rows.length;
+
+    if (!searchInput || !sourceFilter || !resetButton) return;
+
+    function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        const source = sourceFilter.value;
+        let visible = 0;
+
+        rows.forEach(function (row) {
+            const searchText = (row.dataset.search || "").toLowerCase();
+            const rowSource = row.dataset.source || "";
+
+            const matchesSearch = !query || searchText.includes(query);
+            const matchesSource = !source || rowSource === source;
+            const matches = matchesSearch && matchesSource;
+
+            row.style.display = matches ? "" : "none";
+
+            if (matches) visible++;
+        });
+
+        if (noResults) {
+            noResults.style.display =
+                totalRows > 0 && visible === 0 ? "table-row" : "none";
+        }
+
+        if (visibleCount) {
+            visibleCount.textContent = totalRows === 0
+                ? "No purchase orders to display"
+                : "Showing " + visible + " of " + totalRows +
+                  " purchase order" + (totalRows === 1 ? "" : "s");
+        }
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    sourceFilter.addEventListener("change", applyFilters);
+
+    resetButton.addEventListener("click", function () {
+        searchInput.value = "";
+        sourceFilter.value = "";
+        applyFilters();
+        searchInput.focus();
+    });
+
+    applyFilters();
+})();
+</script>
+{% endblock %}

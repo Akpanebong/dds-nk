@@ -1,0 +1,317 @@
+{% extends 'vsla/base.html' %}
+{% load humanize %}
+
+{% block title %}VSLA Groups | DDS-NK THRIVE{% endblock %}
+
+{% block vsla_content %}
+<div class="vsla-page">
+
+    <!-- Page heading -->
+    <div class="page-intro d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <div class="vsla-eyebrow mb-2">
+                <i class="bi bi-people me-1"></i>
+                COMMUNITY FINANCIAL SERVICES
+            </div>
+            <h2 class="h3 fw-bold mb-1">VSLA Groups</h2>
+            <p class="text-muted mb-0">
+                Register and monitor community savings groups across
+                projects, donors and locations.
+            </p>
+        </div>
+
+        <a href="{% url 'vsla:group_create' %}"
+           class="btn btn-vsla d-inline-flex align-items-center gap-2">
+            <i class="bi bi-plus-circle"></i>
+            Register group
+        </a>
+    </div>
+
+    <!-- Directory panel -->
+    <div class="panel vsla-panel">
+
+        <div class="d-flex justify-content-between align-items-center
+                    flex-wrap gap-2 mb-4">
+            <div>
+                <h3 class="h5 fw-bold mb-1">Group directory</h3>
+                <p class="text-muted small mb-0">
+                    Search and access registered VSLA groups.
+                </p>
+            </div>
+
+            <span class="vsla-count">
+                <i class="bi bi-collection me-1"></i>
+                {{ groups|length }} result{{ groups|length|pluralize }}
+            </span>
+        </div>
+
+        <!-- Search -->
+        <form method="get" role="search" class="vsla-search mb-4">
+            <div class="row g-2">
+                <div class="col-12 col-md-9">
+                    <label for="vsla-search" class="visually-hidden">
+                        Search groups
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            type="search"
+                            id="vsla-search"
+                            name="q"
+                            value="{{ q|default:'' }}"
+                            class="form-control"
+                            placeholder="Search by group name, code or district..."
+                        >
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-vsla flex-grow-1">
+                        Search groups
+                    </button>
+
+                    {% if q %}
+                    <a href="{% url 'vsla:group_list' %}"
+                       class="btn btn-outline-secondary"
+                       title="Clear search"
+                       aria-label="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        <!-- Group table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle vsla-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Group</th>
+                        <th scope="col">Project / Donor</th>
+                        <th scope="col">Location</th>
+                        <th scope="col" class="text-center">Members</th>
+                        <th scope="col">Weekly share</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for group in groups %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'vsla:group_detail' group.slug %}"
+                               class="vsla-group-name">
+                                {{ group.name }}
+                            </a>
+                            <div class="small text-muted mt-1">
+                                <i class="bi bi-hash"></i>
+                                {{ group.code }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ group.project_name|default:"—" }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                {{ group.donor_name|default:"Donor not specified" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div>
+                                {{ group.district|default:"—" }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                {{ group.parish_or_village|default:"—" }}
+                            </div>
+                        </td>
+
+                        <td class="text-center">
+                            <span class="vsla-member-count">
+                                {{ group.member_total|default:group.members.count }}
+                            </span>
+                        </td>
+
+                        <td class="text-nowrap">
+                            <span class="text-muted small">UGX</span>
+                            <span class="fw-bold">
+                                {{ group.weekly_share_value|floatformat:0|intcomma }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="status-pill status-{{ group.status }}">
+                                {{ group.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            <a href="{% url 'vsla:group_detail' group.slug %}"
+                               class="btn btn-sm btn-outline-secondary text-nowrap">
+                                Open
+                                <i class="bi bi-arrow-up-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="vsla-empty-icon mb-3">
+                                <i class="bi bi-people"></i>
+                            </div>
+
+                            <h4 class="h6 fw-bold">
+                                {% if q %}
+                                    No matching groups found
+                                {% else %}
+                                    No groups registered yet
+                                {% endif %}
+                            </h4>
+
+                            <p class="text-muted small mb-3">
+                                {% if q %}
+                                    Try another group name, code or district.
+                                {% else %}
+                                    Register your first community savings group
+                                    to get started.
+                                {% endif %}
+                            </p>
+
+                            {% if q %}
+                            <a href="{% url 'vsla:group_list' %}"
+                               class="btn btn-outline-secondary btn-sm">
+                                Clear search
+                            </a>
+                            {% else %}
+                            <a href="{% url 'vsla:group_create' %}"
+                               class="btn btn-vsla btn-sm">
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Register group
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .vsla-page {
+        --vsla-accent: var(--vsla-primary, #087f7b);
+        --vsla-accent-dark: var(--vsla-primary-dark, #075c63);
+        min-width: 0;
+    }
+
+    .vsla-eyebrow {
+        color: var(--vsla-accent);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .09em;
+    }
+
+    .vsla-panel {
+        padding: 1.5rem;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: 1rem;
+        background: var(--bs-body-bg, #fff);
+        box-shadow: 0 4px 20px rgba(24, 50, 58, .045);
+    }
+
+    .vsla-count {
+        display: inline-flex;
+        align-items: center;
+        padding: .5rem .8rem;
+        border-radius: 2rem;
+        color: var(--vsla-accent-dark);
+        background: rgba(8, 127, 123, .09);
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .vsla-search .input-group-text,
+    .vsla-search .form-control {
+        min-height: 44px;
+        background-color: var(--bs-body-bg, #fff);
+        border-color: var(--bs-border-color, #dee2e6);
+    }
+
+    .vsla-search .input-group-text {
+        color: var(--vsla-accent);
+    }
+
+    .vsla-search .form-control:focus {
+        border-color: var(--vsla-accent);
+        box-shadow: 0 0 0 .2rem rgba(8, 127, 123, .10);
+    }
+
+    .vsla-table thead th {
+        padding: .9rem .75rem;
+        color: var(--bs-secondary-color, #6c757d);
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .vsla-table tbody td {
+        padding: 1rem .75rem;
+        border-bottom-color: var(--bs-border-color, #e9ecef);
+    }
+
+    .vsla-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .vsla-group-name {
+        color: var(--vsla-accent-dark);
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .vsla-group-name:hover {
+        color: var(--vsla-accent);
+        text-decoration: underline;
+    }
+
+    .vsla-member-count {
+        display: inline-flex;
+        min-width: 38px;
+        min-height: 32px;
+        justify-content: center;
+        align-items: center;
+        padding: .35rem .65rem;
+        border-radius: .6rem;
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        font-weight: 750;
+    }
+
+    .vsla-empty-icon {
+        color: var(--vsla-accent);
+        font-size: 2.5rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .vsla-panel {
+            padding: 1rem;
+        }
+
+        .page-intro .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

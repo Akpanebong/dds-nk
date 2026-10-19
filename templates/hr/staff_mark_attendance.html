@@ -1,0 +1,153 @@
+{% extends 'module_base.html' %}
+
+{% block title %}Mark Attendance | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="panel attendance-self-card">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+            <span class="text-uppercase small fw-bold text-primary">Staff attendance</span>
+            <h1 class="h3 mt-2">Mark my attendance</h1>
+            <p class="text-muted">Your current browser location and device are required before attendance can be recorded.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{% url 'hr:attendance_list' %}">
+            <i class="bi bi-arrow-left me-1"></i> Attendance register
+        </a>
+    </div>
+
+    <div class="alert alert-warning d-flex gap-2 align-items-start" role="alert">
+        <i class="bi bi-shield-lock-fill"></i>
+        <div>
+            <strong>Device binding notice</strong>
+            <div>
+                The first successful attendance submission binds your account to this device and browser.
+                You cannot mark attendance from another device or browser. Contact HR if you need to change devices.
+            </div>
+        </div>
+    </div>
+
+    {% if device_bound %}
+    <div class="alert alert-info small" role="status">
+        Your attendance account is already bound to its registered device and browser.
+    </div>
+    {% endif %}
+
+    <div id="location-status" class="alert alert-secondary" role="status">
+        <i class="bi bi-geo-alt me-1"></i>
+        Requesting your current location permission...
+    </div>
+
+    <form method="post" id="staff-attendance-form" novalidate>
+        {% csrf_token %}
+        {{ form.status }}
+        {{ form.latitude }}
+        {{ form.longitude }}
+        {{ form.address }}
+        <input type="hidden" name="device_token" id="device-token">
+
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.errors }}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary" id="attendance-submit" disabled>
+            <i class="bi bi-check2-circle me-1"></i> Record attendance
+        </button>
+    </form>
+</div>
+
+<style>
+    .attendance-self-card { max-width: 760px; margin: 0 auto; }
+    .attendance-self-card h1 { color: #3b2938; }
+    .attendance-self-card #id_status { display: none; }
+    .attendance-self-card .alert { margin-top: 1.25rem; }
+    .attendance-self-card form { margin-top: 1.25rem; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('staff-attendance-form');
+    const submit = document.getElementById('attendance-submit');
+    const status = document.getElementById('location-status');
+    const latitude = document.getElementById('id_latitude');
+    const longitude = document.getElementById('id_longitude');
+    const address = document.getElementById('id_address');
+    const deviceToken = document.getElementById('device-token');
+    const storageKey = 'dds-attendance-device-token';
+
+    let locationReady = false;
+    let deviceReady = false;
+
+    function updateSubmitState() {
+        submit.disabled = !(locationReady && deviceReady);
+    }
+
+    try {
+        let token = window.localStorage.getItem(storageKey);
+        if (!token) {
+            token = window.crypto && window.crypto.randomUUID
+                ? window.crypto.randomUUID()
+                : 'device-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+            window.localStorage.setItem(storageKey, token);
+        }
+        deviceToken.value = token;
+        deviceReady = true;
+    } catch (error) {
+        status.className = 'alert alert-danger';
+        status.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Browser storage is required to bind this account to the device.';
+    }
+    updateSubmitState();
+
+    if (!navigator.geolocation) {
+        status.className = 'alert alert-danger';
+        status.innerHTML = '<i class="bi bi-geo-alt me-1"></i> This browser does not support location capture. Attendance cannot be marked.';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(function (position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        latitude.value = lat.toFixed(6);
+        longitude.value = lon.toFixed(6);
+        const fallbackAddress = 'GPS coordinates: ' + latitude.value + ', ' + longitude.value;
+        address.value = fallbackAddress;
+        locationReady = false;
+        status.className = 'alert alert-success';
+        status.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i> Current location captured. Identifying the place...';
+        updateSubmitState();
+
+        fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon), {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (data) {
+                if (data && data.display_name) {
+                    address.value = data.display_name.slice(0, 255);
+                }
+                locationReady = true;
+                status.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i> Location captured: ' + address.value;
+                updateSubmitState();
+            })
+            .catch(function () {
+                locationReady = true;
+                status.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i> Location captured: ' + fallbackAddress;
+                updateSubmitState();
+            });
+    }, function () {
+        locationReady = false;
+        status.className = 'alert alert-danger';
+        status.innerHTML = '<i class="bi bi-geo-alt me-1"></i> Location permission is required. Attendance cannot be marked without your current location.';
+        updateSubmitState();
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+
+    form.addEventListener('submit', function (event) {
+        if (!locationReady || !deviceReady || !latitude.value || !longitude.value) {
+            event.preventDefault();
+            status.className = 'alert alert-danger';
+            status.innerHTML = '<i class="bi bi-shield-exclamation me-1"></i> Capture your current location and enable device storage before submitting.';
+        }
+    });
+});
+</script>
+{% endblock %}

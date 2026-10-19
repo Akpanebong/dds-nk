@@ -1,0 +1,651 @@
+{% extends 'module_base.html' %}
+
+{% block title %}Orientation Sessions | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="orientation-sessions-page">
+
+    <style>
+        .orientation-sessions-page {
+            --osp-pink: #e50078;
+            --osp-plum: #3b2938;
+            --osp-muted: #77808c;
+            --osp-border: #e9e7ec;
+            --osp-soft: #f8f7fa;
+            color: var(--osp-plum);
+            padding-bottom: 2rem;
+        }
+
+        .orientation-sessions-page * {
+            box-sizing: border-box;
+        }
+
+        .orientation-sessions-page .osp-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            background: linear-gradient(120deg, #3b2938, #56364d 70%, #8f1458);
+            border-radius: 20px;
+        }
+
+        .orientation-sessions-page .osp-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .65rem;
+            color: #ffd3e8;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .orientation-sessions-page .osp-hero h1 {
+            margin: 0 0 .55rem;
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .orientation-sessions-page .osp-hero p {
+            max-width: 620px;
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .orientation-sessions-page .osp-hero-icon {
+            display: grid;
+            flex: 0 0 76px;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 22px;
+            font-size: 2rem;
+        }
+
+        .orientation-sessions-page .osp-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .orientation-sessions-page .osp-summary-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            padding: 1.2rem;
+            background: #fff;
+            border: 1px solid var(--osp-border);
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(59, 41, 56, .035);
+        }
+
+        .orientation-sessions-page .osp-summary-icon {
+            display: grid;
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            place-items: center;
+            color: var(--osp-pink);
+            background: #fff0f7;
+            border-radius: 14px;
+            font-size: 1.3rem;
+        }
+
+        .orientation-sessions-page .osp-summary-label {
+            display: block;
+            margin-bottom: .25rem;
+            color: var(--osp-muted);
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .orientation-sessions-page .osp-summary-value {
+            display: block;
+            color: var(--osp-plum);
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .orientation-sessions-page .osp-panel {
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--osp-border);
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .045);
+        }
+
+        .orientation-sessions-page .osp-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.4rem 1.5rem;
+            border-bottom: 1px solid var(--osp-border);
+        }
+
+        .orientation-sessions-page .osp-panel-header h2 {
+            margin: 0;
+            color: var(--osp-plum);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .orientation-sessions-page .osp-panel-header p {
+            margin: .35rem 0 0;
+            color: var(--osp-muted);
+            font-size: .84rem;
+        }
+
+        .orientation-sessions-page .osp-search {
+            position: relative;
+            width: min(100%, 320px);
+        }
+
+        .orientation-sessions-page .osp-search i {
+            position: absolute;
+            top: 50%;
+            left: .9rem;
+            color: var(--osp-muted);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .orientation-sessions-page .osp-search input {
+            width: 100%;
+            min-height: 43px;
+            padding: .65rem .85rem .65rem 2.45rem;
+            color: var(--osp-plum);
+            background: var(--osp-soft);
+            border: 1px solid var(--osp-border);
+            border-radius: 11px;
+            outline: none;
+            font-size: .86rem;
+        }
+
+        .orientation-sessions-page .osp-search input:focus {
+            background: #fff;
+            border-color: var(--osp-pink);
+            box-shadow: 0 0 0 3px rgba(229, 0, 120, .09);
+        }
+
+        .orientation-sessions-page .osp-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .orientation-sessions-page .osp-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+        }
+
+        .orientation-sessions-page .osp-table thead th {
+            padding: .9rem 1.2rem;
+            color: var(--osp-muted);
+            background: #fcfbfd;
+            border-bottom: 1px solid var(--osp-border);
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .07em;
+            text-align: left;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .orientation-sessions-page .osp-table tbody td {
+            padding: 1rem 1.2rem;
+            color: #625563;
+            border-bottom: 1px solid #f0edf2;
+            font-size: .87rem;
+            vertical-align: middle;
+        }
+
+        .orientation-sessions-page .osp-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .orientation-sessions-page .osp-table tbody tr {
+            transition: background .15s ease;
+        }
+
+        .orientation-sessions-page .osp-table tbody tr:hover {
+            background: #fff9fc;
+        }
+
+        .orientation-sessions-page .osp-staff {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            min-width: 190px;
+        }
+
+        .orientation-sessions-page .osp-staff-icon {
+            display: grid;
+            flex: 0 0 38px;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            color: var(--osp-pink);
+            background: #fff0f7;
+            border-radius: 11px;
+            font-size: 1rem;
+        }
+
+        .orientation-sessions-page .osp-staff-name {
+            color: var(--osp-plum);
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .orientation-sessions-page .osp-department {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            color: var(--osp-plum);
+            font-weight: 600;
+        }
+
+        .orientation-sessions-page .osp-department i {
+            color: var(--osp-pink);
+        }
+
+        .orientation-sessions-page .osp-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            max-width: 100%;
+            padding: .4rem .7rem;
+            color: #8c0750;
+            background: #fff0f7;
+            border: 1px solid #f7c6df;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .orientation-sessions-page .osp-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            min-width: 190px;
+        }
+
+        .orientation-sessions-page .osp-action {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .45rem .7rem;
+            color: #8c0750;
+            background: #fff0f7;
+            border: 1px solid #f7c6df;
+            border-radius: 9px;
+            font-size: .76rem;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .orientation-sessions-page .osp-action:hover {
+            color: #fff;
+            background: var(--osp-pink);
+            border-color: var(--osp-pink);
+        }
+
+        .orientation-sessions-page .osp-action.is-complete {
+            color: #176b4d;
+            background: #edf9f3;
+            border-color: #bfe7d2;
+        }
+
+        .orientation-sessions-page .osp-action.is-secondary {
+            color: var(--osp-plum);
+            background: #fff;
+            border-color: var(--osp-border);
+        }
+
+        .orientation-sessions-page .osp-empty {
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .orientation-sessions-page .osp-empty-icon {
+            display: grid;
+            width: 66px;
+            height: 66px;
+            margin: 0 auto 1rem;
+            place-items: center;
+            color: var(--osp-pink);
+            background: #fff0f7;
+            border-radius: 20px;
+            font-size: 1.8rem;
+        }
+
+        .orientation-sessions-page .osp-empty h3 {
+            margin-bottom: .5rem;
+            color: var(--osp-plum);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .orientation-sessions-page .osp-empty p {
+            max-width: 440px;
+            margin: 0 auto;
+            color: var(--osp-muted);
+            font-size: .88rem;
+            line-height: 1.7;
+        }
+
+        .orientation-sessions-page .osp-no-results {
+            display: none;
+            padding: 2rem 1rem;
+            color: var(--osp-muted);
+            text-align: center;
+            font-size: .88rem;
+        }
+
+        .orientation-sessions-page .osp-footer {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+            padding: .9rem 1.5rem;
+            color: var(--osp-muted);
+            background: #fcfbfd;
+            border-top: 1px solid var(--osp-border);
+            font-size: .78rem;
+        }
+
+        @media (max-width: 900px) {
+            .orientation-sessions-page .osp-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .orientation-sessions-page .osp-hero {
+                padding: 1.35rem;
+                border-radius: 15px;
+            }
+
+            .orientation-sessions-page .osp-hero-icon {
+                display: none;
+            }
+
+            .orientation-sessions-page .osp-summary {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .orientation-sessions-page .osp-panel-header {
+                align-items: stretch;
+                padding: 1.1rem;
+            }
+
+            .orientation-sessions-page .osp-search {
+                width: 100%;
+            }
+
+            .orientation-sessions-page .osp-table thead th,
+            .orientation-sessions-page .osp-table tbody td {
+                padding: .85rem;
+            }
+
+            .orientation-sessions-page .osp-footer {
+                padding: .85rem 1rem;
+            }
+        }
+    </style>
+
+    <!-- Page header -->
+    <section class="osp-hero">
+        <div>
+            <div class="osp-eyebrow">
+                <i class="bi bi-calendar2-week"></i>
+                Human Resources
+            </div>
+            <h1>Orientation Sessions</h1>
+            <p>
+                Monitor departmental orientation activities, identify
+                participating staff, and review the recorded status of
+                each session.
+            </p>
+        </div>
+
+        <div class="osp-hero-icon" aria-hidden="true">
+            <i class="bi bi-calendar2-check"></i>
+        </div>
+    </section>
+
+    <!-- Summary cards -->
+    <section class="osp-summary" aria-label="Session summary">
+        <div class="osp-summary-card">
+            <div class="osp-summary-icon">
+                <i class="bi bi-calendar2-week"></i>
+            </div>
+            <div>
+                <span class="osp-summary-label">Total sessions</span>
+                <span class="osp-summary-value" id="ospTotal">0</span>
+            </div>
+        </div>
+
+        <div class="osp-summary-card">
+            <div class="osp-summary-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div>
+                <span class="osp-summary-label">Staff represented</span>
+                <span class="osp-summary-value" id="ospStaffCount">0</span>
+            </div>
+        </div>
+
+        <div class="osp-summary-card">
+            <div class="osp-summary-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <span class="osp-summary-label">Departments represented</span>
+                <span class="osp-summary-value" id="ospDepartmentCount">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Session register -->
+    <section class="osp-panel">
+        <div class="osp-panel-header">
+            <div>
+                <h2>
+                    <i class="bi bi-list-check me-2"
+                       style="color: var(--osp-pink);"></i>
+                    Session register
+                </h2>
+                <p>Search and review the available orientation sessions.</p>
+            </div>
+
+            <div class="osp-search">
+                <i class="bi bi-search"></i>
+                <input
+                    type="search"
+                    id="ospSearch"
+                    placeholder="Search staff, department, status..."
+                    aria-label="Search orientation sessions"
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        {% for session in sessions %}
+            {% if forloop.first %}
+                <div class="osp-table-wrap">
+                    <table class="osp-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Staff member</th>
+                                <th scope="col">Department</th>
+                                <th scope="col">Session status</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ospTableBody">
+            {% endif %}
+
+            <tr class="osp-session-row"
+                data-search="{{ session.plan.staff|default:''|escape }} {{ session.department|default:''|escape }} {{ session.get_status_display|default:''|escape }}">
+                <td>{{ forloop.counter }}</td>
+                <td>
+                    <div class="osp-staff">
+                        <div class="osp-staff-icon" aria-hidden="true">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <span class="osp-staff-name">
+                            {{ session.plan.staff|default:"Staff not specified" }}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <span class="osp-department">
+                        <i class="bi bi-building"></i>
+                        {{ session.department|default:"Not specified" }}
+                    </span>
+                </td>
+                <td>
+                    <span class="osp-status">
+                        <i class="bi bi-activity"></i>
+                        {{ session.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <div class="osp-actions" aria-label="Orientation actions for {{ session.plan.staff }}">
+                        {% if session.status == 'awaiting_schedule' %}
+                            <a class="osp-action" href="{% url 'hr:orientation_head_session_schedule' session.id %}">
+                                <i class="bi bi-calendar2-plus"></i>
+                                Schedule orientation
+                            </a>
+                        {% elif session.status == 'scheduled' %}
+                            <a class="osp-action" href="{% url 'hr:orientation_head_session_schedule' session.id %}">
+                                <i class="bi bi-pencil-square"></i>
+                                Reschedule
+                            </a>
+                            <a class="osp-action is-complete" href="{% url 'hr:orientation_head_session_complete' session.id %}">
+                                <i class="bi bi-check2-circle"></i>
+                                Mark complete
+                            </a>
+                        {% elif session.status == 'completed' %}
+                            <span class="osp-action is-complete" aria-label="Orientation completed">
+                                <i class="bi bi-check2-circle"></i>
+                                Completed
+                            </span>
+                        {% endif %}
+                        <a class="osp-action is-secondary" href="{% url 'hr:orientation_hr_detail' session.plan.id %}">
+                            <i class="bi bi-eye"></i>
+                            View plan
+                        </a>
+                    </div>
+                </td>
+            </tr>
+
+            {% if forloop.last %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="osp-empty">
+                <div class="osp-empty-icon">
+                    <i class="bi bi-calendar2-minus"></i>
+                </div>
+                <h3>No orientation sessions</h3>
+                <p>
+                    There are currently no orientation sessions to display.
+                    Sessions will appear here once they have been added
+                    to staff orientation plans.
+                </p>
+            </div>
+        {% endfor %}
+
+        <div class="osp-no-results" id="ospNoResults">
+            <i class="bi bi-search d-block mb-2"
+               style="font-size: 1.5rem;"></i>
+            No sessions match your search.
+        </div>
+
+        <div class="osp-footer">
+            <span>
+                <i class="bi bi-shield-check me-1"></i>
+                Orientation session register
+            </span>
+            <span id="ospVisibleCount">0 sessions</span>
+        </div>
+    </section>
+
+    <script>
+        (function () {
+            const root = document.querySelector('.orientation-sessions-page');
+            if (!root) return;
+
+            const rows = Array.from(root.querySelectorAll('.osp-session-row'));
+            const search = root.querySelector('#ospSearch');
+            const noResults = root.querySelector('#ospNoResults');
+            const visibleCount = root.querySelector('#ospVisibleCount');
+
+            const uniqueStaff = new Set(
+                rows.map(row => {
+                    const name = row.querySelector('.osp-staff-name');
+                    return name ? name.textContent.trim() : '';
+                }).filter(Boolean)
+            );
+
+            const uniqueDepartments = new Set(
+                rows.map(row => {
+                    const department = row.querySelector('.osp-department');
+                    return department ? department.textContent.trim() : '';
+                }).filter(Boolean)
+            );
+
+            root.querySelector('#ospTotal').textContent = rows.length;
+            root.querySelector('#ospStaffCount').textContent = uniqueStaff.size;
+            root.querySelector('#ospDepartmentCount').textContent =
+                uniqueDepartments.size;
+
+            function updateSearch() {
+                const query = search.value.trim().toLowerCase();
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const text = (row.dataset.search || row.textContent).toLowerCase();
+                    const matches = text.includes(query);
+
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) visible++;
+                });
+
+                noResults.style.display =
+                    rows.length > 0 && visible === 0 ? 'block' : 'none';
+
+                visibleCount.textContent =
+                    visible + (visible === 1 ? ' session' : ' sessions');
+            }
+
+            search.addEventListener('input', updateSearch);
+            updateSearch();
+        })();
+    </script>
+
+</div>
+{% endblock %}

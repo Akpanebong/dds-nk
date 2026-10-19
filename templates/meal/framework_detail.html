@@ -1,0 +1,586 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}{{ object }} | DDS-NK{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Data Records</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+
+{% endblock %}
+
+{% block crumb %}
+
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>
+        MEAL
+    </span>
+
+    <h1>{{ object }}</h1>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
+
+        <div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-diagram-3 me-1"></i>
+                    MEAL Framework
+                </span>
+
+                {% if kind == 'objective' %}
+
+                    <span class="badge rounded-pill text-bg-primary">
+                        <i class="bi bi-bullseye me-1"></i>
+                        Strategic Objective
+                    </span>
+
+                {% elif kind == 'output' %}
+
+                    <span class="badge rounded-pill text-bg-success">
+                        <i class="bi bi-layers me-1"></i>
+                        Output
+                    </span>
+
+                {% else %}
+
+                    <span class="badge rounded-pill text-bg-secondary">
+                        <i class="bi bi-list-check me-1"></i>
+                        Activity
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {{ object }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                DDS-NK MEAL framework record and programme hierarchy information.
+            </p>
+
+        </div>
+
+
+        {% if manage_access.meal %}
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <a href="{% url 'meal:framework_update' kind object.code %}"
+                   class="btn btn-primary d-inline-flex align-items-center gap-2">
+
+                    <i class="bi bi-pencil-square"></i>
+                    <span>Edit</span>
+
+                </a>
+
+                <a href="{% url 'meal:framework_delete' kind object.code %}"
+                   class="btn btn-outline-danger d-inline-flex align-items-center gap-2">
+
+                    <i class="bi bi-trash3"></i>
+                    <span>Delete</span>
+
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- RECORD SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        {% if kind == 'objective' %}
+
+            <div class="col-12 col-md-6">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-bullseye text-primary fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Framework Level
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                Strategic Objective
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-12 col-md-6">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-layers text-success fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Linked Outputs
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                {{ object.outputs.count }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% elif kind == 'output' %}
+
+            <div class="col-12 col-md-4">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-layers text-success fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Framework Level
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                Output
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-12 col-md-4">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-bullseye text-primary fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Strategic Objective
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                {{ object.objective.code|default:"Not linked" }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-12 col-md-4">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-list-check text-secondary fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Linked Activities
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                {{ object.indicators.count }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="col-12 col-md-4">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+
+                            {% if object.is_people %}
+                                <i class="bi bi-people-fill text-primary fs-3"></i>
+                            {% else %}
+                                <i class="bi bi-box-seam text-secondary fs-3"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Capture Type
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                {{ object.get_activity_type_display }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-12 col-md-4">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-bullseye text-primary fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Indicator
+                            </div>
+
+                            <div class="fw-bold fs-6">
+                                {{ object.indicator_text|default:"Not specified" }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-12 col-md-4">
+
+                <div class="panel h-100">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="rounded-3 bg-light p-3">
+                            <i class="bi bi-layers text-success fs-3"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small text-uppercase text-muted fw-semibold">
+                                Parent Output
+                            </div>
+
+                            <div class="fw-bold fs-5">
+                                {{ object.output.code|default:"Not linked" }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- DETAILS -->
+    <div class="panel">
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+
+            <div class="rounded-3 bg-light p-2">
+                <i class="bi bi-info-circle text-primary fs-5"></i>
+            </div>
+
+            <div>
+
+                <h5 class="fw-bold mb-1">
+                    Framework Details
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Detailed information for this DDS-NK MEAL framework record.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            {% if kind == 'objective' %}
+
+                <div class="col-12">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Strategic Objective
+                    </div>
+
+                    <div class="fs-5 fw-semibold">
+                        {{ object.title }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-6">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Outputs
+                    </div>
+
+                    <div class="fw-semibold">
+                        {{ object.outputs.count }}
+                        output{{ object.outputs.count|pluralize }}
+                    </div>
+
+                </div>
+
+
+            {% elif kind == 'output' %}
+
+                <div class="col-12">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Output
+                    </div>
+
+                    <div class="fs-5 fw-semibold">
+                        {{ object.title }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-6">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Strategic Objective
+                    </div>
+
+                    <div class="fw-semibold">
+                        {{ object.objective|default:"Not linked" }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-6">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Activities
+                    </div>
+
+                    <div class="fw-semibold">
+                        {{ object.indicators.count }}
+                        activity{{ object.indicators.count|pluralize }}
+                    </div>
+
+                </div>
+
+
+            {% else %}
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Activity
+                    </div>
+
+                    <div class="fs-5 fw-semibold">
+                        {{ object.title }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Capture Type
+                    </div>
+
+                    <div>
+
+                        {% if object.is_people %}
+
+                            <span class="badge rounded-pill text-bg-primary">
+                                <i class="bi bi-people-fill me-1"></i>
+                                {{ object.get_activity_type_display }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge rounded-pill text-bg-secondary">
+                                <i class="bi bi-box-seam me-1"></i>
+                                {{ object.get_activity_type_display }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Indicator
+                    </div>
+
+                    <div class="fw-semibold">
+                        {{ object.indicator_text|default:"No indicator description provided." }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-6">
+
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">
+                        Parent Output
+                    </div>
+
+                    <div class="fw-semibold">
+                        {{ object.output|default:"Not linked" }}
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ACTIONS -->
+        <div class="border-top mt-4 pt-4 d-flex flex-column flex-sm-row justify-content-between gap-2">
+
+            <a href="{% url 'meal:hierarchy' %}"
+               class="btn btn-light border d-inline-flex align-items-center justify-content-center gap-2">
+
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Framework</span>
+
+            </a>
+
+
+            {% if manage_access.meal %}
+
+                <div class="d-flex flex-column flex-sm-row gap-2">
+
+                    <a href="{% url 'meal:framework_update' kind object.code %}"
+                       class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Edit</span>
+
+                    </a>
+
+                    <a href="{% url 'meal:framework_delete' kind object.code %}"
+                       class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center gap-2">
+
+                        <i class="bi bi-trash3"></i>
+                        <span>Delete</span>
+
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,877 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}{{ plan.number }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-clipboard2-check me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1 class="mb-0">{{ plan.number }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .plan-detail {
+        --pd-primary: #e50078;
+        --pd-primary-dark: #b90060;
+        --pd-plum: #3b2938;
+        --pd-ink: #443b49;
+        --pd-muted: #777789;
+        --pd-border: #e8eaf0;
+        --pd-surface: #faf9fc;
+        --pd-radius: 15px;
+        color: var(--pd-ink);
+        padding-bottom: 2rem;
+    }
+
+    .plan-detail .pd-hero {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--pd-border);
+        border-radius: 18px;
+        background: linear-gradient(115deg, #fff 0%, #fff5fa 100%);
+    }
+
+    .plan-detail .pd-eyebrow {
+        color: var(--pd-primary);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+    }
+
+    .plan-detail .pd-title {
+        margin: 0 0 7px;
+        color: var(--pd-plum);
+        font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+        font-weight: 850;
+        letter-spacing: -.03em;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-detail .pd-subtitle {
+        color: var(--pd-muted);
+        font-size: .875rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .plan-detail .pd-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .plan-detail .pd-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border-radius: 9px;
+        font-size: .81rem;
+        font-weight: 700;
+        padding: 9px 12px;
+    }
+
+    .plan-detail .pd-btn-primary {
+        border-color: var(--pd-primary);
+        background: var(--pd-primary);
+        color: #fff;
+    }
+
+    .plan-detail .pd-btn-primary:hover {
+        border-color: var(--pd-primary-dark);
+        background: var(--pd-primary-dark);
+        color: #fff;
+    }
+
+    .plan-detail .pd-card {
+        background: #fff;
+        border: 1px solid var(--pd-border);
+        border-radius: var(--pd-radius);
+        box-shadow: 0 4px 16px rgb(35 26 44 / 4%);
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .plan-detail .pd-card-body {
+        padding: 20px;
+    }
+
+    .plan-detail .pd-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 17px 20px;
+        border-bottom: 1px solid var(--pd-border);
+    }
+
+    .plan-detail .pd-card-header h2,
+    .plan-detail .pd-card-body h2 {
+        margin: 0;
+        color: var(--pd-plum);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .plan-detail .pd-section-subtitle {
+        margin: 4px 0 0;
+        color: var(--pd-muted);
+        font-size: .78rem;
+    }
+
+    .plan-detail .pd-total {
+        color: var(--pd-primary-dark);
+        font-size: clamp(.95rem, 1.6vw, 1.2rem);
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .plan-detail .pd-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border: 1px solid #e5e2e9;
+        border-radius: 999px;
+        font-size: .73rem;
+        font-weight: 750;
+        line-height: 1.3;
+        background: #f5f4f7;
+        color: #62596a;
+    }
+
+    .plan-detail .pd-status.status-approved {
+        background: #eaf8f0;
+        border-color: #c9ebd7;
+        color: #187347;
+    }
+
+    .plan-detail .pd-status.status-rejected,
+    .plan-detail .pd-status.status-denied {
+        background: #fff0f1;
+        border-color: #f4cdd1;
+        color: #b42332;
+    }
+
+    .plan-detail .pd-status.status-pending,
+    .plan-detail .pd-status.status-submitted,
+    .plan-detail .pd-status.status-under_review,
+    .plan-detail .pd-status.status-review,
+    .plan-detail .pd-status.status-review_approved {
+        background: #fff3f9;
+        border-color: #f4cde1;
+        color: var(--pd-primary-dark);
+    }
+
+    .plan-detail .pd-progress-card {
+        padding: 18px 20px;
+        margin-bottom: 22px;
+    }
+
+    .plan-detail .pd-progress-top,
+    .plan-detail .pd-progress-labels {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .plan-detail .pd-progress-top {
+        margin-bottom: 12px;
+        font-size: .84rem;
+    }
+
+    .plan-detail .pd-progress-value {
+        color: var(--pd-primary);
+        font-size: 1rem;
+        font-weight: 850;
+    }
+
+    .plan-detail .pd-progress-track {
+        height: 9px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #efedf2;
+    }
+
+    .plan-detail .pd-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: var(--pd-primary);
+        transition: width .25s ease;
+    }
+
+    .plan-detail .pd-progress-fill.is-approved {
+        background: #219765;
+    }
+
+    .plan-detail .pd-progress-fill.is-rejected {
+        background: #dc3545;
+    }
+
+    .plan-detail .pd-progress-labels {
+        margin-top: 10px;
+        color: var(--pd-muted);
+        font-size: .68rem;
+    }
+
+    .plan-detail .pd-progress-labels span {
+        text-align: center;
+    }
+
+    .plan-detail .pd-progress-labels span:first-child {
+        text-align: left;
+    }
+
+    .plan-detail .pd-progress-labels span:last-child {
+        text-align: right;
+    }
+
+    .plan-detail .pd-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.8fr) minmax(270px, 1fr);
+        align-items: start;
+        gap: 22px;
+    }
+
+    .plan-detail .pd-main,
+    .plan-detail .pd-sidebar {
+        display: grid;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .plan-detail .pd-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .plan-detail .pd-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        font-size: .81rem;
+    }
+
+    .plan-detail .pd-table thead th {
+        padding: 12px 14px;
+        background: var(--pd-surface);
+        color: #747184;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--pd-border);
+    }
+
+    .plan-detail .pd-table tbody td {
+        padding: 14px;
+        vertical-align: top;
+        border-bottom: 1px solid #f0eef3;
+    }
+
+    .plan-detail .pd-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .plan-detail .pd-table tbody tr:hover {
+        background: #fffafd;
+    }
+
+    .plan-detail .pd-product {
+        font-weight: 750;
+        min-width: 120px;
+        color: var(--pd-plum);
+    }
+
+    .plan-detail .pd-description {
+        min-width: 150px;
+        color: #6c6472;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-detail .pd-number {
+        text-align: right;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .plan-detail .pd-empty {
+        padding: 34px 18px !important;
+        text-align: center;
+        color: var(--pd-muted);
+    }
+
+    .plan-detail .pd-empty i {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.6rem;
+        color: var(--pd-primary);
+    }
+
+    .plan-detail .pd-info-list {
+        display: grid;
+        gap: 0;
+        margin: 18px 0 0;
+    }
+
+    .plan-detail .pd-info-row {
+        display: grid;
+        grid-template-columns: minmax(90px, .85fr) minmax(0, 1.15fr);
+        gap: 12px;
+        padding: 11px 0;
+        border-bottom: 1px solid #f0eef3;
+        font-size: .81rem;
+    }
+
+    .plan-detail .pd-info-row:first-child {
+        padding-top: 0;
+    }
+
+    .plan-detail .pd-info-row:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    .plan-detail .pd-info-row dt {
+        margin: 0;
+        color: var(--pd-muted);
+        font-weight: 550;
+    }
+
+    .plan-detail .pd-info-row dd {
+        margin: 0;
+        text-align: right;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-detail .pd-budget-value {
+        color: var(--pd-primary-dark);
+        font-weight: 850 !important;
+    }
+
+    .plan-detail .pd-notice {
+        padding: 16px 18px;
+        border: 1px solid #f1c5c8;
+        border-radius: var(--pd-radius);
+        background: #fff7f7;
+        color: #842029;
+        overflow-wrap: anywhere;
+    }
+
+    .plan-detail .pd-notice h2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 8px;
+        font-size: .9rem;
+        font-weight: 800;
+    }
+
+    .plan-detail .pd-notice p {
+        margin: 0;
+        font-size: .83rem;
+        line-height: 1.6;
+    }
+
+    .plan-detail .pd-decision {
+        margin-top: 22px;
+    }
+
+    .plan-detail .pd-decision-intro {
+        margin: 6px 0 17px;
+        color: var(--pd-muted);
+        font-size: .83rem;
+        line-height: 1.6;
+    }
+
+    .plan-detail .pd-label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: .8rem;
+        font-weight: 750;
+    }
+
+    .plan-detail .pd-textarea {
+        width: 100%;
+        min-height: 100px;
+        resize: vertical;
+        padding: 12px 14px;
+        border: 1px solid #dfe2e9;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--pd-ink);
+        font-size: .85rem;
+    }
+
+    .plan-detail .pd-textarea:focus {
+        outline: 0;
+        border-color: var(--pd-primary);
+        box-shadow: 0 0 0 3px rgb(229 0 120 / 10%);
+    }
+
+    .plan-detail .pd-decision-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 14px;
+    }
+
+    .plan-detail .pd-decision-actions .btn {
+        padding: 9px 15px;
+        border-radius: 9px;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .plan-detail .pd-decision-actions .btn-primary {
+        border-color: var(--pd-primary);
+        background: var(--pd-primary);
+    }
+
+    .plan-detail .pd-decision-actions .btn-primary:hover {
+        border-color: var(--pd-primary-dark);
+        background: var(--pd-primary-dark);
+    }
+
+    .plan-detail .pd-decision-help {
+        margin-top: 12px;
+        color: var(--pd-muted);
+        font-size: .73rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .plan-detail .pd-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .plan-detail .pd-sidebar {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .plan-detail .pd-hero,
+        .plan-detail .pd-card-body {
+            padding: 16px;
+        }
+
+        .plan-detail .pd-card-header {
+            padding: 15px 16px;
+        }
+
+        .plan-detail .pd-actions {
+            width: 100%;
+        }
+
+        .plan-detail .pd-actions .btn {
+            flex: 1 1 auto;
+        }
+
+        .plan-detail .pd-sidebar {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .plan-detail .pd-progress-labels {
+            font-size: .61rem;
+            gap: 5px;
+        }
+
+        .plan-detail .pd-table thead th,
+        .plan-detail .pd-table tbody td {
+            padding: 11px 10px;
+        }
+
+        .plan-detail .pd-total {
+            font-size: .95rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .plan-detail .pd-progress-fill {
+            transition: none;
+        }
+    }
+
+    @media print {
+        .plan-detail .pd-actions,
+        .plan-detail .pd-decision,
+        .plan-detail .pd-progress-labels {
+            display: none !important;
+        }
+
+        .plan-detail .pd-card {
+            box-shadow: none;
+            break-inside: avoid;
+        }
+
+        .plan-detail .pd-layout {
+            grid-template-columns: 1.7fr 1fr;
+        }
+
+        .plan-detail .pd-table-wrap {
+            overflow: visible;
+        }
+    }
+</style>
+
+<div class="plan-detail">
+
+    <!-- Plan heading -->
+    <header class="pd-hero">
+        <div class="flex-grow-1" style="min-width: 0;">
+            <div class="pd-eyebrow">
+                <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+                Procurement plan details
+            </div>
+
+            <h2 class="pd-title">{{ plan.number }}</h2>
+
+            <p class="pd-subtitle">
+                {{ plan.project.name }}
+                <span class="mx-1">&middot;</span>
+                FY {{ plan.fiscal_year }}
+                <span class="mx-1">&middot;</span>
+                {{ plan.get_budget_period_display }}
+            </p>
+
+            <div class="mt-3">
+                <span class="pd-status status-{{ plan.status|slugify }}">
+                    <i class="bi bi-circle-fill"
+                       style="font-size: 6px;"
+                       aria-hidden="true"></i>
+                    {{ plan.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="pd-actions">
+            {% if plan.is_approved %}
+                <a class="btn btn-outline-danger"
+                   href="{% url 'procurement:plan_pdf' plan.slug %}">
+                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                    Approved PDF
+                </a>
+            {% endif %}
+
+            {% if can_edit %}
+                <a class="btn pd-btn-primary"
+                   href="{% url 'procurement:plan_update' plan.slug %}">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                    Revise plan
+                </a>
+            {% endif %}
+
+            {% if can_delete %}
+                <a class="btn btn-outline-danger"
+                   href="{% url 'procurement:plan_delete' plan.slug %}">
+                    <i class="bi bi-trash3" aria-hidden="true"></i>
+                    Delete
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Approval progress -->
+    <section class="pd-card pd-progress-card"
+             aria-label="Procurement approval progress">
+        <div class="pd-progress-top">
+            <strong>
+                <i class="bi bi-diagram-3 me-2"
+                   style="color: var(--pd-primary);"
+                   aria-hidden="true"></i>
+                Approval progress
+            </strong>
+
+            <span class="pd-progress-value">
+                {{ plan.progress_percentage|default_if_none:0 }}%
+            </span>
+        </div>
+
+        <div class="pd-progress-track"
+             role="progressbar"
+             aria-label="Approval progress"
+             aria-valuenow="{{ plan.progress_percentage|default_if_none:0 }}"
+             aria-valuemin="0"
+             aria-valuemax="100">
+            <div class="pd-progress-fill
+                {% if plan.status == 'approved' %}is-approved
+                {% elif 'rejected' in plan.status or plan.status == 'ed_rejected' %}is-rejected
+                {% endif %}"
+                 style="width: {{ plan.progress_percentage|default_if_none:0 }}%;">
+            </div>
+        </div>
+
+        <div class="pd-progress-labels" aria-hidden="true">
+            <span>Submitted</span>
+            <span>REVIEW</span>
+            <span>ED decision</span>
+            <span>Approved</span>
+        </div>
+    </section>
+
+    <!-- Main content -->
+    <div class="pd-layout">
+
+        <main class="pd-main">
+
+            <!-- Plan items -->
+            <section class="pd-card">
+                <div class="pd-card-header">
+                    <div>
+                        <h2>
+                            <i class="bi bi-cart3 me-2"
+                               style="color: var(--pd-primary);"
+                               aria-hidden="true"></i>
+                            Procurement items
+                        </h2>
+
+                        <p class="pd-section-subtitle">
+                            Itemised goods and services in this plan
+                        </p>
+                    </div>
+
+                    <div class="pd-total">
+                        UGX {{ plan.total_amount|floatformat:2|intcomma }}
+                    </div>
+                </div>
+
+                <div class="pd-table-wrap">
+                    <table class="pd-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Product</th>
+                                <th scope="col">Description</th>
+                                <th scope="col" class="text-end">Quantity</th>
+                                <th scope="col" class="text-end">Unit cost</th>
+                                <th scope="col" class="text-end">Line total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in plan.items.all %}
+                                <tr>
+                                    <td class="pd-product">
+                                        {{ item.product.name|default:"—" }}
+                                    </td>
+
+                                    <td class="pd-description">
+                                        {{ item.description|default:"—" }}
+                                    </td>
+
+                                    <td class="pd-number">
+                                        {{ item.qty|floatformat:2 }}
+                                        {{ item.unit_measure }}
+                                    </td>
+
+                                    <td class="pd-number">
+                                        UGX {{ item.est_unit_cost|floatformat:2|intcomma }}
+                                    </td>
+
+                                    <td class="pd-number fw-bold">
+                                        UGX {{ item.line_total|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="pd-empty">
+                                        <i class="bi bi-inbox" aria-hidden="true"></i>
+                                        <strong>No procurement items</strong>
+                                        <div class="small mt-1">
+                                            No items have been recorded for this plan.
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Decision notes -->
+            {% if plan.rejection_reason %}
+                <section class="pd-notice" aria-label="Decision notes">
+                    <h2>
+                        <i class="bi bi-exclamation-triangle"
+                           aria-hidden="true"></i>
+                        Decision notes
+                    </h2>
+                    <p>{{ plan.rejection_reason|linebreaksbr }}</p>
+                </section>
+            {% endif %}
+
+        </main>
+
+        <aside class="pd-sidebar">
+
+            <!-- Plan information -->
+            <section class="pd-card">
+                <div class="pd-card-body">
+                    <h2>
+                        <i class="bi bi-info-circle me-2"
+                           style="color: var(--pd-primary);"
+                           aria-hidden="true"></i>
+                        Plan information
+                    </h2>
+
+                    <dl class="pd-info-list">
+                        <div class="pd-info-row">
+                            <dt>Project head</dt>
+                            <dd>{{ plan.project_head|default:"—" }}</dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Requester</dt>
+                            <dd>
+                                {% if plan.requester %}
+                                    {{ plan.requester.get_full_name|default:plan.requester.username }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Donor</dt>
+                            <dd>{{ plan.donor|default:"—" }}</dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Fiscal year</dt>
+                            <dd>{{ plan.fiscal_year|default:"—" }}</dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Budget period</dt>
+                            <dd>{{ plan.get_budget_period_display|default:"—" }}</dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Plan budget</dt>
+                            <dd class="pd-budget-value">
+                                UGX {{ plan.budget|floatformat:2|intcomma }}
+                            </dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Plan total</dt>
+                            <dd class="pd-budget-value">
+                                UGX {{ plan.total_amount|floatformat:2|intcomma }}
+                            </dd>
+                        </div>
+
+                        <div class="pd-info-row">
+                            <dt>Created</dt>
+                            <dd>
+                                {{ plan.created_at|date:"d M Y, H:i"|default:"—" }}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </section>
+
+        </aside>
+    </div>
+
+    <!-- Review / decision workflow -->
+    {% if can_review or can_decide_as_ed %}
+        <section class="pd-card pd-decision">
+            <div class="pd-card-body">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 42px; height: 42px; background: #fff0f7; color: var(--pd-primary);">
+                        <i class="bi bi-clipboard2-check fs-5"
+                           aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h2>
+                            {% if can_review %}
+                                REVIEW decision
+                            {% else %}
+                                Executive Director decision
+                            {% endif %}
+                        </h2>
+
+                        <p class="pd-decision-intro">
+                            Record your decision and provide clear feedback
+                            when returning or rejecting the plan.
+                        </p>
+                    </div>
+                </div>
+
+                <form method="post"
+                      action="{% url 'procurement:plan_decision' plan.slug %}">
+                    {% csrf_token %}
+
+                    <label class="pd-label" for="id_decision_comment">
+                        Decision comments
+                    </label>
+
+                    <textarea
+                        id="id_decision_comment"
+                        name="comment"
+                        class="pd-textarea"
+                        rows="4"
+                        placeholder="Enter review observations, approval conditions, or the reason for returning or rejecting this plan."
+                        aria-describedby="pd-decision-help"
+                    ></textarea>
+
+                    <div class="pd-decision-actions">
+                        <button type="submit"
+                                name="decision"
+                                value="approve"
+                                class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"
+                               aria-hidden="true"></i>
+                            Approve
+                        </button>
+
+                        <button type="submit"
+                                name="decision"
+                                value="reject"
+                                class="btn btn-outline-danger">
+                            <i class="bi bi-arrow-counterclockwise me-1"
+                               aria-hidden="true"></i>
+                            Reject / Return
+                        </button>
+
+                        <button type="submit"
+                                name="decision"
+                                value="deny"
+                                class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"
+                               aria-hidden="true"></i>
+                            Deny
+                        </button>
+                    </div>
+
+                    <p id="pd-decision-help" class="pd-decision-help mb-0">
+                        Decisions are subject to the current workflow stage
+                        and server-side permission checks.
+                    </p>
+                </form>
+            </div>
+        </section>
+    {% endif %}
+
+</div>
+{% endblock %}

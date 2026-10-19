@@ -1,0 +1,772 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Apply for Leave | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-leave-page">
+
+    <!-- Page heading -->
+    <div class="leave-page-header">
+        <div class="leave-heading-content">
+            <div class="leave-heading-icon">
+                <i class="bi bi-calendar2-plus"></i>
+            </div>
+            <div>
+                <span class="leave-eyebrow">HUMAN RESOURCES</span>
+                <h1>Apply for Leave</h1>
+                <p>Submit your leave request for review and approval.</p>
+            </div>
+        </div>
+
+        <a href="{% url 'hr:leave_list' %}" class="leave-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Leave Requests</span>
+        </a>
+    </div>
+
+    <div class="leave-layout">
+
+        <!-- Main application form -->
+        <div class="leave-main-column">
+            <div class="leave-card">
+
+                <div class="leave-card-header">
+                    <div>
+                        <h2>Leave Application Form</h2>
+                        <p>Complete the required information below.</p>
+                    </div>
+                    <span class="leave-required-note">
+                        <span>*</span> Required fields
+                    </span>
+                </div>
+
+                <form method="post"
+                      enctype="multipart/form-data"
+                      class="leave-application-form">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="leave-alert leave-alert-error" role="alert">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <div>
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    <div class="leave-form-field{% if field.name == 'special_type' %} special-type-field{% endif %}
+                        {% if field.field.widget.input_type == 'checkbox' %}leave-checkbox-field{% endif %}
+                        {% if field.field.widget.input_type == 'file' %}leave-file-field{% endif %}"
+                        {% if field.name == 'special_type' %}hidden{% endif %}>
+
+                        <label for="{{ field.id_for_label }}" class="leave-field-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="required-star">*</span>
+                            {% endif %}
+                        </label>
+
+                        {% if field.help_text %}
+                            <div class="leave-field-help">{{ field.help_text|safe }}</div>
+                        {% endif %}
+
+                        <div class="leave-input-wrapper">
+                            {% if field.name == 'leave_type' %}
+                            <select
+                                id="{{ field.id_for_label }}"
+                                name="{{ field.html_name }}"
+                                class="form-control"
+                                required
+                            >
+                                {% for leave_type in leave_types %}
+                                <option
+                                    value="{{ leave_type.pk }}"
+                                    data-is-special="{{ leave_type.is_special|yesno:'true,false' }}"
+                                    {% if selected_leave_type_id == leave_type.pk|stringformat:'s' %}selected{% endif %}
+                                >{{ leave_type.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="leave-balance-card" id="leave-balance-card" aria-live="polite">
+                                <i class="bi bi-calendar-check"></i>
+                                <div>
+                                    <strong><span id="leave-remaining-days">{{ selected_remaining_days }}</span> days remaining this year</strong>
+                                    <small><span id="leave-taken-days">{{ selected_taken_days }}</span> approved days used of <span id="leave-allotted-days">{{ selected_allotted_days }}</span> allotted</small>
+                                </div>
+                            </div>
+                            {% else %}
+                            {{ field }}
+                            {% endif %}
+                        </div>
+
+                        {% if field.errors %}
+                        <div class="leave-field-errors" role="alert">
+                            {% for error in field.errors %}
+                                <span>
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    {{ error }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="leave-form-footer">
+                        <a href="{% url 'hr:leave_list' %}" class="leave-cancel-btn">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="leave-submit-btn">
+                            <i class="bi bi-send"></i>
+                            Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Guidance sidebar -->
+        <aside class="leave-sidebar">
+
+            <div class="leave-info-card">
+                <div class="leave-info-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+                <h3>Before You Submit</h3>
+                <p>Review your application carefully to help ensure it can be processed efficiently.</p>
+
+                <div class="leave-guidance-list">
+                    <div class="leave-guidance-item">
+                        <span class="guidance-number">01</span>
+                        <div>
+                            <strong>Check your dates</strong>
+                            <p>Ensure your requested leave period is accurate.</p>
+                        </div>
+                    </div>
+
+                    <div class="leave-guidance-item">
+                        <span class="guidance-number">02</span>
+                        <div>
+                            <strong>Provide a clear reason</strong>
+                            <p>Include the information required to support your request.</p>
+                        </div>
+                    </div>
+
+                    <div class="leave-guidance-item">
+                        <span class="guidance-number">03</span>
+                        <div>
+                            <strong>Attach supporting documents</strong>
+                            <p>If required, upload the relevant supporting files.</p>
+                        </div>
+                    </div>
+
+                    <div class="leave-guidance-item">
+                        <span class="guidance-number">04</span>
+                        <div>
+                            <strong>Track your request</strong>
+                            <p>Return to your leave requests to check the recorded status.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leave-security-card">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                    <strong>Secure Submission</strong>
+                    <p>Your application is submitted through the organization's HR system.</p>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+</div>
+
+{{ leave_type_meta|json_script:"leave-type-balance-data" }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const leaveType = document.getElementById('id_leave_type');
+    const specialTypeField = document.querySelector('.special-type-field');
+    const specialType = document.getElementById('id_special_type');
+    if (!leaveType || !specialTypeField) return;
+
+    const balanceData = JSON.parse(document.getElementById('leave-type-balance-data').textContent);
+    const remainingDays = document.getElementById('leave-remaining-days');
+    const takenDays = document.getElementById('leave-taken-days');
+    const allottedDays = document.getElementById('leave-allotted-days');
+
+    function updateBalance() {
+        const balance = balanceData[leaveType.value] || {
+            remaining_days: 0,
+            taken_days: 0,
+            allotted_days: 0,
+        };
+        remainingDays.textContent = balance.remaining_days;
+        takenDays.textContent = balance.taken_days;
+        allottedDays.textContent = balance.allotted_days;
+    }
+
+    function toggleSpecialType() {
+        const selected = leaveType.options[leaveType.selectedIndex];
+        const isSpecial = selected && selected.dataset.isSpecial === 'true';
+        specialTypeField.hidden = !isSpecial;
+        if (specialType) {
+            specialType.disabled = !isSpecial;
+            specialType.required = isSpecial;
+            if (!isSpecial) specialType.value = '';
+        }
+    }
+
+    leaveType.addEventListener('change', toggleSpecialType);
+    leaveType.addEventListener('change', updateBalance);
+    toggleSpecialType();
+    updateBalance();
+});
+</script>
+
+<style>
+    .hr-leave-page {
+        --leave-primary: #e50078;
+        --leave-primary-dark: #b80060;
+        --leave-plum: #3b2938;
+        --leave-muted: #77717a;
+        --leave-border: #e9e4e9;
+        --leave-surface: #ffffff;
+        --leave-background: #faf8fa;
+        --leave-pink-soft: #fff0f7;
+        color: var(--leave-plum);
+        padding: 8px 0 30px;
+    }
+
+    .hr-leave-page,
+    .hr-leave-page * {
+        box-sizing: border-box;
+    }
+
+    .leave-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+    }
+
+    .leave-heading-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .leave-heading-icon {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        flex: 0 0 58px;
+        border-radius: 16px;
+        background: var(--leave-pink-soft);
+        color: var(--leave-primary);
+        font-size: 26px;
+    }
+
+    .leave-eyebrow {
+        display: block;
+        color: var(--leave-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+    }
+
+    .leave-heading-content h1 {
+        margin: 0;
+        color: var(--leave-plum);
+        font-size: clamp(23px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -0.7px;
+    }
+
+    .leave-heading-content p {
+        color: var(--leave-muted);
+        font-size: 13px;
+        margin: 6px 0 0;
+    }
+
+    .leave-back-btn,
+    .leave-cancel-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 10px 15px;
+        border: 1px solid var(--leave-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--leave-plum);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .leave-back-btn:hover,
+    .leave-cancel-btn:hover {
+        border-color: var(--leave-primary);
+        color: var(--leave-primary);
+        background: var(--leave-pink-soft);
+    }
+
+    .leave-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: start;
+        gap: 22px;
+    }
+
+    .leave-card,
+    .leave-info-card,
+    .leave-security-card {
+        background: var(--leave-surface);
+        border: 1px solid var(--leave-border);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(59, 41, 56, .035);
+    }
+
+    .leave-card {
+        overflow: hidden;
+    }
+
+    .leave-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 23px 25px;
+        border-bottom: 1px solid var(--leave-border);
+        background: linear-gradient(120deg, #fff 0%, #fff9fc 100%);
+    }
+
+    .leave-card-header h2 {
+        color: var(--leave-plum);
+        font-size: 17px;
+        font-weight: 800;
+        margin: 0 0 5px;
+    }
+
+    .leave-card-header p {
+        color: var(--leave-muted);
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .leave-required-note {
+        color: var(--leave-muted);
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .leave-required-note span,
+    .required-star {
+        color: var(--leave-primary);
+        font-weight: 800;
+    }
+
+    .leave-application-form {
+        padding: 25px;
+    }
+
+    .leave-application-form > p {
+        margin-bottom: 18px;
+    }
+
+    .leave-form-field {
+        min-width: 0;
+        margin-bottom: 21px;
+    }
+
+    .leave-field-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--leave-plum);
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .leave-field-help {
+        color: var(--leave-muted);
+        font-size: 11px;
+        line-height: 1.6;
+        margin: -2px 0 8px;
+    }
+
+    .leave-field-help ul,
+    .leave-field-help ol {
+        padding-left: 20px;
+        margin: 5px 0;
+    }
+
+    .leave-input-wrapper input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .leave-input-wrapper select,
+    .leave-input-wrapper textarea {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #ded6df;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--leave-plum);
+        font-family: inherit;
+        font-size: 13px;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .leave-input-wrapper textarea {
+        min-height: 115px;
+        resize: vertical;
+    }
+
+    .leave-balance-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border: 1px solid #eadce6;
+        border-radius: 9px;
+        background: #fff8fc;
+        color: var(--leave-plum);
+    }
+
+    .leave-balance-card > i {
+        color: var(--leave-primary);
+        font-size: 18px;
+    }
+
+    .leave-balance-card strong,
+    .leave-balance-card small {
+        display: block;
+    }
+
+    .leave-balance-card strong {
+        font-size: 12px;
+    }
+
+    .leave-balance-card small {
+        margin-top: 2px;
+        color: var(--leave-muted);
+        font-size: 10px;
+    }
+
+    .leave-input-wrapper input[type="file"] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        border: 1px dashed #d8cbd7;
+        border-radius: 9px;
+        background: var(--leave-background);
+        color: var(--leave-muted);
+        font-size: 12px;
+    }
+
+    .leave-input-wrapper input[type="checkbox"],
+    .leave-input-wrapper input[type="radio"] {
+        accent-color: var(--leave-primary);
+    }
+
+    .leave-input-wrapper input:focus,
+    .leave-input-wrapper select:focus,
+    .leave-input-wrapper textarea:focus {
+        outline: none;
+        border-color: var(--leave-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .10);
+    }
+
+    .leave-input-wrapper input[type="checkbox"]:focus,
+    .leave-input-wrapper input[type="radio"]:focus {
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .12);
+    }
+
+    .leave-checkbox-field .leave-input-wrapper {
+        padding: 12px 14px;
+        border: 1px solid var(--leave-border);
+        border-radius: 9px;
+        background: var(--leave-background);
+    }
+
+    .leave-checkbox-field .leave-input-wrapper label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        color: var(--leave-plum);
+        font-size: 12px;
+    }
+
+    .leave-field-errors {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 7px;
+        color: #b4234b;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .leave-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 13px 15px;
+        margin-bottom: 20px;
+        border-radius: 9px;
+        font-size: 12px;
+    }
+
+    .leave-alert-error {
+        color: #a51e43;
+        border: 1px solid #f3c8d4;
+        background: #fff2f5;
+    }
+
+    .leave-alert p {
+        margin: 0 0 4px;
+    }
+
+    .leave-alert p:last-child {
+        margin-bottom: 0;
+    }
+
+    .leave-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        margin-top: 6px;
+        border-top: 1px solid var(--leave-border);
+    }
+
+    .leave-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 11px 19px;
+        border: 1px solid var(--leave-primary);
+        border-radius: 9px;
+        background: var(--leave-primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .leave-submit-btn:hover {
+        background: var(--leave-primary-dark);
+        border-color: var(--leave-primary-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .leave-submit-btn:focus-visible,
+    .leave-back-btn:focus-visible,
+    .leave-cancel-btn:focus-visible {
+        outline: 3px solid rgba(229, 0, 120, .25);
+        outline-offset: 2px;
+    }
+
+    .leave-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .leave-info-card {
+        padding: 22px 20px;
+    }
+
+    .leave-info-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        background: var(--leave-pink-soft);
+        color: var(--leave-primary);
+        font-size: 20px;
+    }
+
+    .leave-info-card h3 {
+        margin: 0 0 8px;
+        color: var(--leave-plum);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .leave-info-card > p {
+        color: var(--leave-muted);
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .leave-guidance-list {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+    }
+
+    .leave-guidance-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+    }
+
+    .guidance-number {
+        display: grid;
+        place-items: center;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        border-radius: 9px;
+        background: #f7f1f6;
+        color: var(--leave-primary);
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .leave-guidance-item strong {
+        display: block;
+        margin: 1px 0 4px;
+        color: var(--leave-plum);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .leave-guidance-item p {
+        margin: 0;
+        color: var(--leave-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .leave-security-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px;
+        background: #fff9fc;
+    }
+
+    .leave-security-card > i {
+        color: var(--leave-primary);
+        font-size: 21px;
+    }
+
+    .leave-security-card strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--leave-plum);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .leave-security-card p {
+        margin: 0;
+        color: var(--leave-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 1100px) {
+        .leave-layout {
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 16px;
+        }
+
+        .leave-card-header,
+        .leave-application-form {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 850px) {
+        .leave-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .leave-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .hr-leave-page {
+            padding-top: 2px;
+        }
+
+        .leave-page-header {
+            align-items: flex-start;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .leave-heading-icon {
+            width: 48px;
+            height: 48px;
+            flex-basis: 48px;
+            border-radius: 13px;
+            font-size: 22px;
+        }
+
+        .leave-heading-content {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .leave-back-btn {
+            width: 100%;
+        }
+
+        .leave-card-header,
+        .leave-application-form {
+            padding: 17px;
+        }
+
+        .leave-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .leave-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .leave-form-footer {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .leave-submit-btn,
+        .leave-cancel-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

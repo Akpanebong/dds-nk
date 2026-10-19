@@ -1,0 +1,65 @@
+{% extends 'module_base.html' %}
+
+{% block title %}Leave Report | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="page-intro d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1>Leave report</h1>
+        <p class="text-muted mb-0">Approved leave usage for active staff, interns and volunteers.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{% url 'hr:leave_report_pdf' %}?year={{ year }}">PDF</a>
+        <a class="btn btn-outline-success" href="{% url 'hr:leave_report_excel' %}?year={{ year }}">Export Excel</a>
+        <a class="btn btn-outline-success" href="{% url 'hr:leave_staff_excel' %}?year={{ year }}&leave_type={{ selected_leave_type.pk }}">Staff Excel</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="panel h-100"><small class="text-muted d-block">Eligible people</small><strong class="fs-3">{{ total_staff }}</strong><div class="text-muted small">Staff, interns and volunteers</div></div></div>
+    <div class="col-md-4"><div class="panel h-100"><small class="text-muted d-block">Approved days used</small><strong class="fs-3">{{ total_approved }}</strong><div class="text-muted small">Approved requests only</div></div></div>
+    <div class="col-md-4"><div class="panel h-100"><small class="text-muted d-block">Remaining allocation</small><strong class="fs-3">{{ total_remaining }}</strong><div class="text-muted small">Across all leave types</div></div></div>
+</div>
+
+<div class="panel mb-4">
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-auto"><label class="form-label" for="report-year">Year</label><input id="report-year" class="form-control" type="number" name="year" value="{{ year }}"></div>
+        <div class="col-auto align-self-end"><button class="btn btn-primary">Apply filters</button></div>
+    </form>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Leave type</th><th>Eligible people</th><th>Allotted</th><th>Used / approved</th><th>Usage</th><th>Remaining</th></tr></thead>
+            <tbody>
+                {% for row in report_rows %}
+                <tr><td>{{ row.leave_type }}</td><td>{{ row.staff_count }}</td><td>{{ row.allotted_total_days }}</td><td>{{ row.approved_total_days }}</td><td>{{ row.usage_percentage }}%</td><td>{{ row.remaining_total_days }}</td></tr>
+                {% empty %}<tr><td colspan="6" class="text-center">No report data.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7"><div class="panel"><h2 class="h6 mb-3">Approved days by leave type</h2><canvas id="leaveUsageChart" height="130" aria-label="Approved leave days by leave type"></canvas></div></div>
+    <div class="col-lg-5"><div class="panel"><h2 class="h6 mb-3">Allocation used versus remaining</h2><canvas id="leaveAllocationChart" height="180" aria-label="Leave allocation used versus remaining"></canvas></div></div>
+</div>
+
+{{ leave_chart_labels|json_script:"leave-chart-labels" }}
+{{ leave_chart_used|json_script:"leave-chart-used" }}
+{{ leave_chart_remaining|json_script:"leave-chart-remaining" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const labels = JSON.parse(document.getElementById('leave-chart-labels').textContent);
+    const used = JSON.parse(document.getElementById('leave-chart-used').textContent);
+    const remaining = JSON.parse(document.getElementById('leave-chart-remaining').textContent);
+    new Chart(document.getElementById('leaveUsageChart'), {
+        type: 'bar', data: { labels, datasets: [{ label: 'Approved days', data: used, backgroundColor: '#e50078', borderRadius: 6 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+    new Chart(document.getElementById('leaveAllocationChart'), {
+        type: 'doughnut', data: { labels: ['Approved / used', 'Remaining'], datasets: [{ data: [used.reduce((a, b) => a + b, 0), remaining.reduce((a, b) => a + b, 0)], backgroundColor: ['#e50078', '#eadce6'], borderWidth: 0 }] },
+        options: { responsive: true, cutout: '64%', plugins: { legend: { position: 'bottom' } } }
+    });
+});
+</script>
+{% endblock %}

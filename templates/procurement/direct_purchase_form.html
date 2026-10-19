@@ -1,0 +1,11 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+{% block title %}Direct Purchase | DDS-NK Procurement{% endblock %}
+{% block nav %}{% include 'procurement/_sidebar.html' %}{% endblock %}
+{% block crumb %}<span class="module-label procurement-text">PROCUREMENT</span><h1>Direct purchase</h1>{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-7"><div class="panel form-panel"><div class="panel-head"><div><h4>Petty-cash / single quotation purchase</h4><small>Requisitions up to UGX {{ threshold|floatformat:0|intcomma }} bypass the RFQ supplier process.</small></div><span class="status status-approved">Direct purchase</span></div><div class="alert alert-light border"><strong>{{ requisition.number }}</strong> - {{ requisition.project.name }}<br><small>Approved requisition total: UGX {{ requisition.total|floatformat:2|intcomma }}</small></div><form method="post" novalidate>{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}<div class="d-flex gap-2 justify-content-end"><a class="btn btn-light border" href="{% url 'procurement:req_detail' requisition.slug %}">Cancel</a><button class="btn btn-primary"><i class="bi bi-cart-check me-1"></i>Generate direct purchase order</button></div></form></div></div>
+    <div class="col-xl-5"><div class="panel"><div class="panel-head"><div><h4>Items to purchase</h4><small>{{ requisition.number }}</small></div></div><table class="table smart-table"><thead><tr><th>Description</th><th class="text-end">Qty</th></tr></thead><tbody>{% for item in items %}<tr><td>{{ item.description }}<small>{{ item.unit_measure }}</small></td><td class="text-end">{{ item.qty }}</td></tr>{% endfor %}</tbody></table></div></div>
+</div>
+{% endblock %}

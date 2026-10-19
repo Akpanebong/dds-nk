@@ -1,0 +1,959 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}{{ requisition.number }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">PROCUREMENT</span>
+    <h1 class="mb-0">{{ requisition.number }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --req-primary: #b8663f;
+        --req-primary-dark: #87452d;
+        --req-primary-light: #fbf0ea;
+        --req-accent: #a65a7a;
+        --req-danger: #b91c1c;
+        --req-danger-light: #fef2f2;
+        --req-border: #e8edf4;
+        --req-text: #14213d;
+        --req-muted: #6b7890;
+        --req-surface: #ffffff;
+        --req-page: #fbf9fa;
+    }
+
+    .req-page {
+        padding: 24px;
+        background: var(--req-page);
+        min-height: 100%;
+        color: var(--req-text);
+        border-radius: 14px;
+    }
+
+    .req-card {
+        background: var(--req-surface);
+        border: 1px solid var(--req-border);
+        border-radius: 14px;
+        margin-bottom: 22px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(41, 37, 36, .045);
+    }
+
+    .req-card-header {
+        padding: 17px 22px;
+        border-bottom: 1px solid var(--req-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .req-card-header h2 {
+        font-size: 15px;
+        font-weight: 750;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .req-card-header h2 i {
+        color: var(--req-primary);
+        font-size: 17px;
+    }
+
+    .req-card-body {
+        padding: 22px;
+    }
+
+    .req-hero {
+        background: linear-gradient(125deg, #87452d 0%, #b8663f 58%, #a65a7a 100%);
+        color: #fff;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .req-hero::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border: 35px solid rgba(255,255,255,.08);
+        border-radius: 50%;
+        right: -75px;
+        top: -100px;
+        pointer-events: none;
+    }
+
+    .req-eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+        font-weight: 750;
+        opacity: .85;
+        margin-bottom: 8px;
+    }
+
+    .req-number {
+        font-size: clamp(23px, 3vw, 32px);
+        line-height: 1.2;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+        margin: 0 0 12px;
+    }
+
+    .req-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        align-items: center;
+    }
+
+    .req-hero-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid rgba(255,255,255,.3);
+        background: rgba(255,255,255,.12);
+        padding: 7px 11px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 650;
+        overflow-wrap: anywhere;
+    }
+
+    .req-amount-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: .8;
+        margin-bottom: 5px;
+    }
+
+    .req-amount {
+        font-size: clamp(25px, 3vw, 34px);
+        font-weight: 800;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .req-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .req-stat {
+        background: #fff;
+        border: 1px solid var(--req-border);
+        border-radius: 12px;
+        padding: 17px;
+        min-width: 0;
+    }
+
+    .req-stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--req-muted);
+        font-weight: 750;
+        margin-bottom: 8px;
+    }
+
+    .req-stat-value {
+        font-size: 15px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .req-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 30px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 750;
+        background: #ffedd5;
+        color: #9a3412;
+        border: 1px solid #fed7aa;
+    }
+
+    .req-status i {
+        font-size: 9px;
+    }
+
+    .req-alert {
+        border: 1px solid #fecaca;
+        border-left: 4px solid var(--req-danger);
+        border-radius: 10px;
+        padding: 16px 18px;
+        background: var(--req-danger-light);
+        color: #7f1d1d;
+        margin-bottom: 22px;
+        overflow-wrap: anywhere;
+    }
+
+    .req-alert-title {
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .req-alert p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .req-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .req-table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .req-table thead th {
+        background: #fff7ed;
+        color: #7c2d12;
+        text-transform: uppercase;
+        letter-spacing: .55px;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 13px 16px;
+        border-bottom: 1px solid #fed7aa;
+        white-space: nowrap;
+    }
+
+    .req-table tbody td {
+        padding: 15px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid #f0eeeb;
+        vertical-align: middle;
+    }
+
+    .req-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .req-table tbody tr:hover {
+        background: #fffaf5;
+    }
+
+    .req-table .text-end {
+        text-align: right;
+    }
+
+    .req-table tfoot td {
+        padding: 16px;
+        font-size: 14px;
+        font-weight: 800;
+        background: #fff7ed;
+        border-top: 1px solid #fed7aa;
+    }
+
+    .req-total {
+        color: var(--req-primary-dark);
+        font-size: 16px !important;
+    }
+
+    .req-empty {
+        text-align: center;
+        padding: 35px 20px !important;
+        color: var(--req-muted);
+    }
+
+    .req-timeline {
+        list-style: none;
+        margin: 0;
+        padding: 3px 0;
+    }
+
+    .req-timeline li {
+        position: relative;
+        padding: 0 0 23px 39px;
+        min-height: 48px;
+    }
+
+    .req-timeline li:last-child {
+        padding-bottom: 0;
+    }
+
+    .req-timeline li:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 29px;
+        bottom: -1px;
+        width: 2px;
+        background: #e7e5e4;
+    }
+
+    .req-timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 29px;
+        height: 29px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #ffedd5;
+        color: var(--req-primary);
+        border: 1px solid #fed7aa;
+        font-size: 12px;
+    }
+
+    .req-timeline li.is-complete .req-timeline-marker {
+        background: #c2410c;
+        color: #fff;
+        border-color: #c2410c;
+    }
+
+    .req-timeline-title {
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    .req-timeline-meta {
+        color: var(--req-muted);
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .req-progress-card {
+        overflow: hidden;
+    }
+
+    .req-progress-percent {
+        color: var(--req-primary-dark);
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .req-progress-body {
+        padding: 18px 22px 20px;
+    }
+
+    .req-progress-track {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e8edf4;
+    }
+
+    .req-progress-track span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--req-primary), var(--req-accent));
+        transition: width .25s ease;
+    }
+
+    .req-progress-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        color: var(--req-muted);
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .req-pending {
+        display: inline-flex;
+        color: #9a3412;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 5px;
+        padding: 3px 7px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .req-form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 750;
+        margin-bottom: 8px;
+    }
+
+    .req-textarea {
+        width: 100%;
+        min-height: 110px;
+        padding: 12px 14px;
+        border: 1px solid #d6d3d1;
+        border-radius: 9px;
+        font-size: 13px;
+        line-height: 1.6;
+        resize: vertical;
+        background: #fff;
+        color: var(--req-text);
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .req-textarea:focus {
+        outline: none;
+        border-color: var(--req-accent);
+        box-shadow: 0 0 0 3px rgba(234,88,12,.12);
+    }
+
+    .req-help {
+        color: var(--req-muted);
+        font-size: 11px;
+        margin-top: 7px;
+    }
+
+    .req-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .req-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 12px;
+        font-weight: 750;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: background .2s, border-color .2s, transform .2s;
+    }
+
+    .req-btn:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .req-btn-primary {
+        background: var(--req-primary);
+        color: #fff;
+        border-color: var(--req-primary);
+    }
+
+    .req-btn-primary:hover {
+        background: var(--req-primary-dark);
+        color: #fff;
+        border-color: var(--req-primary-dark);
+    }
+
+    .req-btn-danger {
+        background: #fff;
+        color: var(--req-danger);
+        border-color: #fecaca;
+    }
+
+    .req-btn-danger:hover {
+        background: var(--req-danger-light);
+        color: #991b1b;
+    }
+
+    .req-btn-outline {
+        background: #fff;
+        color: var(--req-primary-dark);
+        border-color: #fdba74;
+    }
+
+    .req-btn-outline:hover {
+        background: var(--req-primary-light);
+        color: var(--req-primary-dark);
+    }
+
+    .req-btn-muted {
+        background: #f5f5f4;
+        color: #57534e;
+        border-color: #e7e5e4;
+    }
+
+    .req-btn-muted:hover {
+        background: #e7e5e4;
+        color: #292524;
+    }
+
+    .req-section-note {
+        font-size: 12px;
+        color: var(--req-muted);
+        line-height: 1.6;
+        margin-top: 10px;
+    }
+
+    @media (max-width: 767px) {
+        .req-page {
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .req-hero {
+            padding: 20px;
+        }
+
+        .req-summary-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .req-card-header,
+        .req-card-body {
+            padding: 16px;
+        }
+
+        .req-amount-block {
+            margin-top: 20px;
+        }
+
+        .req-actions {
+            flex-direction: column;
+        }
+
+        .req-actions .req-btn {
+            width: 100%;
+        }
+    }
+
+    @media print {
+        .req-page {
+            background: #fff;
+            padding: 0;
+        }
+
+        .req-card,
+        .req-stat,
+        .req-hero {
+            box-shadow: none;
+            break-inside: avoid;
+        }
+
+        .req-no-print {
+            display: none !important;
+        }
+    }
+</style>
+<style>
+    .req-page .req-card-header i,
+    .req-page .req-eyebrow,
+    .req-page .req-progress-percent { color: #b8663f; }
+    .req-page .req-status { color: #87452d; background: #fbf0ea; border-color: #e5c4b4; }
+    .req-page .req-timeline-marker { background: #fbf0ea; border-color: #e5c4b4; color: #b8663f; }
+    .req-page .req-timeline li.is-complete .req-timeline-marker { background: #b8663f; border-color: #b8663f; }
+    .req-page .req-pending { color: #87452d; background: #fbf0ea; border-color: #e5c4b4; }
+    .req-page .req-progress-track span { background: linear-gradient(90deg, #b8663f, #a65a7a); }
+</style>
+
+<div class="req-page">
+
+    <!-- Requisition overview -->
+    <section class="req-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="req-eyebrow">
+                    <i class="bi bi-file-earmark-text me-1"></i>
+                    Procurement requisition
+                </div>
+
+                <h2 class="req-number">{{ requisition.number }}</h2>
+
+                <div class="req-hero-meta">
+                    <span class="req-hero-chip">
+                        <i class="bi bi-folder2-open"></i>
+                        {{ requisition.project.name|default:"No project assigned" }}
+                    </span>
+
+                    <span class="req-hero-chip">
+                        <i class="bi bi-calendar3"></i>
+                        Requisition record
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-lg-4 req-amount-block">
+                <div class="req-amount-label">Total requisition value</div>
+                <div class="req-amount">
+                    UGX {{ requisition.total|floatformat:2|intcomma }}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Summary -->
+    <div class="req-summary-grid">
+        <div class="req-stat">
+            <div class="req-stat-label">
+                <i class="bi bi-clipboard-check me-1"></i> Current status
+            </div>
+            <div class="req-stat-value">
+                <span class="req-status">
+                    <i class="bi bi-circle-fill"></i>
+                    {{ requisition.status }}
+                </span>
+            </div>
+        </div>
+
+        <div class="req-stat">
+            <div class="req-stat-label">
+                <i class="bi bi-kanban me-1"></i> Project
+            </div>
+            <div class="req-stat-value">
+                {{ requisition.project.name|default:"Not assigned" }}
+            </div>
+        </div>
+
+        <div class="req-stat">
+            <div class="req-stat-label">
+                <i class="bi bi-cash-stack me-1"></i> Total value
+            </div>
+            <div class="req-stat-value">
+                UGX {{ requisition.total|floatformat:2|intcomma }}
+            </div>
+        </div>
+    </div>
+
+    <section class="req-card req-progress-card">
+        <div class="req-card-header">
+            <h2><i class="bi bi-graph-up-arrow"></i> Workflow progress</h2>
+            <strong class="req-progress-percent">{{ progress_percent }}%</strong>
+        </div>
+        <div class="req-progress-body">
+            <div class="req-progress-track" role="progressbar" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                <span style="width: {{ progress_percent }}%"></span>
+            </div>
+            <div class="req-progress-labels"><span>Requested</span><span>Reviewed</span><span>Checked</span><span>Approved</span></div>
+        </div>
+    </section>
+
+    <!-- Rejection notice -->
+    {% if requisition.rejection_reason %}
+        <div class="req-alert" role="alert">
+            <div class="req-alert-title">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Requisition returned or rejected
+            </div>
+            <p>{{ requisition.rejection_reason }}</p>
+        </div>
+    {% endif %}
+
+    <!-- Requisition items -->
+    <section class="req-card">
+        <div class="req-card-header">
+            <h2>
+                <i class="bi bi-list-check"></i>
+                Requisition items
+            </h2>
+
+            <span class="req-status">
+                <i class="bi bi-box-seam"></i>
+                {{ requisition.items.count }} item{{ requisition.items.count|pluralize }}
+            </span>
+        </div>
+
+        <div class="req-table-wrap">
+            <table class="req-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Description</th>
+                        <th class="text-end">Quantity</th>
+                        <th class="text-end">Unit price</th>
+                        <th class="text-end">Line total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in requisition.items.all %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ item.description }}</strong>
+                            </td>
+                            <td class="text-end">{{ item.qty|intcomma }}</td>
+                            <td class="text-end">
+                                UGX {{ item.unit_price|floatformat:2|intcomma }}
+                            </td>
+                            <td class="text-end">
+                                <strong>
+                                    UGX {{ item.line_total|floatformat:2|intcomma }}
+                                </strong>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="req-empty">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                No items have been recorded for this requisition.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end">Grand total</td>
+                        <td class="text-end req-total">
+                            UGX {{ requisition.total|floatformat:2|intcomma }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+    <!-- Approval history -->
+    <section class="req-card">
+        <div class="req-card-header">
+            <h2>
+                <i class="bi bi-diagram-3"></i>
+                Approval workflow
+            </h2>
+        </div>
+
+        <div class="req-card-body">
+            <ol class="req-timeline">
+                {% for name, person, timestamp in stages %}
+                    <li class="{% if person %}is-complete{% endif %}">
+                        <span class="req-timeline-marker">
+                            {% if person %}
+                                <i class="bi bi-check-lg"></i>
+                            {% else %}
+                                <i class="bi bi-clock"></i>
+                            {% endif %}
+                        </span>
+
+                        <div class="req-timeline-title">{{ name }}</div>
+
+                        <div class="req-timeline-meta">
+                            {% if person %}
+                                <i class="bi bi-person-check me-1"></i>
+                                {{ person }}
+
+                                {% if timestamp %}
+                                    <span class="d-block mt-1">
+                                        <i class="bi bi-calendar-check me-1"></i>
+                                        {{ timestamp }}
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="req-pending">Pending</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% empty %}
+                    <li>
+                        <div class="req-timeline-title">No approval history available</div>
+                        <div class="req-timeline-meta">
+                            Workflow information has not been recorded.
+                        </div>
+                    </li>
+                {% endfor %}
+            </ol>
+        </div>
+    </section>
+
+    <!-- Approval actions -->
+    {% if can_act %}
+        <section class="req-card">
+            <div class="req-card-header">
+                <h2>
+                    <i class="bi bi-shield-check"></i>
+                    Review and decision
+                </h2>
+            </div>
+
+            <div class="req-card-body">
+                <p class="req-section-note mt-0">
+                    Review the requisition details and line items before recording
+                    your decision. Add a reason when rejecting the request.
+                </p>
+
+                <form
+                    method="post"
+                    action="{% url 'procurement:req_approve' requisition.slug %}"
+                    onsubmit="return confirmRequisitionDecision(event);"
+                >
+                    {% csrf_token %}
+
+                    <label for="req-reason" class="req-form-label">
+                        Comments or rejection reason
+                    </label>
+
+                    <textarea
+                        id="req-reason"
+                        name="reason"
+                        class="req-textarea"
+                        placeholder="Enter review comments or explain why this requisition is being rejected..."
+                    ></textarea>
+
+                    <div class="req-help">
+                        Provide clear, relevant comments to support the approval
+                        decision and maintain an audit trail.
+                    </div>
+
+                    <div class="req-actions">
+                        <button
+                            type="submit"
+                            name="action"
+                            value="{% if requisition.status == 'Pending' %}review{% elif requisition.status == 'Reviewed' %}check{% else %}approve{% endif %}"
+                            class="req-btn req-btn-primary"
+                        >
+                            <i class="bi bi-check-circle"></i>
+                            {% if requisition.status == 'Pending' %}
+                                Review requisition
+                            {% elif requisition.status == 'Reviewed' %}
+                                Check requisition
+                            {% else %}
+                                Approve requisition
+                            {% endif %}
+                        </button>
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="reject"
+                            class="req-btn req-btn-danger"
+                            onclick="document.getElementById('req-decision').value='reject';"
+                        >
+                            <i class="bi bi-x-circle"></i>
+                            Reject requisition
+                        </button>
+                    </div>
+
+                    <input type="hidden" id="req-decision" value="">
+                </form>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Record management -->
+    {% if can_edit or can_delete %}
+        <section class="req-card req-no-print">
+            <div class="req-card-header">
+                <h2>
+                    <i class="bi bi-gear"></i>
+                    Requisition management
+                </h2>
+            </div>
+
+            <div class="req-card-body">
+                <div class="req-actions mt-0">
+                    {% if can_edit %}
+                        <a
+                            href="{% url 'procurement:req_update' requisition.slug %}"
+                            class="req-btn req-btn-outline"
+                        >
+                            <i class="bi bi-pencil-square"></i>
+                            Update requisition
+                        </a>
+                    {% endif %}
+
+                    {% if can_delete %}
+                        <a
+                            href="{% url 'procurement:req_delete' requisition.slug %}"
+                            class="req-btn req-btn-danger"
+                        >
+                            <i class="bi bi-trash3"></i>
+                            Delete requisition
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Utility actions -->
+    <div class="req-actions req-no-print">
+        {% if can_download_pdf %}
+            <a
+                href="{% url 'procurement:req_pdf' requisition.slug %}"
+                class="req-btn req-btn-primary"
+            >
+                <i class="bi bi-file-earmark-pdf"></i>
+                Download approved PDF
+            </a>
+        {% endif %}
+        {% if can_create_rfq %}
+            <a
+                href="{% url 'procurement:rfq_create' requisition.slug %}"
+                class="req-btn req-btn-outline"
+            >
+                <i class="bi bi-send-plus"></i>
+                Create RFQ
+            </a>
+        {% endif %}
+        {% if can_direct_purchase %}
+            <a
+                href="{% url 'procurement:direct_purchase_create' requisition.slug %}"
+                class="req-btn req-btn-outline"
+            >
+                <i class="bi bi-cart-check"></i>
+                Direct purchase
+            </a>
+        {% endif %}
+        <button
+            type="button"
+            class="req-btn req-btn-muted"
+            onclick="window.print()"
+        >
+            <i class="bi bi-printer"></i>
+            Print requisition
+        </button>
+    </div>
+
+</div>
+
+<script>
+    function confirmRequisitionDecision(event) {
+        const submitter = event.submitter;
+        const action = submitter ? submitter.value : '';
+        const reason = document.getElementById('req-reason');
+
+        if (action === 'reject') {
+            if (!reason.value.trim()) {
+                event.preventDefault();
+                reason.focus();
+                alert('Please provide a reason before rejecting this requisition.');
+                return false;
+            }
+
+            return confirm(
+                'Are you sure you want to reject this requisition?'
+            );
+        }
+
+        let message = 'Continue with this requisition action?';
+
+        if (action === 'review') {
+            message = 'Submit this requisition for review?';
+        } else if (action === 'check') {
+            message = 'Submit this requisition for the next approval stage?';
+        } else if (action === 'approve') {
+            message = 'Approve this requisition?';
+        }
+
+        return confirm(message);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,1617 @@
+
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}HR Intelligence Dashboard | DDS-NK THRIVE{% endblock %}
+
+{% block module_brand %}
+<i class="bi bi-people-fill"></i> Human Resources
+{% endblock %}
+
+{% block nav %}
+<a class="active" href="{% url 'hr:dashboard' %}">
+    <i class="bi bi-speedometer2"></i> Dashboard
+</a>
+<a href="{% url 'hr:staff' %}">
+    <i class="bi bi-person-vcard"></i> Staff Records
+</a>
+<a href="{% url 'hr:reviews' %}">
+    <i class="bi bi-clipboard2-check"></i> Performance
+</a>
+{% endblock %}
+
+{% block crumb %}
+<span class="module-label hr-text">HUMAN RESOURCES</span>
+<h1>People intelligence</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --hr-primary: #e50078;
+        --hr-primary-dark: #b90060;
+        --hr-plum: #3b2938;
+        --hr-ink: #25313b;
+        --hr-muted: #73808d;
+        --hr-border: #e8eaf0;
+        --hr-surface: #ffffff;
+        --hr-bg: #f6f7fb;
+        --hr-green: #16866b;
+        --hr-blue: #376bd6;
+        --hr-amber: #bc7910;
+        --hr-red: #c83d50;
+    }
+
+    .hr-dashboard {
+        color: var(--hr-ink);
+        padding-bottom: 1.5rem;
+    }
+
+    .hr-dashboard * { box-sizing: border-box; }
+
+    .hr-hero {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        padding: clamp(1.35rem, 3vw, 2.2rem);
+        margin-bottom: 1.4rem;
+        color: #fff;
+        border-radius: 20px;
+        background: linear-gradient(115deg, #3b2938 0%, #54233f 55%, #a8005a 100%);
+        box-shadow: 0 12px 32px rgba(59, 41, 56, .12);
+    }
+
+    .hr-hero::after {
+        content: "";
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        right: 12%;
+        top: -155px;
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 50%;
+        box-shadow: 0 0 0 28px rgba(255,255,255,.035),
+                    0 0 0 58px rgba(255,255,255,.025);
+        pointer-events: none;
+    }
+
+    .hr-hero-content, .hr-hero-actions {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hr-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: .75rem;
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+        color: #ffc4e1;
+    }
+
+    .hr-hero h2 {
+        margin: 0 0 .6rem;
+        font-size: clamp(1.45rem, 2.8vw, 2.1rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        color: #fff;
+    }
+
+    .hr-hero p {
+        max-width: 650px;
+        margin: 0;
+        color: rgba(255,255,255,.78);
+        font-size: .92rem;
+        line-height: 1.7;
+    }
+
+    .hr-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .6rem 1rem;
+        margin-top: 1rem;
+        color: rgba(255,255,255,.76);
+        font-size: .77rem;
+    }
+
+    .hr-hero-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .hr-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        padding: .78rem 1rem;
+        color: #fff !important;
+        background: var(--hr-primary);
+        border: 1px solid var(--hr-primary);
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 750;
+        font-size: .83rem;
+        white-space: nowrap;
+        transition: .2s ease;
+    }
+
+    .hr-primary-btn:hover {
+        background: #c90069;
+        border-color: #c90069;
+        transform: translateY(-1px);
+    }
+
+    .hr-outline-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        padding: .72rem .9rem;
+        color: #fff !important;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.24);
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: .82rem;
+        white-space: nowrap;
+    }
+
+    .hr-section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 1.7rem 0 .85rem;
+    }
+
+    .hr-section-heading h3 {
+        margin: 0;
+        color: var(--hr-plum);
+        font-size: 1.02rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    .hr-section-heading p {
+        margin: .3rem 0 0;
+        color: var(--hr-muted);
+        font-size: .79rem;
+    }
+
+    .hr-section-tag {
+        color: var(--hr-muted);
+        font-size: .72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .hr-kpi {
+        height: 100%;
+        min-height: 143px;
+        padding: 1.15rem;
+        border: 1px solid var(--hr-border);
+        border-radius: 15px;
+        background: var(--hr-surface);
+        box-shadow: 0 3px 12px rgba(30,35,60,.025);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .hr-kpi:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(30,35,60,.07);
+    }
+
+    .hr-kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .7rem;
+        margin-bottom: 1rem;
+    }
+
+    .hr-kpi-label {
+        color: var(--hr-muted);
+        font-size: .69rem;
+        font-weight: 800;
+        letter-spacing: .065em;
+        text-transform: uppercase;
+    }
+
+    .hr-kpi-icon {
+        display: grid;
+        place-items: center;
+        width: 39px;
+        height: 39px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        font-size: 1.05rem;
+    }
+
+    .hr-kpi-value {
+        display: block;
+        color: var(--hr-plum);
+        font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+        font-weight: 850;
+        letter-spacing: -.055em;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .hr-kpi-foot {
+        margin-top: .55rem;
+        color: var(--hr-muted);
+        font-size: .74rem;
+        line-height: 1.45;
+    }
+
+    .hr-kpi-foot strong { color: var(--hr-ink); }
+
+    .hr-tone-pink { background: #fff0f7; color: var(--hr-primary); }
+    .hr-tone-green { background: #eaf8f2; color: var(--hr-green); }
+    .hr-tone-blue { background: #edf3ff; color: var(--hr-blue); }
+    .hr-tone-amber { background: #fff5e5; color: var(--hr-amber); }
+    .hr-tone-red { background: #fff0f1; color: var(--hr-red); }
+    .hr-tone-plum { background: #f3edf4; color: var(--hr-plum); }
+
+    .hr-panel {
+        height: 100%;
+        overflow: hidden;
+        background: var(--hr-surface);
+        border: 1px solid var(--hr-border);
+        border-radius: 16px;
+        box-shadow: 0 3px 12px rgba(30,35,60,.025);
+    }
+
+    .hr-panel-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.2rem;
+        border-bottom: 1px solid #eef0f4;
+    }
+
+    .hr-panel-head h4 {
+        margin: 0;
+        color: var(--hr-plum);
+        font-size: .91rem;
+        font-weight: 800;
+    }
+
+    .hr-panel-head p {
+        margin: .32rem 0 0;
+        color: var(--hr-muted);
+        font-size: .75rem;
+    }
+
+    .hr-panel-body { padding: 1.15rem 1.2rem; }
+
+    .hr-chart {
+        position: relative;
+        width: 100%;
+        height: 275px;
+    }
+
+    .hr-chart.hr-chart-small { height: 245px; }
+
+    .hr-alert-list {
+        display: grid;
+        gap: .7rem;
+    }
+
+    .hr-alert {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: .9rem;
+        border: 1px solid var(--hr-border);
+        border-radius: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition: background .18s ease, border-color .18s ease;
+    }
+
+    .hr-alert:hover {
+        background: #fcf8fb;
+        border-color: #efc6dc;
+    }
+
+    .hr-alert-icon {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+
+    .hr-alert-main { flex: 1; min-width: 0; }
+
+    .hr-alert-title {
+        display: block;
+        color: var(--hr-ink);
+        font-size: .82rem;
+        font-weight: 800;
+    }
+
+    .hr-alert-sub {
+        display: block;
+        margin-top: .25rem;
+        color: var(--hr-muted);
+        font-size: .73rem;
+        line-height: 1.5;
+    }
+
+    .hr-alert-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 31px;
+        height: 29px;
+        padding: 0 .45rem;
+        border-radius: 9px;
+        color: var(--hr-plum);
+        background: #f4f0f5;
+        font-size: .82rem;
+        font-weight: 850;
+    }
+
+    .hr-table {
+        margin: 0;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .hr-table thead th {
+        padding: .82rem 1rem;
+        color: #77818d;
+        background: #fafafd;
+        border-bottom: 1px solid var(--hr-border);
+        font-size: .66rem;
+        font-weight: 800;
+        letter-spacing: .065em;
+        text-transform: uppercase;
+    }
+
+    .hr-table tbody td {
+        padding: .9rem 1rem;
+        border-color: #f0f1f5;
+        color: #52606c;
+        font-size: .79rem;
+    }
+
+    .hr-table tbody tr:last-child td { border-bottom: 0; }
+
+    .hr-table tbody tr:hover { background: #fcf9fb; }
+
+    .hr-person {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        min-width: 175px;
+    }
+
+    .hr-avatar {
+        display: grid;
+        place-items: center;
+        width: 37px;
+        height: 37px;
+        overflow: hidden;
+        flex-shrink: 0;
+        border-radius: 11px;
+        background: #f5eaf1;
+        color: var(--hr-primary-dark);
+        font-weight: 850;
+        font-size: .78rem;
+    }
+
+    .hr-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hr-person strong {
+        display: block;
+        max-width: 210px;
+        overflow: hidden;
+        color: var(--hr-ink);
+        font-size: .79rem;
+        text-overflow: ellipsis;
+    }
+
+    .hr-person small {
+        display: block;
+        margin-top: .2rem;
+        color: var(--hr-muted);
+        font-size: .7rem;
+    }
+
+    .hr-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .38rem;
+        padding: .34rem .58rem;
+        border-radius: 30px;
+        font-size: .67rem;
+        font-weight: 800;
+        line-height: 1.2;
+        background: #f0f2f5;
+        color: #5d6673;
+    }
+
+    .hr-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .hr-status-active, .hr-status-approved, .hr-status-completed,
+    .hr-status-resolved { background: #e7f7ef; color: #18794e; }
+
+    .hr-status-on-leave, .hr-status-pending,
+    .hr-status-scheduled, .hr-status-reviewed,
+    .hr-status-sent-to-employee { background: #fff3df; color: #95600b; }
+
+    .hr-status-exit, .hr-status-denied, .hr-status-canceled {
+        background: #ffedef;
+        color: #b02c43;
+    }
+
+    .hr-status-in-progress, .hr-status-submitted-by-employee,
+    .hr-status-reviewed-by-supervisor, .hr-status-reviewed-by-hr {
+        background: #edf2ff;
+        color: #365bc0;
+    }
+
+    .hr-status-awaiting-schedule, .hr-status-draft {
+        background: #f0edf3;
+        color: #6e5879;
+    }
+
+    .hr-link {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        color: var(--hr-primary-dark);
+        font-size: .77rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .hr-link:hover { color: var(--hr-primary); }
+
+    .hr-empty {
+        padding: 2rem 1rem !important;
+        color: var(--hr-muted) !important;
+        text-align: center;
+        white-space: normal;
+    }
+
+    .hr-empty i {
+        display: block;
+        margin-bottom: .5rem;
+        font-size: 1.6rem;
+        color: #c5bdc9;
+    }
+
+    .hr-schedule-item {
+        display: flex;
+        align-items: flex-start;
+        gap: .8rem;
+        padding: .85rem 0;
+        border-bottom: 1px solid #f0f1f5;
+    }
+
+    .hr-schedule-item:first-child { padding-top: 0; }
+    .hr-schedule-item:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .hr-date-box {
+        display: grid;
+        place-items: center;
+        min-width: 49px;
+        min-height: 52px;
+        padding: .35rem;
+        border-radius: 11px;
+        background: #fff0f7;
+        color: var(--hr-primary-dark);
+    }
+
+    .hr-date-box strong {
+        font-size: 1.05rem;
+        line-height: 1.1;
+    }
+
+    .hr-date-box span {
+        font-size: .62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .hr-schedule-main { flex: 1; min-width: 0; }
+
+    .hr-schedule-main strong {
+        display: block;
+        color: var(--hr-ink);
+        font-size: .81rem;
+        line-height: 1.5;
+    }
+
+    .hr-schedule-main small {
+        display: block;
+        margin-top: .2rem;
+        color: var(--hr-muted);
+        font-size: .72rem;
+        line-height: 1.5;
+    }
+
+    .hr-progress {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #f0edf3;
+    }
+
+    .hr-progress > span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--hr-primary);
+    }
+
+    .hr-dept-row { margin-bottom: 1.05rem; }
+    .hr-dept-row:last-child { margin-bottom: 0; }
+
+    .hr-dept-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+        margin-bottom: .45rem;
+        font-size: .76rem;
+    }
+
+    .hr-dept-meta strong { color: var(--hr-ink); }
+    .hr-dept-meta span { color: var(--hr-muted); }
+
+    .hr-footer-note {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-top: 1.3rem;
+        color: var(--hr-muted);
+        font-size: .71rem;
+    }
+
+    @media (max-width: 767px) {
+        .hr-hero {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .hr-hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .hr-section-heading { align-items: flex-start; }
+        .hr-chart { height: 245px; }
+        .hr-chart.hr-chart-small { height: 225px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hr-kpi, .hr-alert, .hr-primary-btn { transition: none; }
+    }
+</style>
+
+<div class="hr-dashboard">
+
+    <!-- HERO -->
+    <section class="hr-hero">
+        <div class="hr-hero-content">
+            <span class="hr-eyebrow">
+                <i class="bi bi-bar-chart-line-fill"></i>
+                DDS-NK THRIVE · PEOPLE OPERATIONS
+            </span>
+            <h2>Human Resources Intelligence</h2>
+            <p>
+                A consolidated view of workforce capacity, attendance,
+                leave administration, performance management, onboarding
+                and staff development.
+            </p>
+            <div class="hr-hero-meta">
+                <span><i class="bi bi-calendar3"></i>
+                    {{ today|date:"l, d F Y" }}
+                </span>
+                <span><i class="bi bi-building"></i>
+                    {{ department_count|intcomma }} departments
+                </span>
+                <span><i class="bi bi-people"></i>
+                    {{ active|intcomma }} active staff
+                </span>
+            </div>
+        </div>
+
+        <div class="hr-hero-actions">
+            {% if manage_access.hr %}
+            <a class="hr-primary-btn" href="{% url 'hr:add_employee' %}">
+                <i class="bi bi-person-plus-fill"></i>
+                Register staff
+            </a>
+            {% endif %}
+            <a class="hr-outline-btn" href="{% url 'hr:staff' %}">
+                <i class="bi bi-person-vcard"></i>
+                Staff directory
+            </a>
+        </div>
+    </section>
+
+    <!-- WORKFORCE KPI -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Workforce overview</h3>
+            <p>Staff establishment and current employment status.</p>
+        </div>
+        <span class="hr-section-tag">PEOPLE ANALYTICS</span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Total profiles</span>
+                    <span class="hr-kpi-icon hr-tone-plum">
+                        <i class="bi bi-people-fill"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ staff|intcomma }}</strong>
+                <div class="hr-kpi-foot">All staff profiles in the system</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Active workforce</span>
+                    <span class="hr-kpi-icon hr-tone-green">
+                        <i class="bi bi-person-check-fill"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ active|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ volunteers|intcomma }} volunteers · {{ interns|intcomma }} interns
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">On leave status</span>
+                    <span class="hr-kpi-icon hr-tone-amber">
+                        <i class="bi bi-calendar2-week"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ on_leave_staff|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ currently_on_leave_count|intcomma }} currently covered by approved leave
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Departments</span>
+                    <span class="hr-kpi-icon hr-tone-pink">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ department_count|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ exited_staff|intcomma }} profiles marked as exited
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HR OPERATIONS -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>HR operations and action queue</h3>
+            <p>Workflow volumes that may require review, coordination or follow-up.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Leave actions</span>
+                    <span class="hr-kpi-icon hr-tone-amber">
+                        <i class="bi bi-calendar2-check"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ pending_leave_count|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ upcoming_leave_count|intcomma }} approved leave starts in the next 30 days
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Appraisals</span>
+                    <span class="hr-kpi-icon hr-tone-blue">
+                        <i class="bi bi-clipboard2-data-fill"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ reviews|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ appraisal_action_count|intcomma }} in the employee or review workflow
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">PIP overdue</span>
+                    <span class="hr-kpi-icon hr-tone-red">
+                        <i class="bi bi-flag-fill"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ overdue_pips|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    Improvement plans past their expected completion date
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Orientation scheduling</span>
+                    <span class="hr-kpi-icon hr-tone-pink">
+                        <i class="bi bi-person-workspace"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">
+                    {{ session_stats.awaiting_schedule|intcomma }}
+                </strong>
+                <div class="hr-kpi-foot">
+                    Sessions awaiting scheduling
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Workforce analytics</h3>
+            <p>Visual indicators for staffing distribution, attendance and HR workflow.</p>
+        </div>
+        <span class="hr-section-tag">LIVE DATABASE AGGREGATES</span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Staff by department</h4>
+                        <p>Distribution of active staff profiles across departments.</p>
+                    </div>
+                    <i class="bi bi-diagram-3 fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    <div class="hr-chart">
+                        <canvas id="hrDepartmentChart"
+                                aria-label="Active staff by department"
+                                role="img"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Attendance trend</h4>
+                        <p>Attendance records captured over the last seven calendar days.</p>
+                    </div>
+                    <i class="bi bi-activity fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    <div class="hr-chart">
+                        <canvas id="hrAttendanceChart"
+                                aria-label="Seven day attendance trend"
+                                role="img"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Leave request pipeline</h4>
+                        <p>Distribution of leave requests by their current workflow status.</p>
+                    </div>
+                    <i class="bi bi-calendar2-check fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    <div class="hr-chart hr-chart-small">
+                        <canvas id="hrLeaveChart"
+                                aria-label="Leave request status distribution"
+                                role="img"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Performance appraisal pipeline</h4>
+                        <p>Appraisals across employee submission, review and approval stages.</p>
+                    </div>
+                    <i class="bi bi-clipboard2-check fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    <div class="hr-chart hr-chart-small">
+                        <canvas id="hrAppraisalChart"
+                                aria-label="Performance appraisal status distribution"
+                                role="img"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ACTION QUEUE -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Management attention</h3>
+            <p>Operational indicators that help prioritize follow-up.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>HR workflow monitor</h4>
+                        <p>Current counts from leave, appraisal, onboarding and staff support records.</p>
+                    </div>
+                    <i class="bi bi-list-check fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    <div class="hr-alert-list">
+
+                        <div class="hr-alert">
+                            <span class="hr-alert-icon hr-tone-amber">
+                                <i class="bi bi-calendar2-minus"></i>
+                            </span>
+                            <span class="hr-alert-main">
+                                <span class="hr-alert-title">Leave requests requiring progression</span>
+                                <span class="hr-alert-sub">
+                                    Pending, supervisor-approved and HR-approved requests.
+                                </span>
+                            </span>
+                            <span class="hr-alert-count">{{ pending_leave_count }}</span>
+                        </div>
+
+                        <div class="hr-alert">
+                            <span class="hr-alert-icon hr-tone-blue">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </span>
+                            <span class="hr-alert-main">
+                                <span class="hr-alert-title">Appraisals in workflow</span>
+                                <span class="hr-alert-sub">
+                                    Appraisals awaiting employee, supervisor or HR progression.
+                                </span>
+                            </span>
+                            <span class="hr-alert-count">{{ appraisal_action_count }}</span>
+                        </div>
+
+                        <div class="hr-alert">
+                            <span class="hr-alert-icon hr-tone-red">
+                                <i class="bi bi-flag"></i>
+                            </span>
+                            <span class="hr-alert-main">
+                                <span class="hr-alert-title">Overdue improvement plans</span>
+                                <span class="hr-alert-sub">
+                                    Plans with an elapsed target date that are not completed.
+                                </span>
+                            </span>
+                            <span class="hr-alert-count">{{ overdue_pips }}</span>
+                        </div>
+
+                        <div class="hr-alert">
+                            <span class="hr-alert-icon hr-tone-pink">
+                                <i class="bi bi-calendar2-event"></i>
+                            </span>
+                            <span class="hr-alert-main">
+                                <span class="hr-alert-title">Orientation sessions awaiting schedule</span>
+                                <span class="hr-alert-sub">
+                                    Department sessions still awaiting scheduling.
+                                </span>
+                            </span>
+                            <span class="hr-alert-count">{{ session_stats.awaiting_schedule }}</span>
+                        </div>
+
+                        <div class="hr-alert">
+                            <span class="hr-alert-icon hr-tone-plum">
+                                <i class="bi bi-shield-lock"></i>
+                            </span>
+                            <span class="hr-alert-main">
+                                <span class="hr-alert-title">Unapproved staff devices</span>
+                                <span class="hr-alert-sub">
+                                    Device records awaiting approval.
+                                </span>
+                            </span>
+                            <span class="hr-alert-count">{{ device_stats.pending }}</span>
+                        </div>
+
+                        <div class="hr-alert">
+                            <span class="hr-alert-icon hr-tone-amber">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </span>
+                            <span class="hr-alert-main">
+                                <span class="hr-alert-title">Pending situation reports</span>
+                                <span class="hr-alert-sub">
+                                    Reports not yet reviewed or resolved.
+                                </span>
+                            </span>
+                            <span class="hr-alert-count">{{ situation_stats.pending }}</span>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Department staffing</h4>
+                        <p>Largest active department teams, based on assigned staff profiles.</p>
+                    </div>
+                    <span class="hr-section-tag">{{ department_count }} total</span>
+                </div>
+                <div class="hr-panel-body">
+                    {% for department in departments %}
+                    <div class="hr-dept-row">
+                        <div class="hr-dept-meta">
+                            <strong>{{ department.name }}</strong>
+                            <span>{{ department.staff_count }} staff</span>
+                        </div>
+                        <div class="hr-progress">
+                            <span style="width: {% if active %}{% widthratio department.staff_count active 100 %}{% else %}0{% endif %}%;"></span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="hr-empty">
+                        <i class="bi bi-diagram-3"></i>
+                        No departments have been configured yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ONBOARDING AND TRAINING -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Staff development and onboarding</h3>
+            <p>Upcoming training opportunities and orientation commitments.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Upcoming orientation sessions</h4>
+                        <p>Scheduled department orientation sessions over the next 14 days.</p>
+                    </div>
+                    <i class="bi bi-person-workspace fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    {% for session in upcoming_orientation_sessions %}
+                    <div class="hr-schedule-item">
+                        <div class="hr-date-box">
+                            <strong>{{ session.scheduled_start|date:"d" }}</strong>
+                            <span>{{ session.scheduled_start|date:"M" }}</span>
+                        </div>
+                        <div class="hr-schedule-main">
+                            <strong>{{ session.plan.staff.get_full_name }}</strong>
+                            <small>
+                                {{ session.department.name }}
+                                {% if session.scheduled_start %}
+                                · {{ session.scheduled_start|date:"H:i" }}
+                                {% endif %}
+                            </small>
+                            <small>
+                                {{ session.get_status_display }}
+                            </small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="hr-empty">
+                        <i class="bi bi-calendar2-check"></i>
+                        No upcoming orientation sessions are scheduled.
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-6">
+            <section class="hr-panel">
+                <div class="hr-panel-head">
+                    <div>
+                        <h4>Training calendar</h4>
+                        <p>Training that is ongoing or scheduled to finish in the future.</p>
+                    </div>
+                    <i class="bi bi-mortarboard fs-5 text-secondary"></i>
+                </div>
+                <div class="hr-panel-body">
+                    {% for training in upcoming_trainings %}
+                    <div class="hr-schedule-item">
+                        <div class="hr-date-box">
+                            <strong>{{ training.start_date|date:"d" }}</strong>
+                            <span>{{ training.start_date|date:"M" }}</span>
+                        </div>
+                        <div class="hr-schedule-main">
+                            <strong>{{ training.title }}</strong>
+                            <small>
+                                {{ training.start_date|date:"d M Y" }}
+                                – {{ training.end_date|date:"d M Y" }}
+                            </small>
+                            <small>
+                                {{ training.participants.count }} participant{{ training.participants.count|pluralize }}
+                            </small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="hr-empty">
+                        <i class="bi bi-mortarboard"></i>
+                        No upcoming or ongoing training is recorded.
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- RECENT STAFF -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Recently registered staff</h3>
+            <p>Latest workforce profiles added to the HR system.</p>
+        </div>
+        <a class="hr-link" href="{% url 'hr:staff' %}">
+            Open directory <i class="bi bi-arrow-up-right"></i>
+        </a>
+    </div>
+
+    <section class="hr-panel">
+        <div class="table-responsive">
+            <table class="table hr-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Registration number</th>
+                        <th>Job title</th>
+                        <th>Department</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Date joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in recent %}
+                    <tr>
+                        <td>
+                            <div class="hr-person">
+                                <div class="hr-avatar">
+                                    {% if s.photo %}
+                                    <img src="{{ s.photo.url }}" alt="">
+                                    {% else %}
+                                    {{ s.first_name|default:s.username|slice:":1"|upper }}{{ s.last_name|slice:":1"|upper }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong>{{ s.get_full_name }}</strong>
+                                    <small>{{ s.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ s.staff_reg_no|default:"—" }}</td>
+                        <td>{{ s.job_title|default:"—" }}</td>
+                        <td>{{ s.department.name|default:"Unassigned" }}</td>
+                        <td>{{ s.get_user_type_display|default:s.user_type }}</td>
+                        <td>
+                            <span class="hr-status hr-status-{{ s.status|slugify }}">
+                                {{ s.get_status_display|default:s.status }}
+                            </span>
+                        </td>
+                        <td>{{ s.date_joined|date:"d M Y"|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="hr-empty">
+                            <i class="bi bi-people"></i>
+                            No staff profiles are available yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- RECENT LEAVE -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Recent leave requests</h3>
+            <p>Latest submissions and their current approval stages.</p>
+        </div>
+        <span class="hr-section-tag">
+            {{ pending_leave_count }} in workflow
+        </span>
+    </div>
+
+    <section class="hr-panel">
+        <div class="table-responsive">
+            <table class="table hr-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Leave type</th>
+                        <th>Period</th>
+                        <th>Working days</th>
+                        <th>Applied</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in recent_leaves %}
+                    <tr>
+                        <td>
+                            <strong>
+                                {{ leave.employee.get_full_name|default:"Staff record unavailable" }}
+                            </strong>
+                        </td>
+                        <td>
+                            {{ leave.leave_type.name }}
+                            {% if leave.special_type %}
+                            <small class="d-block text-muted">
+                                {{ leave.special_type.name }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ leave.start_date|date:"d M Y" }}
+                            <small class="d-block text-muted">
+                                to {{ leave.end_date|date:"d M Y" }}
+                            </small>
+                        </td>
+                        <td>{{ leave.days_requested }}</td>
+                        <td>{{ leave.applied_date|date:"d M Y" }}</td>
+                        <td>
+                            <span class="hr-status hr-status-{{ leave.status|slugify }}">
+                                {{ leave.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="hr-empty">
+                            <i class="bi bi-calendar2-check"></i>
+                            No leave requests have been recorded.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- RECENT APPRAISALS -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>Recent performance appraisals</h3>
+            <p>Latest appraisal records across the performance management workflow.</p>
+        </div>
+        <a class="hr-link" href="{% url 'hr:reviews' %}">
+            Open performance <i class="bi bi-arrow-up-right"></i>
+        </a>
+    </div>
+
+    <section class="hr-panel">
+        <div class="table-responsive">
+            <table class="table hr-table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Employee</th>
+                        <th>Supervisor</th>
+                        <th>Review year</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appraisal in recent_appraisals %}
+                    <tr>
+                        <td><strong>{{ appraisal.reference }}</strong></td>
+                        <td>{{ appraisal.employee|default:"—" }}</td>
+                        <td>{{ appraisal.supervisor|default:"Not assigned" }}</td>
+                        <td>{{ appraisal.year|default:"—" }}</td>
+                        <td>{{ appraisal.date_of_submission|date:"d M Y"|default:"—" }}</td>
+                        <td>
+                            <span class="hr-status hr-status-{{ appraisal.status|slugify }}">
+                                {{ appraisal.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="hr-empty">
+                            <i class="bi bi-clipboard2-check"></i>
+                            No appraisal records are available.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- DEVELOPMENT SUMMARY -->
+    <div class="hr-section-heading">
+        <div>
+            <h3>People development summary</h3>
+            <p>Current orientation, training and performance improvement activity.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Orientation plans</span>
+                    <span class="hr-kpi-icon hr-tone-pink">
+                        <i class="bi bi-person-workspace"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ orientation_stats.total|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ orientation_stats.completed }} completed ·
+                    {{ orientation_stats.in_progress }} in progress
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Training programmes</span>
+                    <span class="hr-kpi-icon hr-tone-blue">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ training_stats.total|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ training_stats.ongoing }} ongoing ·
+                    {{ training_stats.upcoming }} upcoming
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Improvement plans</span>
+                    <span class="hr-kpi-icon hr-tone-amber">
+                        <i class="bi bi-bullseye"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ pip_stats.total|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ pip_stats.completed }} completed ·
+                    {{ pip_stats.under_hr_review }} under HR review
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="hr-kpi">
+                <div class="hr-kpi-top">
+                    <span class="hr-kpi-label">Situation reports</span>
+                    <span class="hr-kpi-icon hr-tone-green">
+                        <i class="bi bi-file-earmark-check"></i>
+                    </span>
+                </div>
+                <strong class="hr-kpi-value">{{ situation_stats.total|intcomma }}</strong>
+                <div class="hr-kpi-foot">
+                    {{ situation_stats.resolved }} resolved ·
+                    {{ situation_stats.pending }} pending
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'core/_audit_activity.html' %}
+
+    <div class="hr-footer-note">
+        <span>
+            <i class="bi bi-shield-check"></i>
+            Workforce indicators are based on available HR records.
+        </span>
+        <span>
+            Last refreshed: {{ last_updated|date:"d M Y, H:i" }}
+        </span>
+    </div>
+
+</div>
+
+{{ chart_data|json_script:"hr-dashboard-chart-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function () {
+    "use strict";
+
+    const dataElement = document.getElementById("hr-dashboard-chart-data");
+    if (!dataElement || typeof Chart === "undefined") return;
+
+    let data;
+    try {
+        data = JSON.parse(dataElement.textContent);
+    } catch (error) {
+        console.error("Unable to read HR dashboard chart data.", error);
+        return;
+    }
+
+    const palette = {
+        pink: "#e50078",
+        plum: "#3b2938",
+        green: "#16866b",
+        blue: "#376bd6",
+        amber: "#d99a27",
+        red: "#c83d50",
+        grey: "#a8a0ad",
+        grid: "rgba(59,41,56,.07)"
+    };
+
+    Chart.defaults.font.family =
+        "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = "#73808d";
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 550 },
+        plugins: {
+            legend: {
+                position: "bottom",
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: "circle",
+                    padding: 17,
+                    boxWidth: 8,
+                    boxHeight: 8
+                }
+            },
+            tooltip: {
+                backgroundColor: "#3b2938",
+                titleColor: "#fff",
+                bodyColor: "#fff",
+                padding: 11,
+                cornerRadius: 8,
+                displayColors: true
+            }
+        }
+    };
+
+    function createChart(id, config) {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        new Chart(canvas, config);
+    }
+
+    createChart("hrDepartmentChart", {
+        type: "bar",
+        data: {
+            labels: data.departmentLabels || [],
+            datasets: [{
+                label: "Active staff",
+                data: data.departmentValues || [],
+                backgroundColor: palette.pink,
+                hoverBackgroundColor: palette.plum,
+                borderRadius: 6,
+                maxBarThickness: 32
+            }]
+        },
+        options: {
+            ...commonOptions,
+            indexAxis: "y",
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    grid: { color: palette.grid },
+                    border: { display: false }
+                },
+                y: {
+                    grid: { display: false },
+                    border: { display: false }
+                }
+            },
+            plugins: {
+                ...commonOptions.plugins,
+                legend: { display: false }
+            }
+        }
+    });
+
+    createChart("hrAttendanceChart", {
+        type: "line",
+        data: {
+            labels: data.attendanceLabels || [],
+            datasets: [
+                {
+                    label: "Present",
+                    data: data.attendancePresent || [],
+                    borderColor: palette.green,
+                    backgroundColor: "rgba(22,134,107,.10)",
+                    fill: true,
+                    tension: .35,
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                },
+                {
+                    label: "Absent",
+                    data: data.attendanceAbsent || [],
+                    borderColor: palette.red,
+                    backgroundColor: "transparent",
+                    tension: .35,
+                    borderWidth: 2,
+                    pointRadius: 3
+                },
+                {
+                    label: "Leave",
+                    data: data.attendanceLeave || [],
+                    borderColor: palette.blue,
+                    backgroundColor: "transparent",
+                    tension: .35,
+                    borderWidth: 2,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            interaction: { intersect: false, mode: "index" },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    border: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    grid: { color: palette.grid },
+                    border: { display: false }
+                }
+            }
+        }
+    });
+
+    createChart("hrLeaveChart", {
+        type: "doughnut",
+        data: {
+            labels: data.leaveLabels || [],
+            datasets: [{
+                data: data.leaveValues || [],
+                backgroundColor: [
+                    palette.amber,
+                    palette.blue,
+                    palette.pink,
+                    palette.green,
+                    palette.red
+                ],
+                borderWidth: 3,
+                borderColor: "#ffffff",
+                hoverOffset: 5
+            }]
+        },
+        options: {
+            ...commonOptions,
+            cutout: "67%",
+            plugins: {
+                ...commonOptions.plugins,
+                legend: {
+                    ...commonOptions.plugins.legend,
+                    position: "bottom"
+                }
+            }
+        }
+    });
+
+    createChart("hrAppraisalChart", {
+        type: "bar",
+        data: {
+            labels: data.appraisalLabels || [],
+            datasets: [{
+                label: "Appraisals",
+                data: data.appraisalValues || [],
+                backgroundColor: [
+                    palette.grey,
+                    palette.amber,
+                    palette.blue,
+                    "#8763b5",
+                    palette.pink,
+                    palette.green
+                ],
+                borderRadius: 6,
+                maxBarThickness: 35
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: {
+                        maxRotation: 35,
+                        minRotation: 0
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    grid: { color: palette.grid },
+                    border: { display: false }
+                }
+            },
+            plugins: {
+                ...commonOptions.plugins,
+                legend: { display: false }
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

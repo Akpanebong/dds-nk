@@ -1,0 +1,1086 @@
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-profile-page">
+
+    <!-- Page heading -->
+    <div class="hr-page-header">
+        <div class="hr-page-heading">
+            <div class="hr-heading-icon">
+                <i class="bi bi-person-vcard"></i>
+            </div>
+            <div>
+                <div class="hr-eyebrow">HUMAN RESOURCES / STAFF MANAGEMENT</div>
+                <h1>{{ title }}</h1>
+                <p>Maintain staff identity, employment assignments and supporting HR records.</p>
+            </div>
+        </div>
+
+        <a class="btn hr-btn-outline" href="{% url 'hr:employee_list' %}">
+            <i class="bi bi-arrow-left me-2"></i>Back to employees
+        </a>
+    </div>
+
+    <!-- Form-wide errors -->
+    <form method="post" enctype="multipart/form-data" novalidate id="staff-profile-form">
+        {% csrf_token %}
+
+        {% if profile_form.non_field_errors or employee_form.non_field_errors %}
+        <div class="alert alert-danger hr-error-summary" role="alert">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div>
+                    <strong>Please review the following errors.</strong>
+                    <div>{{ profile_form.non_field_errors }}</div>
+                    {% if employee_form %}
+                        <div>{{ employee_form.non_field_errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% for section in profile_sections %}
+            {% if section.form %}
+                {% if section.form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ section.form.non_field_errors }}
+                </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        <!-- Progress -->
+        <div class="hr-progress-card">
+            <div class="hr-progress-top">
+                <div>
+                    <span class="hr-progress-caption">PROFILE COMPLETION</span>
+                    <h2 id="profile-step-label">Staff profile</h2>
+                </div>
+                <span class="hr-step-count" id="profile-step-count">Section 1 of 1</span>
+            </div>
+
+            <div class="progress hr-progress-track"
+                 role="progressbar"
+                 aria-label="Form section progress"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 aria-valuenow="0"
+                 id="profile-progress">
+                <div id="profile-progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div class="hr-progress-foot">
+                <span><i class="bi bi-info-circle me-1"></i>Complete each section before saving.</span>
+                <span id="profile-progress-percent">0%</span>
+            </div>
+        </div>
+
+        <!-- Staff profile -->
+        <section class="panel hr-form-panel mb-4 profile-step"
+                 data-section-title="Staff profile"
+                 data-section-icon="bi-person-badge">
+            <div class="panel-head hr-panel-heading">
+                <div class="hr-section-icon"><i class="bi bi-person-badge"></i></div>
+                <div>
+                    <h3>Staff profile</h3>
+                    <small>Personal identity and account information.</small>
+                </div>
+                <span class="hr-section-number">01</span>
+            </div>
+
+            <div class="hr-form-grid">
+                {% for field in profile_form %}
+                <div class="hr-field
+                    {% if field.field.widget.input_type == 'checkbox' %}hr-field-checkbox{% endif %}
+                    {% if field.field.widget.input_type == 'file' %}hr-field-file{% endif %}
+                    {% if field.name == 'address' or field.name == 'notes' or field.name == 'bio' %}hr-field-wide{% endif %}
+                    {% if field.errors %}hr-field-invalid{% endif %}">
+
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                    <label class="hr-check-card" for="{{ field.id_for_label }}">
+                        <span class="hr-check-content">
+                            <span class="hr-field-label">{{ field.label }}</span>
+                            {% if field.help_text %}
+                            <span class="hr-field-help">{{ field.help_text }}</span>
+                            {% endif %}
+                        </span>
+                        {{ field }}
+                    </label>
+                    {% else %}
+                    <label class="form-label hr-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="hr-required">*</span>{% endif %}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                    <div class="hr-field-help">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                    <div class="hr-field-error">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Employment record -->
+        {% if employee_form %}
+        <section class="panel hr-form-panel mb-4 profile-step"
+                 data-section-title="Employment record"
+                 data-section-icon="bi-briefcase">
+            <div class="panel-head hr-panel-heading">
+                <div class="hr-section-icon"><i class="bi bi-briefcase"></i></div>
+                <div>
+                    <h3>Employment record</h3>
+                    <small>Employment assignment, position and HR administration.</small>
+                </div>
+                <span class="hr-section-number">02</span>
+            </div>
+
+            {% if employee_form.non_field_errors %}
+            <div class="alert alert-danger mx-4 mt-3">
+                {{ employee_form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="hr-form-grid">
+                {% for field in employee_form %}
+                <div class="hr-field
+                    {% if field.field.widget.input_type == 'checkbox' %}hr-field-checkbox{% endif %}
+                    {% if field.field.widget.input_type == 'file' %}hr-field-file{% endif %}
+                    {% if field.errors %}hr-field-invalid{% endif %}">
+
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                    <label class="hr-check-card" for="{{ field.id_for_label }}">
+                        <span class="hr-check-content">
+                            <span class="hr-field-label">{{ field.label }}</span>
+                            {% if field.help_text %}
+                            <span class="hr-field-help">{{ field.help_text }}</span>
+                            {% endif %}
+                        </span>
+                        {{ field }}
+                    </label>
+                    {% else %}
+                    <label class="form-label hr-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="hr-required">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+
+                    {% if field.help_text %}
+                    <div class="hr-field-help">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                    <div class="hr-field-error">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Additional profile sections and formsets -->
+        {% for section in profile_sections %}
+        <section class="panel hr-form-panel mb-4 profile-step"
+                 data-section-title="{{ section.title }}"
+                 data-section-icon="bi-folder2-open">
+
+            <div class="panel-head hr-panel-heading">
+                <div class="hr-section-icon">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <div>
+                    <h3>{{ section.title }}</h3>
+                    <small>Additional staff records and supporting information.</small>
+                </div>
+                <span class="hr-section-number">
+                    {{ forloop.counter|add:2|stringformat:"02d" }}
+                </span>
+            </div>
+
+            {% if section.form %}
+                {% if section.form.non_field_errors %}
+                <div class="alert alert-danger mx-4 mt-3">
+                    {{ section.form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="hr-form-grid">
+                    {% for field in section.form %}
+                    <div class="hr-field
+                        {% if field.field.widget.input_type == 'checkbox' %}hr-field-checkbox{% endif %}
+                        {% if field.field.widget.input_type == 'file' %}hr-field-file{% endif %}
+                        {% if field.errors %}hr-field-invalid{% endif %}">
+
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                        <label class="hr-check-card" for="{{ field.id_for_label }}">
+                            <span class="hr-check-content">
+                                <span class="hr-field-label">{{ field.label }}</span>
+                                {% if field.help_text %}
+                                <span class="hr-field-help">{{ field.help_text }}</span>
+                                {% endif %}
+                            </span>
+                            {{ field }}
+                        </label>
+                        {% else %}
+                        <label class="form-label hr-label" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="hr-required">*</span>{% endif %}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                        <div class="hr-field-help">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                        <div class="hr-field-error">
+                            <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if section.formset %}
+            <div class="hr-formset-area">
+                {{ section.formset.management_form }}
+
+                {% if section.formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {{ section.formset.non_form_errors }}
+                </div>
+                {% endif %}
+
+                {% for row in section.formset.forms %}
+                <fieldset class="hr-record-card">
+                    <legend>
+                        <span class="hr-record-number">{{ forloop.counter }}</span>
+                        Record {{ forloop.counter }}
+                    </legend>
+
+                    {% for field in row.hidden_fields %}
+                        {{ field }}
+                    {% endfor %}
+
+                    {% if row.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ row.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="hr-form-grid">
+                        {% for field in row.visible_fields %}
+                        <div class="hr-field
+                            {% if field.field.widget.input_type == 'checkbox' %}hr-field-checkbox{% endif %}
+                            {% if field.field.widget.input_type == 'file' %}hr-field-file{% endif %}
+                            {% if field.errors %}hr-field-invalid{% endif %}">
+
+                            {% if field.field.widget.input_type == 'checkbox' %}
+                            <label class="hr-check-card" for="{{ field.id_for_label }}">
+                                <span class="hr-check-content">
+                                    <span class="hr-field-label">{{ field.label }}</span>
+                                    {% if field.help_text %}
+                                    <span class="hr-field-help">{{ field.help_text }}</span>
+                                    {% endif %}
+                                </span>
+                                {{ field }}
+                            </label>
+                            {% else %}
+                            <label class="form-label hr-label" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="hr-required">*</span>{% endif %}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                            <div class="hr-field-help">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                            {% endif %}
+
+                            {% for error in field.errors %}
+                            <div class="hr-field-error">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endfor %}
+
+        <!-- Actions -->
+        <div class="hr-form-actions">
+            <a class="btn hr-btn-cancel" href="{% url 'hr:employee_list' %}">
+                Cancel
+            </a>
+
+            <div class="hr-navigation">
+                <button class="btn hr-btn-outline" type="button" id="profile-prev">
+                    <i class="bi bi-arrow-left me-2"></i>Previous
+                </button>
+
+                <button class="btn hr-btn-primary" type="button" id="profile-next">
+                    Continue<i class="bi bi-arrow-right ms-2"></i>
+                </button>
+
+                <button class="btn hr-btn-save d-none" type="submit" id="profile-submit">
+                    <i class="bi bi-check2-circle me-2"></i>Save staff profile
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<style>
+    .hr-profile-page {
+        --hr-primary: #e50078;
+        --hr-primary-dark: #b80060;
+        --hr-primary-soft: #fff0f7;
+        --hr-primary-border: #f4c5dc;
+        --hr-ink: #3b2938;
+        --hr-muted: #7b6c78;
+        --hr-border: #e8dfe6;
+        --hr-surface: #ffffff;
+        --hr-page-bg: #faf7f9;
+        --hr-danger: #c62828;
+        color: var(--hr-ink);
+        padding-bottom: 24px;
+    }
+
+    .hr-profile-page *,
+    .hr-profile-page *::before,
+    .hr-profile-page *::after {
+        box-sizing: border-box;
+    }
+
+    /* Page header */
+    .hr-page-header,
+    .hr-page-heading,
+    .hr-panel-heading,
+    .hr-progress-top,
+    .hr-progress-foot,
+    .hr-form-actions,
+    .hr-navigation {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .hr-page-header {
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .hr-page-heading {
+        justify-content: flex-start;
+    }
+
+    .hr-heading-icon,
+    .hr-section-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 13px;
+    }
+
+    .hr-heading-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.65rem;
+    }
+
+    .hr-eyebrow,
+    .hr-progress-caption {
+        color: var(--hr-primary-dark);
+        font-size: .69rem;
+        font-weight: 800;
+        letter-spacing: .11em;
+    }
+
+    .hr-page-header h1 {
+        margin: 3px 0 5px;
+        color: var(--hr-ink);
+        font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .hr-page-header p {
+        margin: 0;
+        color: var(--hr-muted);
+        font-size: .91rem;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    .hr-btn-outline,
+    .hr-btn-cancel,
+    .hr-btn-primary,
+    .hr-btn-save {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 10px 16px;
+        border-radius: 9px;
+        font-size: .85rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+            background .2s ease,
+            color .2s ease,
+            border-color .2s ease,
+            box-shadow .2s ease,
+            transform .2s ease;
+    }
+
+    .hr-btn-outline {
+        color: var(--hr-ink);
+        background: #fff;
+        border: 1px solid var(--hr-border);
+    }
+
+    .hr-btn-outline:hover {
+        color: var(--hr-primary-dark);
+        background: var(--hr-primary-soft);
+        border-color: var(--hr-primary);
+    }
+
+    .hr-btn-cancel {
+        color: var(--hr-ink);
+        background: #fff;
+        border: 1px solid var(--hr-border);
+    }
+
+    .hr-btn-cancel:hover {
+        color: var(--hr-primary-dark);
+        background: #fff7fb;
+        border-color: var(--hr-primary-border);
+    }
+
+    .hr-btn-primary,
+    .hr-btn-save {
+        color: #fff;
+        background: var(--hr-primary);
+        border: 1px solid var(--hr-primary);
+        box-shadow: 0 3px 8px rgba(229, 0, 120, .13);
+    }
+
+    .hr-btn-primary:hover,
+    .hr-btn-save:hover {
+        color: #fff;
+        background: var(--hr-primary-dark);
+        border-color: var(--hr-primary-dark);
+        box-shadow: 0 5px 12px rgba(184, 0, 96, .18);
+        transform: translateY(-1px);
+    }
+
+    .hr-profile-page .btn:focus-visible,
+    .hr-profile-page a:focus-visible {
+        outline: 3px solid rgba(229, 0, 120, .25);
+        outline-offset: 3px;
+    }
+
+    .hr-profile-page button:disabled {
+        opacity: .48;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Progress indicator */
+    .hr-progress-card {
+        padding: 19px 22px;
+        margin-bottom: 22px;
+        background: var(--hr-surface);
+        border: 1px solid var(--hr-border);
+        border-top: 3px solid var(--hr-primary);
+        border-radius: 14px;
+        box-shadow: 0 4px 15px rgba(59, 41, 56, .045);
+    }
+
+    .hr-progress-top {
+        margin-bottom: 14px;
+    }
+
+    .hr-progress-top h2 {
+        margin: 4px 0 0;
+        color: var(--hr-ink);
+        font-size: 1.08rem;
+        font-weight: 800;
+    }
+
+    .hr-step-count {
+        padding: 6px 10px;
+        color: var(--hr-primary-dark);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 7px;
+        font-size: .77rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .hr-progress-track {
+        height: 7px;
+        overflow: hidden;
+        background: #f0e8ee;
+        border-radius: 20px;
+    }
+
+    .hr-progress-track .progress-bar {
+        width: 0;
+        background: linear-gradient(90deg, #e50078, #b80060);
+        border-radius: 20px;
+        transition: width .3s ease;
+    }
+
+    .hr-progress-foot {
+        margin-top: 10px;
+        color: var(--hr-muted);
+        font-size: .76rem;
+    }
+
+    .hr-progress-foot span:last-child {
+        color: var(--hr-primary-dark);
+        font-weight: 800;
+    }
+
+    /* Form sections */
+    .hr-form-panel {
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 14px;
+        box-shadow: 0 5px 20px rgba(59, 41, 56, .04);
+    }
+
+    .hr-panel-heading {
+        justify-content: flex-start;
+        padding: 19px 22px;
+        background: linear-gradient(100deg, #fff5fa, #ffffff 75%);
+        border-bottom: 1px solid var(--hr-border);
+    }
+
+    .hr-section-icon {
+        width: 43px;
+        height: 43px;
+        font-size: 1.2rem;
+        border-radius: 11px;
+    }
+
+    .hr-panel-heading h3 {
+        margin: 0 0 4px;
+        color: var(--hr-ink);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .hr-panel-heading small {
+        color: var(--hr-muted);
+        font-size: .8rem;
+        line-height: 1.5;
+    }
+
+    .hr-section-number {
+        margin-left: auto;
+        color: #ad9eaa;
+        font-size: .84rem;
+        font-weight: 800;
+    }
+
+    /* Form layout */
+    .hr-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 21px 22px;
+        padding: 24px;
+    }
+
+    .hr-field {
+        min-width: 0;
+    }
+
+    .hr-field-wide {
+        grid-column: 1 / -1;
+    }
+
+    .hr-label,
+    .hr-field-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--hr-ink);
+        font-size: .82rem;
+        font-weight: 750;
+    }
+
+    .hr-required {
+        margin-left: 3px;
+        color: var(--hr-primary);
+    }
+
+    /* Inputs */
+    .hr-field input:not([type="checkbox"]):not([type="radio"]),
+    .hr-field select,
+    .hr-field textarea {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 43px;
+        padding: 10px 12px;
+        color: var(--hr-ink);
+        background-color: #fff;
+        border: 1px solid #ded3dc;
+        border-radius: 8px;
+        font-size: .88rem;
+        line-height: 1.5;
+        transition:
+            border-color .18s ease,
+            box-shadow .18s ease,
+            background .18s ease;
+    }
+
+    .hr-field textarea {
+        min-height: 115px;
+        resize: vertical;
+    }
+
+    .hr-field input[type="file"] {
+        min-height: auto;
+        padding: 10px;
+        background: #fcf9fb;
+        border-style: dashed;
+    }
+
+    .hr-field input::placeholder,
+    .hr-field textarea::placeholder {
+        color: #a394a0;
+        opacity: 1;
+    }
+
+    .hr-field input:focus,
+    .hr-field select:focus,
+    .hr-field textarea:focus {
+        outline: none;
+        border-color: var(--hr-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .12);
+    }
+
+    .hr-field input[type="checkbox"],
+    .hr-field input[type="radio"] {
+        accent-color: var(--hr-primary);
+    }
+
+    .hr-field-help {
+        display: block;
+        margin-top: 6px;
+        color: var(--hr-muted);
+        font-size: .76rem;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-field-help ul,
+    .hr-field-help p {
+        margin-bottom: 4px;
+    }
+
+    /* Validation feedback */
+    .hr-field-error {
+        margin-top: 6px;
+        color: var(--hr-danger);
+        font-size: .78rem;
+        font-weight: 600;
+    }
+
+    .hr-field-invalid input:not([type="checkbox"]),
+    .hr-field-invalid select,
+    .hr-field-invalid textarea,
+    .hr-field .is-invalid {
+        border-color: #dc6262;
+        background-color: #fffafa;
+    }
+
+    .hr-field-invalid input:focus,
+    .hr-field-invalid select:focus,
+    .hr-field-invalid textarea:focus {
+        box-shadow: 0 0 0 3px rgba(198, 40, 40, .1);
+    }
+
+    .hr-error-summary {
+        border-radius: 10px;
+    }
+
+    /* Checkbox and toggle cards */
+    .hr-check-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        min-height: 68px;
+        padding: 13px 15px;
+        margin: 0;
+        background: #fcf9fb;
+        border: 1px solid var(--hr-border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background .18s ease, border-color .18s ease;
+    }
+
+    .hr-check-card:hover {
+        background: var(--hr-primary-soft);
+        border-color: var(--hr-primary-border);
+    }
+
+    .hr-check-content {
+        min-width: 0;
+    }
+
+    .hr-check-content .hr-field-label {
+        margin-bottom: 0;
+    }
+
+    .hr-check-card input[type="checkbox"] {
+        width: 19px;
+        height: 19px;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    /* Repeated records and formsets */
+    .hr-formset-area {
+        padding: 20px 24px 24px;
+    }
+
+    .hr-record-card {
+        min-width: 0;
+        padding: 20px;
+        margin: 0 0 17px;
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 11px;
+    }
+
+    .hr-record-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .hr-record-card legend {
+        float: none;
+        width: auto;
+        padding: 0 8px;
+        margin-bottom: 10px;
+        color: var(--hr-ink);
+        font-size: .85rem;
+        font-weight: 800;
+    }
+
+    .hr-record-number {
+        display: inline-grid;
+        place-items: center;
+        width: 25px;
+        height: 25px;
+        margin-right: 6px;
+        color: #fff;
+        background: var(--hr-primary);
+        border-radius: 7px;
+        font-size: .78rem;
+    }
+
+    /* Sticky action bar */
+    .hr-form-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        flex-wrap: wrap;
+        padding: 15px 18px;
+        margin-top: 24px;
+        background: rgba(255, 255, 255, .97);
+        border: 1px solid var(--hr-border);
+        border-top: 2px solid var(--hr-primary);
+        border-radius: 13px;
+        box-shadow: 0 -4px 18px rgba(59, 41, 56, .06);
+        backdrop-filter: blur(8px);
+    }
+
+    .hr-navigation {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 9px;
+    }
+
+    /* Multi-step visibility */
+    .profile-step:not(.active) {
+        display: none !important;
+    }
+
+    #profile-progress {
+        overflow: hidden;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 767.98px) {
+        .hr-page-header {
+            align-items: flex-start;
+        }
+
+        .hr-page-header > a {
+            width: 100%;
+        }
+
+        .hr-heading-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.35rem;
+        }
+
+        .hr-page-heading {
+            align-items: flex-start;
+        }
+
+        .hr-progress-card {
+            padding: 16px;
+        }
+
+        .hr-panel-heading {
+            padding: 16px;
+        }
+
+        .hr-form-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 17px;
+            padding: 17px;
+        }
+
+        .hr-field-wide {
+            grid-column: auto;
+        }
+
+        .hr-formset-area {
+            padding: 16px;
+        }
+
+        .hr-record-card {
+            padding: 15px;
+        }
+
+        .hr-form-actions {
+            align-items: stretch;
+            padding: 12px;
+        }
+
+        .hr-form-actions > .hr-btn-cancel {
+            flex: 1;
+        }
+
+        .hr-navigation {
+            width: 100%;
+        }
+
+        .hr-navigation .btn {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .hr-progress-top,
+        .hr-progress-foot {
+            align-items: flex-start;
+        }
+
+        .hr-step-count {
+            font-size: .7rem;
+        }
+
+        .hr-panel-heading {
+            gap: 10px;
+        }
+
+        .hr-section-icon {
+            width: 37px;
+            height: 37px;
+        }
+
+        .hr-panel-heading small {
+            font-size: .75rem;
+        }
+
+        .hr-section-number {
+            font-size: .75rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hr-profile-page *,
+        .hr-profile-page *::before,
+        .hr-profile-page *::after {
+            scroll-behavior: auto !important;
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+        }
+    }
+</style>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('staff-profile-form');
+    if (!form) return;
+
+    const steps = Array.from(form.querySelectorAll('.profile-step'));
+    const previous = document.getElementById('profile-prev');
+    const next = document.getElementById('profile-next');
+    const submit = document.getElementById('profile-submit');
+    const label = document.getElementById('profile-step-label');
+    const count = document.getElementById('profile-step-count');
+    const bar = document.getElementById('profile-progress-bar');
+    const progress = document.getElementById('profile-progress');
+    const percent = document.getElementById('profile-progress-percent');
+
+    if (!steps.length) {
+        label.textContent = 'Staff profile';
+        count.textContent = 'No sections';
+        bar.style.width = '100%';
+        progress.setAttribute('aria-valuenow', '100');
+        percent.textContent = '100%';
+        previous.classList.add('d-none');
+        next.classList.add('d-none');
+        submit.classList.remove('d-none');
+        return;
+    }
+
+    let current = 0;
+
+    function sectionHasErrors(step) {
+        return Boolean(
+            step.querySelector(
+                '.hr-field-error, .invalid-feedback, .is-invalid, ' +
+                '.errorlist, .alert-danger'
+            )
+        );
+    }
+
+    function focusFirstField(step) {
+        const target = step.querySelector(
+            '.hr-field-invalid input, .hr-field-invalid select, ' +
+            '.hr-field-invalid textarea, input:invalid, select:invalid, textarea:invalid'
+        );
+
+        if (target) {
+            target.focus({ preventScroll: true });
+        }
+    }
+
+    function showStep(index, shouldScroll = true) {
+        current = Math.max(0, Math.min(index, steps.length - 1));
+
+        steps.forEach(function (step, position) {
+            const active = position === current;
+            step.classList.toggle('active', active);
+            step.setAttribute('aria-hidden', String(!active));
+        });
+
+        const sectionTitle =
+            steps[current].dataset.sectionTitle ||
+            steps[current].querySelector('h3')?.textContent.trim() ||
+            `Section ${current + 1}`;
+
+        const completed = Math.round(((current + 1) / steps.length) * 100);
+
+        label.textContent = sectionTitle;
+        count.textContent = `Section ${current + 1} of ${steps.length}`;
+        bar.style.width = `${completed}%`;
+        progress.setAttribute('aria-valuenow', String(completed));
+        percent.textContent = `${completed}%`;
+
+        previous.disabled = current === 0;
+        previous.classList.toggle('d-none', steps.length === 1);
+        next.classList.toggle('d-none', current === steps.length - 1);
+        submit.classList.toggle('d-none', current !== steps.length - 1);
+
+        if (shouldScroll) {
+            const header = form.querySelector('.hr-progress-card');
+            if (header) {
+                header.scrollIntoView({
+                    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                        ? 'auto'
+                        : 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+    }
+
+    previous.addEventListener('click', function () {
+        showStep(current - 1);
+    });
+
+    next.addEventListener('click', function () {
+        const currentStep = steps[current];
+
+        /*
+         * Validate only the visible section. The final submit will still
+         * validate the complete form on the server.
+         */
+        const controls = Array.from(currentStep.querySelectorAll(
+            'input:not([type="hidden"]):not([type="button"]):not([type="submit"]), ' +
+            'select, textarea'
+        )).filter(function (control) {
+            return !control.disabled &&
+                   control.type !== 'checkbox' &&
+                   control.type !== 'radio' &&
+                   control.type !== 'file';
+        });
+
+        for (const control of controls) {
+            if (!control.checkValidity()) {
+                control.reportValidity();
+                return;
+            }
+        }
+
+        showStep(current + 1);
+    });
+
+    /*
+     * If Django re-renders the form with validation errors, automatically
+     * open the first section containing errors.
+     */
+    const errorIndex = steps.findIndex(sectionHasErrors);
+    showStep(errorIndex >= 0 ? errorIndex : 0, false);
+
+    /*
+     * Do not block submission here: Django remains responsible for final
+     * validation, including formsets and cross-field rules.
+     */
+});
+</script>
+{% endblock %}

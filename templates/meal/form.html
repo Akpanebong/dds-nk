@@ -1,0 +1,403 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | DDS-NK{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Data Records</span>
+    </a>
+
+    <a href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+{% endblock %}
+
+{% block scripts %}
+{% if quarterplan_form %}
+{{ indicator_metadata|json_script:"indicator-metadata" }}
+<script>
+(function () {
+    function bindQuarterPlanFields() {
+        const indicator = document.getElementById('id_indicator');
+        const target = document.getElementById('id_target');
+        const quarter = document.getElementById('id_quarter');
+        const metadataNode = document.getElementById('indicator-metadata');
+        if (!indicator || !metadataNode) return;
+        const metadata = JSON.parse(metadataNode.textContent || '{}');
+        function populate() {
+            const selected = metadata[indicator.value] || {};
+            if (target && selected.target !== undefined) target.value = selected.target;
+            if (quarter && selected.quarter) quarter.value = selected.quarter;
+        }
+        indicator.addEventListener('change', populate);
+        populate();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindQuarterPlanFields);
+    } else {
+        bindQuarterPlanFields();
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>
+        MEAL
+    </span>
+
+    <h1>{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-bar-chart-line me-1"></i>
+                    MEAL
+                </span>
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-gear me-1"></i>
+                    Activity Configuration
+                </span>
+
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {{ title }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                Configure the activity, indicator and data collection requirements
+                for the DDS-NK MEAL framework.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- FORM PANEL -->
+    <div class="panel form-panel">
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- FORM ERRORS -->
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger d-flex align-items-start gap-2 mb-4">
+
+                    <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+
+                    <div>
+                        <strong>Please review the form.</strong>
+
+                        <div class="mt-1">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- ACTIVITY DETAILS -->
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-clipboard2-check"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-1">
+                            Activity Details
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Define the basic identity and classification of the MEAL activity.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="row g-4 mt-1">
+
+                    {% for field in form %}
+
+                        {% if field.name == 'code' or field.name == 'title' or field.name == 'activity_type' %}
+
+                            <div class="
+                                {% if field.name == 'title' %}
+                                    col-12 col-md-6
+                                {% else %}
+                                    col-12 col-md-3
+                                {% endif %}
+                            ">
+
+                                <label for="{{ field.id_for_label }}"
+                                       class="form-label fw-semibold">
+
+                                    {{ field.label }}
+
+                                    {% if field.field.required %}
+                                        <span class="text-danger">*</span>
+                                    {% endif %}
+
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <div class="form-text">
+                                        {{ field.help_text }}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in field.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- INDICATOR & REPORTING -->
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-1">
+                            Indicator & Reporting
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Define what will be measured and how frequently the activity will be reported.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="row g-4 mt-1">
+
+                    {% for field in form %}
+
+                        {% if field.name == 'indicator_text' or field.name == 'reporting_frequency' %}
+
+                            <div class="
+                                {% if field.name == 'indicator_text' %}
+                                    col-12 col-md-8
+                                {% else %}
+                                    col-12 col-md-4
+                                {% endif %}
+                            ">
+
+                                <label for="{{ field.id_for_label }}"
+                                       class="form-label fw-semibold">
+
+                                    {{ field.label }}
+
+                                    {% if field.field.required %}
+                                        <span class="text-danger">*</span>
+                                    {% endif %}
+
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <div class="form-text">
+                                        {{ field.help_text }}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in field.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- REMAINING FIELDS -->
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-1">
+                            Additional Configuration
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Configure any additional fields required for data collection and reporting.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="row g-4 mt-1">
+
+                    {% for field in form %}
+
+                        {% if field.name != 'code' and field.name != 'title' and field.name != 'activity_type' and field.name != 'indicator_text' and field.name != 'reporting_frequency' %}
+
+                            <div class="
+                                {% if field.field.widget.input_type == 'checkbox' %}
+                                    col-12
+                                {% elif field.name == 'description' or field.name == 'comment' or field.name == 'notes' or field.name == 'title' %}
+                                    col-12
+                                {% else %}
+                                    col-12 col-md-6
+                                {% endif %}
+                            ">
+
+                                <div class="{% if field.field.widget.input_type == 'checkbox' %}form-check form-switch{% endif %}">
+
+                                    {% if field.field.widget.input_type == 'checkbox' %}
+
+                                        {{ field }}
+
+                                        <label class="form-check-label fw-semibold"
+                                               for="{{ field.id_for_label }}">
+
+                                            {{ field.label }}
+
+                                        </label>
+
+                                    {% else %}
+
+                                        <label for="{{ field.id_for_label }}"
+                                               class="form-label fw-semibold">
+
+                                            {{ field.label }}
+
+                                            {% if field.field.required %}
+                                                <span class="text-danger">*</span>
+                                            {% endif %}
+
+                                        </label>
+
+                                        {{ field }}
+
+                                    {% endif %}
+
+                                </div>
+
+                                {% if field.help_text %}
+                                    <div class="form-text">
+                                        {{ field.help_text }}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in field.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+            <div class="form-actions border-top pt-4 mt-4">
+
+                <a href="{% url cancel_url %}"
+                   class="btn btn-light border d-inline-flex align-items-center gap-2">
+
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Cancel</span>
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary d-inline-flex align-items-center gap-2 px-4">
+
+                    <i class="bi bi-check2-circle"></i>
+                    <span>Save Activity</span>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

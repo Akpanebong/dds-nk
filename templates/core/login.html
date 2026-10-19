@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Staff Login | DDS-NK THRIVE{% endblock %}
+{% block body %}
+<div class="login-shell">
+    <div class="login-card">
+        <div class="login-logo"><img src="{% static 'img/dds_nk.jpg' %}" alt="DDS-NK THRIVE logo"></div>
+        <p class="eyebrow">STAFF PORTAL</p>
+        <h1>Welcome back</h1>
+        <p class="muted">Sign in to access your DDS-NK THRIVE workspaces.</p>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}<div class="alert alert-danger py-2">Username or password is incorrect.</div>{% endif %}
+            <label class="form-label">Username, email, staff registration no., or phone</label>
+            <div class="input-group mb-3"><span class="input-group-text"><i class="bi bi-person"></i></span>{{ form.username }}</div>
+            <label class="form-label">Password</label>
+            <div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-key"></i></span>{{ form.password }}</div>
+            <button class="btn btn-primary btn-lg w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Sign in securely</button>
+            <div class="text-center mt-3"><a class="auth-link" href="{% url 'password_reset' %}">Forgot your password?</a></div>
+        </form>
+    </div>
+    <div class="login-side">
+        <span class="pill"><i class="bi bi-lock-fill"></i> Secure staff access</span>
+        <h2>One login.<br>Three workspaces.</h2>
+        <p>Move seamlessly between MEAL, Procurement and HR while keeping each operational area focused and organized.</p>
+        <div class="mini-stat"><i class="bi bi-check-circle-fill"></i><span>Role-aware access control</span></div>
+        <div class="mini-stat"><i class="bi bi-check-circle-fill"></i><span>Centralized records & reporting</span></div>
+        <div class="mini-stat"><i class="bi bi-check-circle-fill"></i><span>Responsive on desktop and mobile</span></div>
+    </div>
+</div>
+{% endblock %}

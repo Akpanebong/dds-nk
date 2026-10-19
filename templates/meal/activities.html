@@ -1,0 +1,456 @@
+{% extends 'module_base.html' %}
+
+{% block title %}MEAL Activities | DDS-NK{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Data Records</span>
+    </a>
+
+    <a href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i> MEAL
+    </span>
+    <h1>
+        FY{{ current_year|stringformat:"s"|slice:"-2:" }} Activities
+    </h1>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    FY{{ current_year|stringformat:"s"|slice:"-2:" }}
+                </span>
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-activity me-1"></i>
+                    MEAL Activity Register
+                </span>
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                MEAL Activities
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage programme activities, indicators, reporting frequencies and data capture templates.
+            </p>
+        </div>
+
+        {% if manage_access.meal %}
+            <a href="{% url 'meal:activity_create' %}"
+               class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Activity</span>
+            </a>
+        {% endif %}
+
+    </div>
+
+
+    <!-- FILTER PANEL -->
+    <div class="panel mb-4">
+
+        <div class="d-flex flex-column flex-xl-row justify-content-between gap-3">
+
+            <div>
+                <h5 class="fw-semibold mb-1">
+                    <i class="bi bi-funnel me-2"></i>
+                    Activity Register
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Search and filter activities by code, indicator or capture type.
+                </p>
+            </div>
+
+            <div class="text-muted small d-flex align-items-center">
+                <i class="bi bi-info-circle me-1"></i>
+                Select <strong class="mx-1">Capture</strong> to enter activity data.
+            </div>
+
+        </div>
+
+        <hr class="my-3">
+
+        <form method="get" class="row g-3 align-items-end">
+
+            <!-- SEARCH -->
+            <div class="col-12 col-lg-6 col-xl-7">
+
+                <label for="activity-search"
+                       class="form-label small fw-semibold text-uppercase text-muted">
+                    Search
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text bg-white">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input
+                        id="activity-search"
+                        type="search"
+                        class="form-control"
+                        name="q"
+                        value="{{ q }}"
+                        placeholder="Search activity, code or indicator..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIVITY TYPE -->
+            <div class="col-12 col-md-7 col-lg-4 col-xl-3">
+
+                <label for="activity-type"
+                       class="form-label small fw-semibold text-uppercase text-muted">
+                    Capture Type
+                </label>
+
+                <select id="activity-type"
+                        class="form-select"
+                        name="type">
+
+                    <option value="">
+                        All capture types
+                    </option>
+
+                    <option value="people"
+                            {% if kind == 'people' %}selected{% endif %}>
+                        People activities
+                    </option>
+
+                    <option value="non_people"
+                            {% if kind == 'non_people' %}selected{% endif %}>
+                        Non-people activities
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- FILTER BUTTON -->
+            <div class="col-12 col-md-5 col-lg-2 col-xl-2">
+
+                <button type="submit"
+                        class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
+
+                    <i class="bi bi-funnel"></i>
+                    <span>Apply Filters</span>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ACTIVITY TABLE -->
+    <div class="panel p-0 overflow-hidden">
+
+        <div class="px-4 py-3 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+            <div>
+                <h5 class="fw-semibold mb-1">
+                    Registered Activities
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Activities configured within the DDS-NK MEAL framework.
+                </p>
+            </div>
+
+            {% if activity_count %}
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-list-check me-1"></i>
+                    {{ activity_count }} activit{{ activity_count|pluralize:"y,ies" }}
+                </span>
+            {% endif %}
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table smart-table align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th class="ps-4">Activity</th>
+                        <th>Indicator</th>
+                        <th>Reporting Frequency</th>
+                        <th>Capture Type</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for a in activities %}
+
+                        <tr>
+
+                            <!-- ACTIVITY -->
+                            <td class="ps-4">
+
+                                <div class="d-flex align-items-start gap-3">
+
+                                    <div class="rounded-3 bg-light p-2 flex-shrink-0">
+                                        <i class="bi bi-clipboard2-check text-primary fs-5"></i>
+                                    </div>
+
+                                    <div>
+
+                                        <div class="fw-semibold">
+                                            {{ a.title }}
+                                        </div>
+
+                                        <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+
+                                            <span class="badge rounded-pill text-bg-light border">
+                                                {{ a.code }}
+                                            </span>
+
+                                            {% if a.reporting_frequency %}
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ a.reporting_frequency }}
+                                                </span>
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- INDICATOR -->
+                            <td>
+
+                                {% if a.indicator_text %}
+
+                                    <div class="small text-body-secondary"
+                                         style="min-width: 180px; max-width: 340px;">
+
+                                        {{ a.indicator_text }}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- FREQUENCY -->
+                            <td>
+
+                                {% if a.reporting_frequency %}
+
+                                    <span class="badge rounded-pill bg-light text-dark border">
+                                        <i class="bi bi-arrow-repeat me-1"></i>
+                                        {{ a.reporting_frequency }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- TYPE -->
+                            <td>
+
+                                {% if a.is_people %}
+
+                                    <span class="badge rounded-pill text-bg-primary">
+                                        <i class="bi bi-people-fill me-1"></i>
+                                        {{ a.get_activity_type_display }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge rounded-pill text-bg-secondary">
+                                        <i class="bi bi-box-seam me-1"></i>
+                                        {{ a.get_activity_type_display }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ACTIONS -->
+                            <td class="text-end pe-4">
+
+                                <div class="d-inline-flex align-items-center gap-1">
+
+                                    <a href="{% url 'meal:activity_capture' a.pk %}"
+                                       class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
+                                       title="Capture data">
+
+                                        <i class="bi bi-pencil-square"></i>
+                                        <span>Capture</span>
+
+                                    </a>
+
+                                    {% if manage_access.meal %}
+
+                                        <a href="{% url 'meal:activity_update' a.pk %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Edit activity">
+
+                                            <i class="bi bi-pencil"></i>
+<!--                                            <span class="d-none d-xl-inline ms-1">Edit</span>-->
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="5" class="py-5">
+
+                                <div class="text-center px-3">
+
+                                    <div class="mb-3">
+                                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light"
+                                             style="width:64px;height:64px;">
+
+                                            <i class="bi bi-clipboard-x text-muted fs-3"></i>
+
+                                        </div>
+                                    </div>
+
+                                    <h5 class="fw-semibold mb-2">
+                                        No activities found
+                                    </h5>
+
+                                    <p class="text-muted mb-3">
+                                        No MEAL activities match your current search or filter criteria.
+                                    </p>
+
+                                    {% if q or kind %}
+
+                                        <a href="{% url 'meal:activities' %}"
+                                           class="btn btn-sm btn-outline-secondary">
+
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                            Clear Filters
+
+                                        </a>
+
+                                    {% elif manage_access.meal %}
+
+                                        <a href="{% url 'meal:activity_create' %}"
+                                           class="btn btn-sm btn-primary">
+
+                                            <i class="bi bi-plus-lg me-1"></i>
+                                            Create First Activity
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+            <div class="px-4 py-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <small class="text-muted">
+                    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} activities
+                </small>
+                <nav aria-label="Activities pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?q={{ q|urlencode }}&type={{ kind|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                        {% endif %}
+                        {% for page_number in page_obj.paginator.page_range %}
+                            <li class="page-item{% if page_number == page_obj.number %} active{% endif %}"><a class="page-link" href="?q={{ q|urlencode }}&type={{ kind|urlencode }}&page={{ page_number }}">{{ page_number }}</a></li>
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?q={{ q|urlencode }}&type={{ kind|urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

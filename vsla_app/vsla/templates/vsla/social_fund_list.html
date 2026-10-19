@@ -1,0 +1,6 @@
+{% extends 'vsla/base.html' %}
+{% load humanize %}
+{% block vsla_content %}
+<div class="page-intro d-flex justify-content-between align-items-center flex-wrap gap-3"><div><h2 class="h3 fw-bold mb-1">Social Fund Ledger</h2><p>Track member contributions and emergency assistance transparently.</p></div><a class="btn btn-light" href="{% url 'vsla:social_fund_create' %}"><i class="bi bi-plus-lg me-1"></i> Record transaction</a></div>
+<div class="panel"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date</th><th>Reference</th><th>Group</th><th>Member / beneficiary</th><th>Type</th><th class="text-end">Amount</th><th>Status</th></tr></thead><tbody>{% for tx in transactions %}<tr><td>{{ tx.transaction_date|date:"d M Y" }}</td><td>{{ tx.transaction_ref }}</td><td>{{ tx.group.name }}</td><td>{{ tx.member.full_name|default:tx.beneficiary_name|default:"—" }}</td><td>{{ tx.get_transaction_type_display }}</td><td class="text-end">UGX {{ tx.amount|floatformat:0|intcomma }}</td><td><span class="status-pill status-{{ tx.status }}">{{ tx.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="7" class="text-center text-muted py-5">No social fund transactions recorded.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

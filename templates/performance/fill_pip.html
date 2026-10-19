@@ -1,0 +1,299 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Performance Improvement Plan | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .pip-page {
+        --pip-primary: var(--primary-color, #e50078);
+        --pip-plum: #3b2938;
+        --pip-muted: #77818d;
+        --pip-border: #e6eaf0;
+        --pip-bg: #f7f8fb;
+        color: var(--pip-plum);
+    }
+
+    .pip-page .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .pip-page .eyebrow {
+        color: var(--pip-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .5rem;
+    }
+
+    .pip-page .page-heading h1 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        margin: 0 0 .4rem;
+    }
+
+    .pip-page .page-heading p {
+        color: var(--pip-muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .pip-page .pip-card {
+        background: #fff;
+        border: 1px solid var(--pip-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+    }
+
+    .pip-page .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--pip-border);
+    }
+
+    .pip-page .heading-icon {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: #fff0f7;
+        color: var(--pip-primary);
+        font-size: 1.25rem;
+    }
+
+    .pip-page .card-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .25rem;
+    }
+
+    .pip-page .card-heading p {
+        color: var(--pip-muted);
+        font-size: .82rem;
+        margin: 0;
+    }
+
+    .pip-page .card-body {
+        padding: 1.5rem;
+    }
+
+    .pip-page .pip-intro {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f2d6e5;
+        border-radius: 12px;
+        background: #fff8fb;
+        color: var(--pip-muted);
+        font-size: .84rem;
+        line-height: 1.65;
+    }
+
+    .pip-page .pip-intro > i {
+        color: var(--pip-primary);
+        font-size: 1.1rem;
+        margin-top: .1rem;
+    }
+
+    .pip-page .form-body p {
+        margin-bottom: 1.25rem;
+    }
+
+    .pip-page .form-body label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--pip-plum);
+        font-size: .85rem;
+        font-weight: 750;
+    }
+
+    .pip-page .form-body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .pip-page .form-body select,
+    .pip-page .form-body textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--pip-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .pip-page .form-body textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .pip-page .form-body input:focus,
+    .pip-page .form-body select:focus,
+    .pip-page .form-body textarea:focus {
+        outline: none;
+        border-color: var(--pip-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .pip-page .form-body input[type="checkbox"],
+    .pip-page .form-body input[type="radio"] {
+        accent-color: var(--pip-primary);
+    }
+
+    .pip-page .form-body input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: .7rem;
+        border: 1px dashed #cbd2dc;
+        border-radius: 10px;
+        background: var(--pip-bg);
+        font-size: .85rem;
+    }
+
+    .pip-page .form-body .helptext,
+    .pip-page .form-body .form-text {
+        display: block;
+        margin-top: .4rem;
+        color: var(--pip-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .pip-page .form-body ul.errorlist {
+        list-style: none;
+        padding: 0;
+        margin: .4rem 0;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .pip-page .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--pip-border);
+    }
+
+    .pip-page .btn-pip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1.2rem;
+        border-radius: 10px;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .pip-page .btn-pip-primary {
+        color: #fff;
+        background: var(--pip-primary);
+        border: 1px solid var(--pip-primary);
+    }
+
+    .pip-page .btn-pip-primary:hover {
+        color: #fff;
+        background: #c90069;
+        border-color: #c90069;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 575.98px) {
+        .pip-page .card-heading,
+        .pip-page .card-body {
+            padding: 1rem;
+        }
+
+        .pip-page .form-actions,
+        .pip-page .btn-pip {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="pip-page">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-person-workspace me-1"></i>
+            Human Resources / Employee Development
+        </div>
+
+        <h1>Performance Improvement Plan</h1>
+
+        <p>
+            Document performance gaps, agree on improvement objectives,
+            and establish a structured plan for monitoring progress.
+        </p>
+    </div>
+
+    <!-- PIP form -->
+    <section class="pip-card">
+
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+
+            <div>
+                <h2>Improvement Plan Details</h2>
+                <p>Complete the plan information and submit it for processing.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="pip-intro">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Planning guidance</strong><br>
+                    Where applicable, define measurable improvement objectives,
+                    realistic timelines, support required, and how progress will be reviewed.
+                    Ensure the plan reflects the employee's circumstances and relevant
+                    organisational procedures.
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please correct the following errors:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-body">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-pip btn-pip-primary">
+                        <i class="bi bi-check2-circle"></i>
+                        Submit Improvement Plan
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

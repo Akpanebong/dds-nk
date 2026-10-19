@@ -1,0 +1,548 @@
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title|default:"Quarter Plan" }} | DDS-NK{% endblock %}
+
+{% block scripts %}
+    {{ indicator_metadata|json_script:"quarter-plan-indicator-metadata" }}
+    <script>
+        (() => {
+            const indicator = document.getElementById('id_indicator');
+            const target = document.getElementById('id_target');
+            const quarter = document.getElementById('id_quarter');
+            const metadataElement = document.getElementById('quarter-plan-indicator-metadata');
+
+            if (!indicator || !metadataElement) return;
+
+            const metadata = JSON.parse(metadataElement.textContent || '{}');
+
+            const populateFromIndicator = (preserveValues = false) => {
+                const selected = metadata[indicator.value];
+                if (!selected) return;
+
+                if (target && !preserveValues) {
+                    target.value = selected.target;
+                }
+                if (quarter && !preserveValues) {
+                    quarter.value = selected.quarter;
+                }
+            };
+
+            indicator.addEventListener('change', () => populateFromIndicator());
+            populateFromIndicator(true);
+        })();
+    </script>
+{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i>
+    MEAL
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Quarter Plans</span>
+    </a>
+
+    <a href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>
+        MEAL
+    </span>
+
+    <h1>{{ title|default:"Quarter Plan" }}</h1>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
+    <div class="d-flex flex-column flex-lg-row
+                justify-content-between align-items-lg-center
+                gap-3 mb-4">
+
+        <div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-bar-chart-line me-1"></i>
+                    MEAL
+                </span>
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    Quarter Plan
+                </span>
+
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {{ title|default:"Quarter Plan" }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                Define the quarterly target, budget, expenditure,
+                and planned results for the selected indicator.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         FORM PANEL
+    ========================================================== -->
+    <div class="panel form-panel">
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- =================================================
+                 FORM ERRORS
+            ================================================== -->
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger
+                            d-flex align-items-start gap-2 mb-4">
+
+                    <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+
+                    <div>
+
+                        <strong>Please review the form.</strong>
+
+                        <div class="mt-1">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 QUARTER PLAN DETAILS
+            ================================================== -->
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-calendar3"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-1">
+                            Quarter Plan Details
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Select the indicator and define the reporting
+                            period and quarterly target.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- INDICATOR -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.indicator.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.indicator.label }}
+
+                            {% if form.indicator.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.indicator }}
+
+                        {% if form.indicator.help_text %}
+                            <div class="form-text">
+                                {{ form.indicator.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.indicator.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.indicator.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- REPORTING YEAR -->
+                    <div class="col-12 col-md-3">
+
+                        <label for="{{ form.reporting_year.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.reporting_year.label }}
+
+                            {% if form.reporting_year.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.reporting_year }}
+
+                        {% if form.reporting_year.help_text %}
+                            <div class="form-text">
+                                {{ form.reporting_year.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.reporting_year.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.reporting_year.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- QUARTER -->
+                    <div class="col-12 col-md-3">
+
+                        <label for="{{ form.quarter.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.quarter.label }}
+
+                            {% if form.quarter.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.quarter }}
+
+                        {% if form.quarter.help_text %}
+                            <div class="form-text">
+                                {{ form.quarter.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.quarter.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.quarter.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- TARGET -->
+                    <div class="col-12 col-md-12">
+
+                        <label for="{{ form.target.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.target.label }}
+
+                            {% if form.target.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.target }}
+
+                        {% if form.target.help_text %}
+                            <div class="form-text">
+                                {{ form.target.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.target.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.target.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 BUDGET & EXPENDITURE
+            ================================================== -->
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-1">
+                            Budget & Expenditure
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Record the planned budget and expenditure
+                            associated with this quarterly plan.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- PLANNED BUDGET -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.planned_budget.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.planned_budget.label }}
+
+                            {% if form.planned_budget.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.planned_budget }}
+
+                        {% if form.planned_budget.help_text %}
+                            <div class="form-text">
+                                {{ form.planned_budget.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.planned_budget.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.planned_budget.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- BUDGET EXPENSE -->
+                    <div class="col-12 col-md-6">
+
+                        <label for="{{ form.budget_expense.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.budget_expense.label }}
+
+                            {% if form.budget_expense.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.budget_expense }}
+
+                        {% if form.budget_expense.help_text %}
+                            <div class="form-text">
+                                {{ form.budget_expense.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.budget_expense.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.budget_expense.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RESULTS & SOURCE
+            ================================================== -->
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="section-icon">
+                        <i class="bi bi-clipboard2-data"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-1">
+                            Results & Source
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Capture the expected workbook result and
+                            identify the source row where applicable.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="row g-4 mt-1">
+
+                    <!-- WORKBOOK RESULT -->
+                    <div class="col-12 col-md-8">
+
+                        <label for="{{ form.workbook_result.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.workbook_result.label }}
+
+                            {% if form.workbook_result.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.workbook_result }}
+
+                        {% if form.workbook_result.help_text %}
+                            <div class="form-text">
+                                {{ form.workbook_result.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.workbook_result.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.workbook_result.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- SOURCE ROW -->
+                    <div class="col-12 col-md-4">
+
+                        <label for="{{ form.source_row.id_for_label }}"
+                               class="form-label fw-semibold">
+
+                            {{ form.source_row.label }}
+
+                            {% if form.source_row.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+
+                        </label>
+
+                        {{ form.source_row }}
+
+                        {% if form.source_row.help_text %}
+                            <div class="form-text">
+                                {{ form.source_row.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if form.source_row.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.source_row.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
+            <div class="form-actions border-top pt-4 mt-4
+                        d-flex flex-column flex-sm-row
+                        justify-content-between gap-2">
+
+                <a href="{% url cancel_url %}"
+                   class="btn btn-light border
+                          d-inline-flex align-items-center
+                          justify-content-center gap-2">
+
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Cancel</span>
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary px-4
+                               d-inline-flex align-items-center
+                               justify-content-center gap-2">
+
+                    <i class="bi bi-check2-circle"></i>
+                    <span>
+                        {% if object %}
+                            Update Quarter Plan
+                        {% else %}
+                            Save Quarter Plan
+                        {% endif %}
+                    </span>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

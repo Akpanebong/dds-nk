@@ -1,0 +1,927 @@
+
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}RFQ Dashboard | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-send-check me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1 class="mb-0">RFQ Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --rfq-primary: #e50078;
+        --rfq-primary-dark: #b90060;
+        --rfq-ink: #3b2938;
+        --rfq-muted: #817582;
+        --rfq-border: #ece5eb;
+        --rfq-surface: #ffffff;
+        --rfq-soft: #fff5fa;
+        --rfq-green: #16845b;
+        --rfq-blue: #3867c8;
+        --rfq-amber: #a66a0a;
+        --rfq-radius: 16px;
+    }
+
+    .rfq-page {
+        padding-bottom: 2rem;
+        color: var(--rfq-ink);
+    }
+
+    .rfq-hero {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        overflow: hidden;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--rfq-border);
+        border-radius: var(--rfq-radius);
+        background: linear-gradient(120deg, #fff 0%, #fff4f9 100%);
+    }
+
+    .rfq-hero::after {
+        content: "";
+        position: absolute;
+        right: 12%;
+        top: -95px;
+        width: 190px;
+        height: 190px;
+        border: 26px solid rgba(229, 0, 120, .05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .rfq-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        margin-bottom: .65rem;
+        color: var(--rfq-primary);
+        font-size: .72rem;
+        font-weight: 850;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .rfq-hero h2 {
+        margin: 0 0 .55rem;
+        font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+        font-weight: 850;
+        letter-spacing: -.04em;
+    }
+
+    .rfq-hero p {
+        max-width: 650px;
+        margin: 0;
+        color: var(--rfq-muted);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .rfq-hero-icon {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        height: 68px;
+        border: 1px solid #f5d6e6;
+        border-radius: 19px;
+        background: #fff;
+        color: var(--rfq-primary);
+        font-size: 1.9rem;
+        box-shadow: 0 8px 25px rgba(59, 41, 56, .05);
+    }
+
+    .rfq-kpi {
+        position: relative;
+        height: 100%;
+        min-height: 150px;
+        overflow: hidden;
+        padding: 1.3rem;
+        border: 1px solid var(--rfq-border);
+        border-radius: var(--rfq-radius);
+        background: var(--rfq-surface);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .rfq-kpi:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 41, 56, .055);
+    }
+
+    .rfq-kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .7rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .rfq-kpi-label {
+        color: var(--rfq-muted);
+        font-size: .7rem;
+        font-weight: 850;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .rfq-kpi-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #fff0f7;
+        color: var(--rfq-primary);
+        font-size: 1.15rem;
+    }
+
+    .rfq-kpi-value {
+        display: block;
+        color: var(--rfq-ink);
+        font-size: clamp(1.55rem, 2.5vw, 2rem);
+        font-weight: 850;
+        line-height: 1.2;
+        letter-spacing: -.04em;
+        overflow-wrap: anywhere;
+    }
+
+    .rfq-kpi-value.currency {
+        font-size: clamp(1.1rem, 1.8vw, 1.55rem);
+        letter-spacing: -.025em;
+    }
+
+    .rfq-kpi-note {
+        display: block;
+        margin-top: .55rem;
+        color: var(--rfq-muted);
+        font-size: .77rem;
+    }
+
+    .rfq-panel {
+        overflow: hidden;
+        border: 1px solid var(--rfq-border);
+        border-radius: var(--rfq-radius);
+        background: #fff;
+        box-shadow: 0 3px 14px rgba(59, 41, 56, .035);
+    }
+
+    .rfq-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.25rem 1.35rem;
+        border-bottom: 1px solid var(--rfq-border);
+    }
+
+    .rfq-panel-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 850;
+    }
+
+    .rfq-panel-header p {
+        margin: .3rem 0 0;
+        color: var(--rfq-muted);
+        font-size: .82rem;
+    }
+
+    .rfq-filter-area {
+        padding: 1.25rem 1.35rem;
+        border-bottom: 1px solid var(--rfq-border);
+        background: #fff;
+    }
+
+    .rfq-label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--rfq-ink);
+        font-size: .77rem;
+        font-weight: 800;
+    }
+
+    .rfq-control {
+        min-height: 43px;
+        border: 1px solid #e5dce4;
+        border-radius: 10px;
+        color: var(--rfq-ink);
+        font-size: .85rem;
+    }
+
+    .rfq-control:focus {
+        border-color: var(--rfq-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .rfq-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        min-height: 41px;
+        padding: .6rem .95rem;
+        border: 1px solid var(--rfq-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--rfq-ink);
+        font-size: .82rem;
+        font-weight: 750;
+        text-decoration: none;
+        transition: all .18s ease;
+    }
+
+    .rfq-btn:hover {
+        border-color: var(--rfq-primary);
+        color: var(--rfq-primary-dark);
+        background: var(--rfq-soft);
+    }
+
+    .rfq-btn-primary {
+        border-color: var(--rfq-primary);
+        background: var(--rfq-primary);
+        color: #fff;
+    }
+
+    .rfq-btn-primary:hover {
+        border-color: var(--rfq-primary-dark);
+        background: var(--rfq-primary-dark);
+        color: #fff;
+    }
+
+    .rfq-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .rfq-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 27px;
+        padding: .25rem .55rem;
+        border: 1px solid #f2d7e5;
+        border-radius: 8px;
+        background: var(--rfq-soft);
+        color: var(--rfq-primary-dark);
+        font-size: .75rem;
+        font-weight: 850;
+    }
+
+    .rfq-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .rfq-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: .83rem;
+    }
+
+    .rfq-table thead th {
+        padding: .95rem 1rem;
+        border-bottom: 1px solid var(--rfq-border);
+        background: #faf8fa;
+        color: #786b78;
+        font-size: .68rem;
+        font-weight: 850;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .rfq-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1edf1;
+        color: var(--rfq-ink);
+        vertical-align: middle;
+    }
+
+    .rfq-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .rfq-table tbody tr:hover td {
+        background: #fffafd;
+    }
+
+    .rfq-reference {
+        display: block;
+        color: var(--rfq-ink);
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .rfq-subtext {
+        display: block;
+        margin-top: .35rem;
+        color: var(--rfq-muted);
+        font-size: .75rem;
+        font-weight: 450;
+        line-height: 1.5;
+    }
+
+    .rfq-project {
+        display: block;
+        max-width: 230px;
+        overflow-wrap: anywhere;
+        font-weight: 700;
+    }
+
+    .rfq-supplier-count {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        color: var(--rfq-ink);
+        font-weight: 750;
+    }
+
+    .rfq-deadline {
+        white-space: nowrap;
+        font-weight: 650;
+    }
+
+    .rfq-value {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        font-weight: 750;
+    }
+
+    .rfq-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .65rem;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        font-size: .72rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .rfq-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .rfq-status-sent {
+        border-color: #ccebdd;
+        background: #eaf8f1;
+        color: #13764e;
+    }
+
+    .rfq-status-responded {
+        border-color: #d7e3ff;
+        background: #edf3ff;
+        color: #315bb1;
+    }
+
+    .rfq-status-pending {
+        border-color: #f3e2bb;
+        background: #fff7e5;
+        color: #94610b;
+    }
+
+    .rfq-status-other {
+        border-color: #e8e0e8;
+        background: #f6f2f6;
+        color: #6f6170;
+    }
+
+    .rfq-actions {
+        display: inline-flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .rfq-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid #ebe4ea;
+        border-radius: 8px;
+        background: #fff;
+        color: #625462;
+        text-decoration: none;
+        transition: all .18s ease;
+    }
+
+    .rfq-action:hover {
+        border-color: var(--rfq-primary);
+        background: var(--rfq-soft);
+        color: var(--rfq-primary-dark);
+    }
+
+    .rfq-action-danger:hover {
+        border-color: #f0c9d0;
+        background: #fff0f1;
+        color: #b42335;
+    }
+
+    .rfq-empty {
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+    }
+
+    .rfq-empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1rem;
+        border-radius: 18px;
+        background: var(--rfq-soft);
+        color: var(--rfq-primary);
+        font-size: 1.7rem;
+    }
+
+    .rfq-empty h4 {
+        margin-bottom: .5rem;
+        font-size: 1rem;
+        font-weight: 850;
+    }
+
+    .rfq-empty p {
+        max-width: 440px;
+        margin: 0 auto;
+        color: var(--rfq-muted);
+        font-size: .85rem;
+        line-height: 1.7;
+    }
+
+    .rfq-footer {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding-top: 1rem;
+        color: var(--rfq-muted);
+        font-size: .76rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .rfq-hero {
+            align-items: flex-start;
+            padding: 1.25rem;
+        }
+
+        .rfq-hero-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            font-size: 1.3rem;
+        }
+
+        .rfq-filter-area,
+        .rfq-panel-header {
+            padding: 1rem;
+        }
+
+        .rfq-table thead th,
+        .rfq-table tbody td {
+            padding: .8rem;
+        }
+
+        .rfq-actions {
+            min-width: 150px;
+        }
+
+        .rfq-footer {
+            flex-direction: column;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .rfq-kpi,
+        .rfq-btn,
+        .rfq-action {
+            transition: none;
+        }
+    }
+</style>
+
+<div class="rfq-page">
+
+    <!-- Dashboard header -->
+    <section class="rfq-hero">
+        <div>
+            <span class="rfq-eyebrow">
+                <i class="bi bi-diagram-3"></i>
+                DDS-NK THRIVE · PROCUREMENT INTELLIGENCE
+            </span>
+
+            <h2>Request for Quotation Management</h2>
+
+            <p>
+                Manage supplier quotation requests originating from finally
+                approved requisitions. Monitor dispatch, supplier responses,
+                deadlines and the financial value of your RFQ pipeline.
+            </p>
+        </div>
+
+        <div class="rfq-hero-icon" aria-hidden="true">
+            <i class="bi bi-send-check"></i>
+        </div>
+    </section>
+
+    <!-- Key performance indicators -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rfq-kpi">
+                <div class="rfq-kpi-top">
+                    <span class="rfq-kpi-label">Total RFQs</span>
+                    <span class="rfq-kpi-icon">
+                        <i class="bi bi-files"></i>
+                    </span>
+                </div>
+
+                <strong class="rfq-kpi-value">
+                    {{ total_rfqs|intcomma }}
+                </strong>
+
+                <span class="rfq-kpi-note">
+                    Generated quotation requests
+                </span>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rfq-kpi">
+                <div class="rfq-kpi-top">
+                    <span class="rfq-kpi-label">Sent RFQs</span>
+                    <span class="rfq-kpi-icon">
+                        <i class="bi bi-envelope-check"></i>
+                    </span>
+                </div>
+
+                <strong class="rfq-kpi-value">
+                    {{ sent_count|intcomma }}
+                </strong>
+
+                <span class="rfq-kpi-note">
+                    Requests marked as sent
+                </span>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rfq-kpi">
+                <div class="rfq-kpi-top">
+                    <span class="rfq-kpi-label">Supplier responses</span>
+                    <span class="rfq-kpi-icon">
+                        <i class="bi bi-chat-square-text"></i>
+                    </span>
+                </div>
+
+                <strong class="rfq-kpi-value">
+                    {{ responded_count|intcomma }}
+                </strong>
+
+                <span class="rfq-kpi-note">
+                    RFQs marked as responded
+                </span>
+            </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="rfq-kpi">
+                <div class="rfq-kpi-top">
+                    <span class="rfq-kpi-label">Total RFQ value</span>
+                    <span class="rfq-kpi-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </span>
+                </div>
+
+                <strong class="rfq-kpi-value currency">
+                    UGX {{ total_value|floatformat:2|intcomma }}
+                </strong>
+
+                <span class="rfq-kpi-note">
+                    Aggregate requisition value associated with RFQs
+                </span>
+            </article>
+        </div>
+
+    </div>
+
+    <!-- RFQ register -->
+    <section class="rfq-panel">
+
+        <header class="rfq-panel-header">
+            <div>
+                <h3>
+                    <i class="bi bi-list-check me-2"
+                       style="color:var(--rfq-primary);"></i>
+                    RFQ Register
+                </h3>
+
+                <p>
+                    Search requests, monitor their status and access individual records.
+                </p>
+            </div>
+
+            <span class="rfq-count">
+                {{ rfqs|length }} record{{ rfqs|length|pluralize }}
+            </span>
+        </header>
+
+        <!-- Search and status filters -->
+        <div class="rfq-filter-area">
+            <form method="get" action="">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-12 col-lg-6">
+                        <label for="rfq-search" class="rfq-label">
+                            Search RFQs
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"
+                                  style="border-color:#e5dce4;border-radius:10px 0 0 10px;">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+
+                            <input
+                                type="search"
+                                class="form-control rfq-control"
+                                id="rfq-search"
+                                name="search"
+                                value="{{ search|default:'' }}"
+                                placeholder="RFQ reference, requisition or project"
+                                aria-label="Search RFQs"
+                                style="border-radius:0 10px 10px 0;">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-7 col-lg-3">
+                        <label for="rfq-status" class="rfq-label">
+                            RFQ status
+                        </label>
+
+                        <select class="form-select rfq-control"
+                                id="rfq-status"
+                                name="status">
+                            <option value=""
+                                {% if not status_filter %}selected{% endif %}>
+                                All statuses
+                            </option>
+
+                            <option value="Pending"
+                                {% if status_filter == 'Pending' %}selected{% endif %}>
+                                Pending
+                            </option>
+
+                            <option value="Sent"
+                                {% if status_filter == 'Sent' %}selected{% endif %}>
+                                Sent
+                            </option>
+
+                            <option value="Responded"
+                                {% if status_filter == 'Responded' %}selected{% endif %}>
+                                Responded
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-5 col-lg-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit"
+                                    class="rfq-btn rfq-btn-primary flex-grow-1">
+                                <i class="bi bi-funnel"></i>
+                                Filter
+                            </button>
+
+                            <a href="{% url 'procurement:rfq_list' %}"
+                               class="rfq-btn"
+                               title="Clear search and filters"
+                               aria-label="Clear search and filters">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- RFQ table -->
+        <div class="rfq-table-wrap">
+            <table class="rfq-table">
+                <thead>
+                    <tr>
+                        <th scope="col">RFQ reference</th>
+                        <th scope="col">Requisition / project</th>
+                        <th scope="col">Suppliers</th>
+                        <th scope="col">Deadline</th>
+                        <th scope="col" class="text-end">Value (UGX)</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for rfq in rfqs %}
+                        <tr>
+                            <td>
+                                <span class="rfq-reference">
+                                    {{ rfq.reference_no }}
+                                </span>
+
+                                <span class="rfq-subtext">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    Issued:
+                                    {% if rfq.date_issued %}
+                                        {{ rfq.date_issued|date:'d M Y' }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="rfq-project">
+                                    {{ rfq.req.number|default:"—" }}
+                                </span>
+
+                                <span class="rfq-subtext">
+                                    <i class="bi bi-folder2 me-1"></i>
+                                    {{ rfq.req.project.name|default:"No project assigned" }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="rfq-supplier-count">
+                                    <i class="bi bi-buildings"
+                                       style="color:var(--rfq-primary);"></i>
+                                    {{ rfq.supplier.count|intcomma }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="rfq-deadline">
+                                    {% if rfq.deadline %}
+                                        {{ rfq.deadline|date:'d M Y' }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <span class="rfq-value">
+                                    {{ rfq.req.total|floatformat:2|intcomma }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if rfq.status == 'Sent' %}
+                                    <span class="rfq-status rfq-status-sent">
+                                        Sent
+                                    </span>
+                                {% elif rfq.status == 'Responded' %}
+                                    <span class="rfq-status rfq-status-responded">
+                                        Responded
+                                    </span>
+                                {% elif rfq.status == 'Pending' %}
+                                    <span class="rfq-status rfq-status-pending">
+                                        Pending
+                                    </span>
+                                {% else %}
+                                    <span class="rfq-status rfq-status-other">
+                                        {{ rfq.status|default:"Unknown" }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                <div class="rfq-actions">
+
+                                    <form method="post"
+                                          action="{% url 'procurement:rfq_send' rfq.slug %}"
+                                          class="d-inline">
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="rfq-action"
+                                            title="{% if rfq.status == 'Sent' %}Already marked as sent{% else %}Send RFQ email{% endif %}"
+                                            aria-label="Send RFQ email"
+                                            {% if rfq.status == 'Sent' %}disabled{% endif %}>
+                                            <i class="bi bi-envelope-arrow-up"></i>
+                                        </button>
+                                    </form>
+
+                                    <a
+                                        href="{% url 'procurement:rfq_detail' rfq.slug %}"
+                                        class="rfq-action"
+                                        title="View RFQ"
+                                        aria-label="View RFQ">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a
+                                        href="{% url 'procurement:rfq_log' rfq.slug %}"
+                                        class="rfq-action"
+                                        title="View RFQ activity log"
+                                        aria-label="View RFQ activity log">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
+
+                                    <a
+                                        href="{% url 'procurement:rfq_delete' rfq.slug %}"
+                                        class="rfq-action rfq-action-danger"
+                                        title="Delete RFQ"
+                                        aria-label="Delete RFQ">
+                                        <i class="bi bi-trash3"></i>
+                                    </a>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="rfq-empty">
+                                    <div class="rfq-empty-icon">
+                                        <i class="bi bi-send"></i>
+                                    </div>
+
+                                    <h4>No RFQs found</h4>
+
+                                    <p>
+                                        {% if search or status_filter %}
+                                            No quotation requests match your
+                                            current search or status filters.
+                                            Clear the filters to view all RFQs.
+                                        {% else %}
+                                            No quotation requests have been
+                                            generated yet. RFQs created from
+                                            approved requisitions will appear here.
+                                        {% endif %}
+                                    </p>
+
+                                    {% if search or status_filter %}
+                                        <a href="{% url 'procurement:rfq_list' %}"
+                                           class="rfq-btn rfq-btn-primary mt-3">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                            Clear filters
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="rfq-panel-header">
+            <span class="small text-muted">
+                <i class="bi bi-shield-check me-1"></i>
+                DDS-NK THRIVE Procurement Management
+            </span>
+
+            <span class="small text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Values are displayed in UGX.
+            </span>
+        </footer>
+
+    </section>
+
+</div>
+{% endblock %}

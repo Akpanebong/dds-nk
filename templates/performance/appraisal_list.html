@@ -1,0 +1,505 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Employee Appraisals | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="appraisal-page">
+
+    <!-- Page heading -->
+    <div class="page-intro d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <div class="appraisal-eyebrow mb-2">
+                <i class="bi bi-clipboard2-check me-1"></i>
+                HUMAN RESOURCE MANAGEMENT
+            </div>
+            <h1 class="h3 fw-bold mb-1">Employee Appraisals</h1>
+            <p class="text-muted mb-0">
+                Review performance appraisal records, reporting years
+                and assessment progress.
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary"
+           href="{% url 'hr:employee_list' %}">
+            <i class="bi bi-people me-2"></i>
+            Assign appraisal
+        </a>
+        <a class="btn btn-primary appraisal-primary-btn"
+           href="{% url 'appraisal_dashboard' %}">
+            <i class="bi bi-speedometer2 me-2"></i>
+            Appraisal Dashboard
+        </a>
+        </div>
+    </div>
+
+    <!-- Appraisal register -->
+    <section class="appraisal-panel">
+
+        <div class="d-flex justify-content-between align-items-center
+                    flex-wrap gap-2 mb-4">
+            <div>
+                <h2 class="h5 fw-bold mb-1">Appraisal Register</h2>
+                <p class="text-muted small mb-0">
+                    Select a reference to view the full appraisal.
+                </p>
+            </div>
+
+            <span class="appraisal-count">
+                <i class="bi bi-files me-1"></i>
+                {{ total_count }}
+                record{{ total_count|pluralize }}
+            </span>
+        </div>
+
+        <!-- Search -->
+        <form method="get" class="mb-4" role="search">
+            <div class="row g-2">
+                <div class="col-12 col-md-8 col-lg-9">
+                    <label for="appraisal-search"
+                           class="visually-hidden">
+                        Search appraisals
+                    </label>
+                    <div class="input-group appraisal-search">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            type="search"
+                            id="appraisal-search"
+                            name="q"
+                            value="{{ request.GET.q|default:'' }}"
+                            class="form-control"
+                            placeholder="Search by reference or employee..."
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-3 d-grid">
+                    <button type="submit"
+                            class="btn btn-outline-secondary">
+                        Search appraisals
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle appraisal-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Reference</th>
+                        <th scope="col">Employee</th>
+                        <th scope="col">Appraisal type</th>
+                        <th scope="col">Appraisal year</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for appraisal in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'appraisal_detail' appraisal.slug %}"
+                               class="appraisal-reference">
+                                <i class="bi bi-file-earmark-text me-1"></i>
+                                {{ appraisal.reference }}
+                            </a>
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="appraisal-avatar">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <span class="fw-semibold">
+                                    {{ appraisal.employee }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="appraisal-year">
+                                {{ appraisal.get_appraisal_type_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="appraisal-year">
+                                {{ appraisal.year }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="appraisal-status
+                                {% if appraisal.status == 'approved' %}is-approved
+                                {% elif appraisal.status == 'completed' %}is-completed
+                                {% elif appraisal.status == 'rejected' %}is-rejected
+                                {% elif appraisal.status == 'draft' %}is-draft
+                                {% else %}is-pending{% endif %}">
+                                {{ appraisal.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="text-end appraisal-actions">
+                            <div class="dropdown">
+                                <button
+                                    class="btn btn-sm appraisal-action-toggle dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    aria-label="Actions for appraisal {{ appraisal.reference }}"
+                                >
+                                    <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'appraisal_detail' appraisal.slug %}">
+                                            <i class="bi bi-eye me-2"></i>View
+                                        </a>
+                                    </li>
+                                    {% if appraisal.can_employee_submit and appraisal.status == 'sent_to_employee' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'employee_submit' appraisal.slug %}">
+                                            <i class="bi bi-pencil-square me-2"></i>Complete
+                                        </a>
+                                    </li>
+                                    {% elif appraisal.can_supervisor_review and appraisal.status == 'submitted_by_employee' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'supervisor_review' appraisal.slug %}">
+                                            <i class="bi bi-clipboard-check me-2"></i>Review
+                                        </a>
+                                    </li>
+                                    {% elif is_hr and appraisal.status == 'reviewed_by_supervisor' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'hr_review' appraisal.slug %}">
+                                            <i class="bi bi-person-check me-2"></i>HR review
+                                        </a>
+                                    </li>
+                                    {% elif is_cmt and appraisal.status == 'reviewed_by_hr' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'cmt_approval' appraisal.slug %}">
+                                            <i class="bi bi-check2-circle me-2"></i>Approve
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="appraisal-empty-icon mb-3">
+                                <i class="bi bi-clipboard2-x"></i>
+                            </div>
+                            <h3 class="h6 fw-bold">
+                                No appraisals found
+                            </h3>
+                            <p class="text-muted small mb-0">
+                                Appraisal records will appear here when available.
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="appraisal-pagination mt-4"
+             aria-label="Appraisal pagination">
+            <div class="d-flex justify-content-between
+                        align-items-center flex-wrap gap-3">
+                <small class="text-muted">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </small>
+
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page=1{% if request.GET.q %}&amp;q={{ request.GET.q|urlencode }}{% endif %}"
+                           aria-label="First page">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&amp;q={{ request.GET.q|urlencode }}{% endif %}">
+                            Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&amp;q={{ request.GET.q|urlencode }}{% endif %}">
+                            Next
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&amp;q={{ request.GET.q|urlencode }}{% endif %}"
+                           aria-label="Last page">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        {% endif %}
+
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('.appraisal-search')?.closest('form');
+    const input = document.getElementById('appraisal-search');
+    if (!form || !input) return;
+
+    let timer;
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            form.submit();
+        }, 350);
+    });
+});
+</script>
+
+<style>
+    .appraisal-page {
+        --appraisal-accent: var(--primary-color, #e50078);
+        --appraisal-dark: #3b2938;
+        min-width: 0;
+    }
+
+    .appraisal-eyebrow {
+        color: var(--appraisal-accent);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .09em;
+    }
+
+    .appraisal-primary-btn {
+        border: 0;
+        border-radius: .65rem;
+        padding: .7rem 1rem;
+        font-weight: 700;
+    }
+
+    .appraisal-panel {
+        padding: 1.5rem;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: 1rem;
+        background: var(--bs-body-bg, #fff);
+        box-shadow: 0 4px 22px rgba(59, 41, 56, .045);
+    }
+
+    .appraisal-count {
+        display: inline-flex;
+        align-items: center;
+        padding: .5rem .8rem;
+        border-radius: 2rem;
+        background: rgba(229, 0, 120, .08);
+        color: var(--appraisal-accent);
+        font-size: .8rem;
+        font-weight: 750;
+    }
+
+    .appraisal-actions {
+        position: relative;
+    }
+
+    .appraisal-action-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: .55rem;
+        background: #fff;
+        color: var(--appraisal-dark);
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    .appraisal-action-toggle:hover,
+    .appraisal-action-toggle:focus-visible,
+    .appraisal-action-toggle.show {
+        border-color: var(--appraisal-accent);
+        background: rgba(229, 0, 120, .08);
+        color: var(--appraisal-accent);
+        box-shadow: none;
+    }
+
+    .appraisal-actions .dropdown-menu {
+        min-width: 10rem;
+        padding: .35rem;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: .65rem;
+        box-shadow: 0 .75rem 1.75rem rgba(59, 41, 56, .14);
+    }
+
+    .appraisal-actions .dropdown-item {
+        border-radius: .4rem;
+        font-size: .8rem;
+    }
+
+    .appraisal-actions .dropdown-item:hover,
+    .appraisal-actions .dropdown-item:focus {
+        background: rgba(229, 0, 120, .08);
+        color: var(--appraisal-accent);
+    }
+
+    .appraisal-search .input-group-text,
+    .appraisal-search .form-control {
+        min-height: 43px;
+        border-color: var(--bs-border-color, #dee2e6);
+    }
+
+    .appraisal-search .input-group-text {
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        color: var(--appraisal-accent);
+    }
+
+    .appraisal-search .form-control:focus {
+        border-color: var(--appraisal-accent);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .10);
+    }
+
+    .appraisal-table thead th {
+        padding: .9rem .75rem;
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        color: var(--bs-secondary-color, #6c757d);
+        border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .appraisal-table tbody td {
+        padding: 1rem .75rem;
+        border-bottom-color: var(--bs-border-color, #e9ecef);
+    }
+
+    .appraisal-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .appraisal-reference {
+        color: var(--appraisal-accent);
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .appraisal-reference:hover {
+        color: var(--appraisal-dark);
+        text-decoration: underline;
+    }
+
+    .appraisal-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: .65rem;
+        background: rgba(229, 0, 120, .08);
+        color: var(--appraisal-accent);
+    }
+
+    .appraisal-year {
+        display: inline-block;
+        padding: .35rem .6rem;
+        border: 1px solid var(--bs-border-color, #e9ecef);
+        border-radius: .45rem;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .appraisal-status {
+        display: inline-block;
+        padding: .4rem .65rem;
+        border-radius: 2rem;
+        font-size: .75rem;
+        font-weight: 750;
+        white-space: nowrap;
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        color: var(--bs-secondary-color, #6c757d);
+    }
+
+    .appraisal-status.is-approved,
+    .appraisal-status.is-completed {
+        background: #d1e7dd;
+        color: #146c43;
+    }
+
+    .appraisal-status.is-rejected {
+        background: #f8d7da;
+        color: #842029;
+    }
+
+    .appraisal-status.is-draft {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .appraisal-status.is-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .appraisal-empty-icon {
+        color: var(--appraisal-accent);
+        font-size: 2.5rem;
+    }
+
+    .appraisal-pagination .page-link {
+        color: var(--appraisal-accent);
+    }
+
+    .appraisal-pagination .page-item.active .page-link {
+        background: var(--appraisal-accent);
+        border-color: var(--appraisal-accent);
+        color: #fff;
+    }
+
+    @media (max-width: 767.98px) {
+        .appraisal-panel {
+            padding: 1rem;
+        }
+
+        .page-intro .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | DDS-NK THRIVE{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin-brand.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div id="site-name" class="dds-admin-brand">
+    <img src="{% static 'img/dds_nk.jpg' %}" alt="DDS-NK THRIVE logo">
+    <a href="{% url 'admin:index' %}">DDS-NK THRIVE <span>Administration</span></a>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

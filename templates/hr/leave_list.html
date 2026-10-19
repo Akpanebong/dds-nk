@@ -1,0 +1,946 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Leave Requests | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-leave-page">
+
+    <!-- Page heading -->
+    <div class="hr-leave-header">
+        <div class="hr-leave-heading">
+            <div class="hr-leave-heading-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+            <div>
+                <div class="hr-leave-eyebrow">HUMAN RESOURCES / STAFF MANAGEMENT</div>
+                <h1>Leave Requests</h1>
+                <p>Monitor staff leave applications, requested dates and approval status.</p>
+            </div>
+        </div>
+
+        <a class="btn hr-leave-primary-btn"
+           href="{% url 'hr:apply_leave' %}">
+            <i class="bi bi-plus-lg me-2"></i>
+            Apply for Leave
+        </a>
+        <a class="btn hr-leave-primary-btn"
+           href="{% url 'hr:schedule_leave' %}">
+            <i class="bi bi-calendar-plus me-2"></i>
+            Schedule Leave
+        </a>
+        {% if is_hr %}
+        <a class="btn btn-outline-primary"
+           href="#scheduled-leave-plans">
+            <i class="bi bi-calendar2-week me-2"></i>
+            Scheduled Leave Plans
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Summary cards -->
+    <div class="hr-leave-stats">
+        <div class="hr-leave-stat-card">
+            <div class="hr-leave-stat-icon">
+                <i class="bi bi-files"></i>
+            </div>
+            <div>
+                <span class="hr-leave-stat-label">Total Requests</span>
+                <strong>{{ leaves|length }}</strong>
+                <small>Leave applications listed</small>
+            </div>
+        </div>
+
+        <div class="hr-leave-stat-card">
+            <div class="hr-leave-stat-icon hr-leave-stat-icon-pending">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <span class="hr-leave-stat-label">Pending Review</span>
+                <strong id="hr-leave-pending-count">—</strong>
+                <small>Awaiting a decision</small>
+            </div>
+        </div>
+
+        <div class="hr-leave-stat-card">
+            <div class="hr-leave-stat-icon hr-leave-stat-icon-approved">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <div>
+                <span class="hr-leave-stat-label">Approved</span>
+                <strong id="hr-leave-approved-count">—</strong>
+                <small>Approved applications</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave requests -->
+    <section class="hr-leave-panel">
+
+        <div class="hr-leave-panel-header">
+            <div>
+                <h2>
+                    <i class="bi bi-list-ul me-2"></i>
+                    Leave Register
+                </h2>
+                <p>Review leave applications recorded in the HR system.</p>
+            </div>
+
+            <div class="hr-leave-record-count">
+                <i class="bi bi-people me-1"></i>
+                {{ leaves|length }} record{{ leaves|length|pluralize }}
+            </div>
+        </div>
+
+        <!-- Client-side search and status filter -->
+        <div class="hr-leave-toolbar">
+            <div class="hr-leave-search">
+                <i class="bi bi-search"></i>
+                <input
+                    type="search"
+                    id="hr-leave-search"
+                    placeholder="Search employee or leave type..."
+                    aria-label="Search leave requests">
+            </div>
+
+            <div class="hr-leave-filter">
+                <i class="bi bi-funnel"></i>
+                <select id="hr-leave-status-filter"
+                        aria-label="Filter leave requests by status">
+                    <option value="">All statuses</option>
+                    {% for leave in leaves %}
+                        <option value="{{ leave.get_status_display|lower }}">
+                            {{ leave.get_status_display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="hr-leave-table-wrap">
+            <table class="table hr-leave-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Employee</th>
+                        <th scope="col">Leave Type</th>
+                        <th scope="col">Leave Period</th>
+                        <th scope="col">Days</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="hr-leave-table-body">
+                    {% for leave in leaves %}
+                    <tr class="hr-leave-row"
+                        data-employee="{{ leave.employee|escape }}"
+                        data-leave-type="{{ leave.leave_type|escape }}"
+                        data-status="{{ leave.get_status_display|lower|escape }}">
+
+                        <td><a href="{% url 'hr:leave_detail' leave.slug %}">
+                            <div class="hr-leave-employee">
+                                <span class="hr-leave-avatar">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <span class="hr-leave-employee-name">
+                                    {{ leave.employee }}
+                                </span>
+                            </div>
+                            </a>
+                        </td>
+
+                        <td>
+                            <span class="hr-leave-type">
+                                {{ leave.leave_type }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="hr-leave-dates">
+                                <i class="bi bi-calendar3"></i>
+                                <span>
+                                    {{ leave.start_date|date:"d M Y" }}
+                                    <span class="hr-leave-date-separator">to</span>
+                                    {{ leave.end_date|date:"d M Y" }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="hr-leave-days">
+                                {{ leave.days_requested }}
+                                <small>day{{ leave.days_requested|pluralize }}</small>
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="hr-leave-status"
+                                  data-status="{{ leave.get_status_display|lower|escape }}">
+                                <span class="hr-leave-status-dot"></span>
+                                {{ leave.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="hr-leave-empty-cell">
+                            <div class="hr-leave-empty">
+                                <div class="hr-leave-empty-icon">
+                                    <i class="bi bi-calendar2-x"></i>
+                                </div>
+                                <h3>No leave requests yet</h3>
+                                <p>Leave applications will appear here when they are submitted.</p>
+                                <a class="btn hr-leave-primary-btn"
+                                   href="{% url 'hr:apply_leave' %}">
+                                    <i class="bi bi-plus-lg me-2"></i>
+                                    Apply for Leave
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr id="hr-leave-no-results" hidden>
+                        <td colspan="5" class="hr-leave-empty-cell">
+                            <div class="hr-leave-no-results">
+                                <i class="bi bi-search"></i>
+                                <p>No requests match your search or selected status.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="hr-leave-panel-footer">
+            <span>
+                <i class="bi bi-info-circle me-1"></i>
+                Leave records reflect the information currently available to your account.
+            </span>
+            <span id="hr-leave-visible-count">
+                {{ leaves|length }} records displayed
+            </span>
+        </div>
+    </section>
+
+    {% if is_hr %}
+    <section class="hr-leave-panel mt-4" id="scheduled-leave-plans">
+        <div class="hr-leave-panel-header">
+            <div>
+                <h2><i class="bi bi-calendar2-week me-2"></i>Scheduled Leave Plans</h2>
+                <p>Leave plans submitted by staff for HR review.</p>
+            </div>
+            <span class="hr-leave-record-count">
+                {{ leave_schedules|length }} plan{{ leave_schedules|length|pluralize }}
+            </span>
+        </div>
+
+        <div class="hr-leave-table-wrap">
+            <table class="table hr-leave-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Leave type</th>
+                        <th>Year</th>
+                        <th>Period</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in leave_schedules %}
+                    <tr>
+                        <td>{{ schedule.employee }}</td>
+                        <td>{{ schedule.leave_type|default:"—" }}</td>
+                        <td>{{ schedule.year }}</td>
+                        <td>{{ schedule.start_date|date:"d M Y" }} to {{ schedule.end_date|date:"d M Y" }}</td>
+                        <td>{{ schedule.get_status_display }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No scheduled leave plans have been submitted.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<style>
+    .hr-leave-page {
+        --hr-primary: #e50078;
+        --hr-primary-dark: #b80060;
+        --hr-primary-soft: #fff0f7;
+        --hr-primary-border: #f4c5dc;
+        --hr-ink: #3b2938;
+        --hr-muted: #7b6c78;
+        --hr-border: #e8dfe6;
+        --hr-surface: #ffffff;
+        --hr-page-bg: #faf7f9;
+
+        color: var(--hr-ink);
+        padding-bottom: 28px;
+    }
+
+    .hr-leave-page *,
+    .hr-leave-page *::before,
+    .hr-leave-page *::after {
+        box-sizing: border-box;
+    }
+
+    /* Header */
+    .hr-leave-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .hr-leave-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-width: 0;
+    }
+
+    .hr-leave-heading-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 55px;
+        height: 55px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 14px;
+        font-size: 1.55rem;
+    }
+
+    .hr-leave-eyebrow {
+        margin-bottom: 4px;
+        color: var(--hr-primary-dark);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .11em;
+    }
+
+    .hr-leave-heading h1 {
+        margin: 0 0 5px;
+        color: var(--hr-ink);
+        font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .hr-leave-heading p {
+        margin: 0;
+        color: var(--hr-muted);
+        font-size: .88rem;
+        line-height: 1.6;
+    }
+
+    /* Primary button */
+    .hr-leave-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 43px;
+        padding: 11px 17px;
+        color: #fff;
+        background: var(--hr-primary);
+        border: 1px solid var(--hr-primary);
+        border-radius: 9px;
+        font-size: .84rem;
+        font-weight: 750;
+        text-decoration: none;
+        box-shadow: 0 3px 9px rgba(229, 0, 120, .13);
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .hr-leave-primary-btn:hover {
+        color: #fff;
+        background: var(--hr-primary-dark);
+        border-color: var(--hr-primary-dark);
+        transform: translateY(-1px);
+    }
+
+    /* KPI cards */
+    .hr-leave-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 17px;
+        margin-bottom: 24px;
+    }
+
+    .hr-leave-stat-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-width: 0;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 13px;
+        box-shadow: 0 4px 15px rgba(59, 41, 56, .035);
+    }
+
+    .hr-leave-stat-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 45px;
+        height: 45px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border-radius: 11px;
+        font-size: 1.25rem;
+    }
+
+    .hr-leave-stat-icon-pending {
+        color: #946200;
+        background: #fff7df;
+    }
+
+    .hr-leave-stat-icon-approved {
+        color: #237747;
+        background: #eaf7ef;
+    }
+
+    .hr-leave-stat-card > div:last-child {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .hr-leave-stat-label {
+        color: var(--hr-muted);
+        font-size: .77rem;
+        font-weight: 650;
+    }
+
+    .hr-leave-stat-card strong {
+        margin: 3px 0;
+        color: var(--hr-ink);
+        font-size: 1.65rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .hr-leave-stat-card small {
+        color: var(--hr-muted);
+        font-size: .72rem;
+    }
+
+    /* Main panel */
+    .hr-leave-panel {
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 14px;
+        box-shadow: 0 5px 20px rgba(59, 41, 56, .04);
+    }
+
+    .hr-leave-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        flex-wrap: wrap;
+        padding: 21px 23px;
+        border-bottom: 1px solid var(--hr-border);
+        background: linear-gradient(100deg, #fff5fa, #fff 75%);
+    }
+
+    .hr-leave-panel-header h2 {
+        margin: 0 0 5px;
+        color: var(--hr-ink);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .hr-leave-panel-header h2 i {
+        color: var(--hr-primary);
+    }
+
+    .hr-leave-panel-header p {
+        margin: 0;
+        color: var(--hr-muted);
+        font-size: .8rem;
+    }
+
+    .hr-leave-record-count {
+        padding: 7px 11px;
+        color: var(--hr-primary-dark);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 8px;
+        font-size: .76rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    /* Search toolbar */
+    .hr-leave-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 17px 23px;
+        border-bottom: 1px solid #f0e8ee;
+    }
+
+    .hr-leave-search,
+    .hr-leave-filter {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-height: 41px;
+        padding: 0 12px;
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 8px;
+    }
+
+    .hr-leave-search {
+        flex: 1 1 260px;
+    }
+
+    .hr-leave-filter {
+        flex: 0 1 205px;
+    }
+
+    .hr-leave-search > i,
+    .hr-leave-filter > i {
+        flex-shrink: 0;
+        color: var(--hr-muted);
+        font-size: .9rem;
+    }
+
+    .hr-leave-search input,
+    .hr-leave-filter select {
+        width: 100%;
+        min-width: 0;
+        padding: 9px 0;
+        color: var(--hr-ink);
+        background: transparent;
+        border: 0;
+        outline: none;
+        box-shadow: none;
+        font-size: .8rem;
+    }
+
+    .hr-leave-search:focus-within,
+    .hr-leave-filter:focus-within {
+        border-color: var(--hr-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .09);
+    }
+
+    /* Table */
+    .hr-leave-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .hr-leave-table {
+        width: 100%;
+        min-width: 750px;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        vertical-align: middle;
+    }
+
+    .hr-leave-table thead th {
+        padding: 14px 19px;
+        color: #746271;
+        background: #fcf9fb;
+        border-bottom: 1px solid var(--hr-border);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .hr-leave-table tbody td {
+        padding: 16px 19px;
+        color: var(--hr-ink);
+        border-bottom: 1px solid #f0e8ee;
+        font-size: .82rem;
+    }
+
+    .hr-leave-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .hr-leave-table tbody tr.hr-leave-row {
+        transition: background .15s ease;
+    }
+
+    .hr-leave-table tbody tr.hr-leave-row:hover {
+        background: #fff8fb;
+    }
+
+    .hr-leave-employee {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 170px;
+    }
+
+    .hr-leave-avatar {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 35px;
+        height: 35px;
+        color: var(--hr-primary-dark);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 10px;
+        font-size: 1rem;
+    }
+
+    .hr-leave-employee-name {
+        color: var(--hr-ink);
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-leave-type {
+        display: inline-block;
+        color: #655260;
+        font-weight: 650;
+    }
+
+    .hr-leave-dates {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #655260;
+        white-space: nowrap;
+    }
+
+    .hr-leave-dates > i {
+        color: var(--hr-primary);
+    }
+
+    .hr-leave-date-separator {
+        padding: 0 3px;
+        color: #a394a0;
+        font-size: .74rem;
+    }
+
+    .hr-leave-days {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
+        color: var(--hr-ink);
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .hr-leave-days small {
+        color: var(--hr-muted);
+        font-size: .7rem;
+        font-weight: 500;
+    }
+
+    /* Status badges */
+    .hr-leave-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        color: #655260;
+        background: #f5f0f4;
+        border: 1px solid #e8dfe6;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .hr-leave-status-dot {
+        width: 7px;
+        height: 7px;
+        flex-shrink: 0;
+        background: #958593;
+        border-radius: 50%;
+    }
+
+    .hr-leave-status[data-status*="pending"],
+    .hr-leave-status[data-status*="review"] {
+        color: #875900;
+        background: #fff7df;
+        border-color: #f1dfab;
+    }
+
+    .hr-leave-status[data-status*="pending"] .hr-leave-status-dot,
+    .hr-leave-status[data-status*="review"] .hr-leave-status-dot {
+        background: #c28a10;
+    }
+
+    .hr-leave-status[data-status*="approved"] {
+        color: #237747;
+        background: #eaf7ef;
+        border-color: #c7e8d2;
+    }
+
+    .hr-leave-status[data-status*="approved"] .hr-leave-status-dot {
+        background: #2d9959;
+    }
+
+    .hr-leave-status[data-status*="rejected"],
+    .hr-leave-status[data-status*="declined"],
+    .hr-leave-status[data-status*="cancelled"],
+    .hr-leave-status[data-status*="canceled"] {
+        color: #ad3030;
+        background: #fff0f0;
+        border-color: #f3cece;
+    }
+
+    .hr-leave-status[data-status*="rejected"] .hr-leave-status-dot,
+    .hr-leave-status[data-status*="declined"] .hr-leave-status-dot,
+    .hr-leave-status[data-status*="cancelled"] .hr-leave-status-dot,
+    .hr-leave-status[data-status*="canceled"] .hr-leave-status-dot {
+        background: #d34a4a;
+    }
+
+    /* Empty states */
+    .hr-leave-empty-cell {
+        padding: 0 !important;
+    }
+
+    .hr-leave-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px 22px;
+        text-align: center;
+    }
+
+    .hr-leave-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 63px;
+        height: 63px;
+        margin-bottom: 17px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 18px;
+        font-size: 1.7rem;
+    }
+
+    .hr-leave-empty h3 {
+        margin: 0 0 8px;
+        color: var(--hr-ink);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .hr-leave-empty p,
+    .hr-leave-no-results p {
+        margin: 0 0 18px;
+        color: var(--hr-muted);
+        font-size: .82rem;
+        line-height: 1.6;
+    }
+
+    .hr-leave-no-results {
+        padding: 35px 20px;
+        color: var(--hr-muted);
+        text-align: center;
+    }
+
+    .hr-leave-no-results > i {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--hr-primary);
+        font-size: 1.5rem;
+    }
+
+    .hr-leave-no-results p {
+        margin: 0;
+    }
+
+    /* Footer */
+    .hr-leave-panel-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 13px 23px;
+        color: var(--hr-muted);
+        background: #fcf9fb;
+        border-top: 1px solid var(--hr-border);
+        font-size: .73rem;
+    }
+
+    .hr-leave-panel-footer i {
+        color: var(--hr-primary);
+    }
+
+    [hidden] {
+        display: none !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 767.98px) {
+        .hr-leave-header {
+            align-items: flex-start;
+        }
+
+        .hr-leave-heading {
+            align-items: flex-start;
+        }
+
+        .hr-leave-heading-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+
+        .hr-leave-header > .hr-leave-primary-btn {
+            width: 100%;
+        }
+
+        .hr-leave-stats {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .hr-leave-stat-card {
+            padding: 15px;
+        }
+
+        .hr-leave-stat-card strong {
+            font-size: 1.4rem;
+        }
+
+        .hr-leave-panel-header {
+            padding: 17px;
+        }
+
+        .hr-leave-toolbar {
+            padding: 14px 17px;
+        }
+
+        .hr-leave-search,
+        .hr-leave-filter {
+            flex: 1 1 100%;
+        }
+
+        .hr-leave-panel-footer {
+            padding: 13px 17px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hr-leave-page *,
+        .hr-leave-page *::before,
+        .hr-leave-page *::after {
+            transition-duration: .01ms !important;
+            animation-duration: .01ms !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const page = document.querySelector('.hr-leave-page');
+    if (!page) return;
+
+    const search = page.querySelector('#hr-leave-search');
+    const filter = page.querySelector('#hr-leave-status-filter');
+    const rows = Array.from(page.querySelectorAll('.hr-leave-row'));
+    const noResults = page.querySelector('#hr-leave-no-results');
+    const visibleCount = page.querySelector('#hr-leave-visible-count');
+    const pendingCount = page.querySelector('#hr-leave-pending-count');
+    const approvedCount = page.querySelector('#hr-leave-approved-count');
+
+    // Populate unique status options without changing the backend.
+    const uniqueStatuses = new Map();
+
+    rows.forEach(function (row) {
+        const status = (row.dataset.status || '').trim().toLowerCase();
+        const label = row.querySelector('.hr-leave-status')?.textContent.trim();
+
+        if (status && label && !uniqueStatuses.has(status)) {
+            uniqueStatuses.set(status, label);
+        }
+    });
+
+    // Remove duplicate status choices from the initial server-rendered list.
+    const selectedStatus = filter.value;
+    filter.querySelectorAll('option:not(:first-child)').forEach(function (option) {
+        option.remove();
+    });
+
+    uniqueStatuses.forEach(function (label, value) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        filter.appendChild(option);
+    });
+
+    filter.value = uniqueStatuses.has(selectedStatus) ? selectedStatus : '';
+
+    function updateSummary() {
+        let pending = 0;
+        let approved = 0;
+
+        rows.forEach(function (row) {
+            const status = (row.dataset.status || '').toLowerCase();
+
+            if (status.includes('pending') || status.includes('review')) {
+                pending++;
+            }
+
+            if (status.includes('approved')) {
+                approved++;
+            }
+        });
+
+        pendingCount.textContent = pending;
+        approvedCount.textContent = approved;
+    }
+
+    function filterRows() {
+        const query = search.value.trim().toLowerCase();
+        const selected = filter.value.toLowerCase();
+        let visible = 0;
+
+        rows.forEach(function (row) {
+            const employee = (row.dataset.employee || '').toLowerCase();
+            const leaveType = (row.dataset.leaveType || '').toLowerCase();
+            const status = (row.dataset.status || '').toLowerCase();
+
+            const matchesSearch =
+                employee.includes(query) ||
+                leaveType.includes(query);
+
+            const matchesStatus = !selected || status === selected;
+            const matches = matchesSearch && matchesStatus;
+
+            row.hidden = !matches;
+
+            if (matches) visible++;
+        });
+
+        noResults.hidden = rows.length === 0 || visible > 0;
+
+        visibleCount.textContent =
+            `${visible} of ${rows.length} record${rows.length === 1 ? '' : 's'} displayed`;
+    }
+
+    search.addEventListener('input', filterRows);
+    filter.addEventListener('change', filterRows);
+
+    updateSummary();
+    filterRows();
+});
+</script>
+{% endblock %}

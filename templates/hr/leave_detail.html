@@ -1,0 +1,808 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Leave Request Details | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-leave-detail-page">
+
+    <!-- Page header -->
+    <div class="hr-detail-header">
+        <div class="hr-detail-heading">
+            <div class="hr-detail-heading-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+            <div>
+                <div class="hr-detail-eyebrow">
+                    HUMAN RESOURCES / LEAVE MANAGEMENT
+                </div>
+                <h1>Leave Request Details</h1>
+                <p>Review the employee's leave application and current status.</p>
+            </div>
+        </div>
+
+        <a class="btn hr-detail-back-btn"
+           href="{% url 'hr:leave_list' %}">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back to Leave Requests
+        </a>
+    </div>
+
+    <!-- Request summary -->
+    <div class="hr-detail-layout">
+
+        <main class="hr-detail-main">
+
+            <!-- Employee and request information -->
+            <section class="hr-detail-card">
+
+                <div class="hr-detail-card-header">
+                    <div class="hr-detail-section-icon">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div>
+                        <h2>Application Overview</h2>
+                        <p>Essential information about this leave request.</p>
+                    </div>
+                </div>
+
+                <div class="hr-detail-card-body">
+
+                    <div class="hr-detail-employee">
+                        <div class="hr-detail-avatar">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div class="hr-detail-employee-info">
+                            <span class="hr-detail-field-caption">EMPLOYEE</span>
+                            <h3>{{ leave.employee }}</h3>
+                            <span class="hr-detail-subtitle">
+                                Staff leave application
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="hr-detail-divider"></div>
+
+                    <div class="hr-detail-info-grid">
+
+                        <div class="hr-detail-info-item">
+                            <span class="hr-detail-label">
+                                <i class="bi bi-briefcase me-2"></i>
+                                Leave Type
+                            </span>
+                            <strong>{{ leave.leave_type }}</strong>
+                        </div>
+
+                        <div class="hr-detail-info-item">
+                            <span class="hr-detail-label">
+                                <i class="bi bi-clipboard-check me-2"></i>
+                                Application Status
+                            </span>
+                            <div>
+                                <span class="hr-detail-status"
+                                      data-status="{{ leave.get_status_display|lower }}">
+                                    <span class="hr-detail-status-dot"></span>
+                                    {{ leave.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="hr-detail-info-item hr-detail-info-wide">
+                            <span class="hr-detail-label">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                Leave Period
+                            </span>
+                            <div class="hr-detail-date-range">
+                                <div class="hr-detail-date">
+                                    <span>START DATE</span>
+                                    <strong>{{ leave.start_date|date:"d M Y" }}</strong>
+                                </div>
+
+                                <div class="hr-detail-date-connector">
+                                    <i class="bi bi-arrow-right"></i>
+                                </div>
+
+                                <div class="hr-detail-date">
+                                    <span>END DATE</span>
+                                    <strong>{{ leave.end_date|date:"d M Y" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if leave.days_requested != None %}
+                        <div class="hr-detail-info-item">
+                            <span class="hr-detail-label">
+                                <i class="bi bi-hourglass-split me-2"></i>
+                                Duration
+                            </span>
+                            <strong class="hr-detail-duration">
+                                {{ leave.days_requested }}
+                                day{{ leave.days_requested|pluralize }}
+                            </strong>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reason for leave -->
+            <section class="hr-detail-card hr-detail-reason-card">
+
+                <div class="hr-detail-card-header">
+                    <div class="hr-detail-section-icon">
+                        <i class="bi bi-chat-left-text"></i>
+                    </div>
+                    <div>
+                        <h2>Reason for Leave</h2>
+                        <p>Applicant-provided explanation for the request.</p>
+                    </div>
+                </div>
+
+                <div class="hr-detail-card-body">
+                    {% if leave.reason %}
+                        <div class="hr-detail-reason">
+                            {{ leave.reason|linebreaksbr }}
+                        </div>
+                    {% else %}
+                        <div class="hr-detail-no-reason">
+                            <i class="bi bi-info-circle"></i>
+                            <span>No reason was provided for this leave request.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Navigation -->
+            <div class="hr-detail-actions">
+                <a class="btn hr-detail-back-btn"
+                   href="{% url 'hr:leave_list' %}">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Return to Leave Register
+                </a>
+            </div>
+
+        </main>
+
+        <!-- Side panel -->
+        <aside class="hr-detail-sidebar">
+
+            <section class="hr-detail-status-card">
+                <div class="hr-detail-status-card-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+
+                <span class="hr-detail-field-caption">CURRENT STATUS</span>
+
+                <h2>
+                    {{ leave.get_status_display }}
+                </h2>
+
+                <p>
+                    This is the current status recorded for the leave application.
+                </p>
+
+                <div class="hr-detail-status-indicator"
+                     data-status="{{ leave.get_status_display|lower }}">
+                    <span class="hr-detail-status-dot"></span>
+                    {{ leave.get_status_display }}
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    {% if can_approve_supervisor and not leave.supervisor_approved %}
+                    <form method="post" action="{% url 'hr:approve_supervisor' leave.pk 'approved' %}">{% csrf_token %}<button class="btn btn-success w-100" type="submit">Approve as supervisor</button></form>
+                    <form method="post" action="{% url 'hr:approve_supervisor' leave.pk 'denied' %}">{% csrf_token %}<button class="btn btn-outline-danger w-100" type="submit">Decline as supervisor</button></form>
+                    {% endif %}
+                    {% if can_approve_hr and leave.supervisor_approved and not leave.hr_approved %}
+                    <form method="post" action="{% url 'hr:approve_hr' leave.pk 'approved' %}">{% csrf_token %}<button class="btn btn-success w-100" type="submit">Approve as HR</button></form>
+                    <form method="post" action="{% url 'hr:approve_hr' leave.pk 'denied' %}">{% csrf_token %}<button class="btn btn-outline-danger w-100" type="submit">Decline as HR</button></form>
+                    {% endif %}
+                    {% if can_approve_ed and leave.hr_approved and not leave.ed_approved %}
+                    <form method="post" action="{% url 'hr:approve_ed' leave.pk 'approved' %}">{% csrf_token %}<button class="btn btn-success w-100" type="submit">Approve as ED</button></form>
+                    <form method="post" action="{% url 'hr:approve_ed' leave.pk 'denied' %}">{% csrf_token %}<button class="btn btn-outline-danger w-100" type="submit">Decline as ED</button></form>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="hr-detail-help-card">
+                <div class="hr-detail-help-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+                <h3>HR Information</h3>
+                <p>
+                    Application status and leave details are displayed from the
+                    current HR record. Contact the authorized HR officer if
+                    any information requires clarification.
+                </p>
+            </section>
+
+        </aside>
+    </div>
+</div>
+
+<style>
+    .hr-leave-detail-page {
+        --hr-primary: #e50078;
+        --hr-primary-dark: #b80060;
+        --hr-primary-soft: #fff0f7;
+        --hr-primary-border: #f4c5dc;
+        --hr-ink: #3b2938;
+        --hr-muted: #7b6c78;
+        --hr-border: #e8dfe6;
+        --hr-surface: #ffffff;
+
+        color: var(--hr-ink);
+        padding-bottom: 28px;
+    }
+
+    .hr-leave-detail-page *,
+    .hr-leave-detail-page *::before,
+    .hr-leave-detail-page *::after {
+        box-sizing: border-box;
+    }
+
+    /* Header */
+    .hr-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .hr-detail-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-width: 0;
+    }
+
+    .hr-detail-heading-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 55px;
+        height: 55px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 14px;
+        font-size: 1.55rem;
+    }
+
+    .hr-detail-eyebrow {
+        margin-bottom: 4px;
+        color: var(--hr-primary-dark);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .11em;
+    }
+
+    .hr-detail-heading h1 {
+        margin: 0 0 5px;
+        color: var(--hr-ink);
+        font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .hr-detail-heading p {
+        margin: 0;
+        color: var(--hr-muted);
+        font-size: .88rem;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    .hr-detail-back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 10px 15px;
+        color: var(--hr-ink);
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-radius: 9px;
+        font-size: .82rem;
+        font-weight: 750;
+        text-decoration: none;
+        transition: background .2s, border-color .2s, color .2s;
+    }
+
+    .hr-detail-back-btn:hover {
+        color: var(--hr-primary-dark);
+        background: var(--hr-primary-soft);
+        border-color: var(--hr-primary);
+    }
+
+    .hr-leave-detail-page a:focus-visible {
+        outline: 3px solid rgba(229, 0, 120, .25);
+        outline-offset: 3px;
+    }
+
+    /* Main layout */
+    .hr-detail-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 290px;
+        align-items: start;
+        gap: 22px;
+    }
+
+    .hr-detail-main,
+    .hr-detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    /* Cards */
+    .hr-detail-card {
+        overflow: hidden;
+        background: var(--hr-surface);
+        border: 1px solid var(--hr-border);
+        border-radius: 14px;
+        box-shadow: 0 5px 20px rgba(59, 41, 56, .04);
+    }
+
+    .hr-detail-card-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 19px 22px;
+        background: linear-gradient(100deg, #fff5fa, #fff 75%);
+        border-bottom: 1px solid var(--hr-border);
+    }
+
+    .hr-detail-section-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 42px;
+        height: 42px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 11px;
+        font-size: 1.15rem;
+    }
+
+    .hr-detail-card-header h2 {
+        margin: 0 0 4px;
+        color: var(--hr-ink);
+        font-size: .98rem;
+        font-weight: 800;
+    }
+
+    .hr-detail-card-header p {
+        margin: 0;
+        color: var(--hr-muted);
+        font-size: .77rem;
+        line-height: 1.5;
+    }
+
+    .hr-detail-card-body {
+        padding: 23px;
+    }
+
+    /* Employee identity */
+    .hr-detail-employee {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .hr-detail-avatar {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 55px;
+        height: 55px;
+        color: var(--hr-primary-dark);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 15px;
+        font-size: 1.65rem;
+    }
+
+    .hr-detail-employee-info {
+        min-width: 0;
+    }
+
+    .hr-detail-field-caption {
+        display: block;
+        color: var(--hr-muted);
+        font-size: .66rem;
+        font-weight: 800;
+        letter-spacing: .09em;
+    }
+
+    .hr-detail-employee-info h3 {
+        margin: 4px 0;
+        color: var(--hr-ink);
+        font-size: 1.08rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-detail-subtitle {
+        color: var(--hr-muted);
+        font-size: .77rem;
+    }
+
+    .hr-detail-divider {
+        height: 1px;
+        margin: 22px 0;
+        background: var(--hr-border);
+    }
+
+    /* Information grid */
+    .hr-detail-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px 22px;
+    }
+
+    .hr-detail-info-item {
+        min-width: 0;
+    }
+
+    .hr-detail-info-wide {
+        grid-column: 1 / -1;
+    }
+
+    .hr-detail-label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--hr-muted);
+        font-size: .76rem;
+        font-weight: 650;
+    }
+
+    .hr-detail-label i {
+        color: var(--hr-primary);
+    }
+
+    .hr-detail-info-item > strong {
+        display: block;
+        color: var(--hr-ink);
+        font-size: .91rem;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-detail-duration {
+        color: var(--hr-primary-dark) !important;
+    }
+
+    /* Leave period */
+    .hr-detail-date-range {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px;
+        background: #fcf9fb;
+        border: 1px solid var(--hr-border);
+        border-radius: 11px;
+    }
+
+    .hr-detail-date {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .hr-detail-date > span {
+        color: var(--hr-muted);
+        font-size: .65rem;
+        font-weight: 800;
+        letter-spacing: .07em;
+    }
+
+    .hr-detail-date strong {
+        color: var(--hr-ink);
+        font-size: .9rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .hr-detail-date-connector {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border-radius: 9px;
+    }
+
+    /* Status badge */
+    .hr-detail-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        color: #655260;
+        background: #f5f0f4;
+        border: 1px solid #e8dfe6;
+        border-radius: 20px;
+        font-size: .75rem;
+        font-weight: 750;
+    }
+
+    .hr-detail-status-dot {
+        display: inline-block;
+        flex-shrink: 0;
+        width: 7px;
+        height: 7px;
+        background: #958593;
+        border-radius: 50%;
+    }
+
+    .hr-detail-status[data-status*="pending"],
+    .hr-detail-status[data-status*="review"] {
+        color: #875900;
+        background: #fff7df;
+        border-color: #f1dfab;
+    }
+
+    .hr-detail-status[data-status*="pending"] .hr-detail-status-dot,
+    .hr-detail-status[data-status*="review"] .hr-detail-status-dot {
+        background: #c28a10;
+    }
+
+    .hr-detail-status[data-status*="approved"] {
+        color: #237747;
+        background: #eaf7ef;
+        border-color: #c7e8d2;
+    }
+
+    .hr-detail-status[data-status*="approved"] .hr-detail-status-dot {
+        background: #2d9959;
+    }
+
+    .hr-detail-status[data-status*="rejected"],
+    .hr-detail-status[data-status*="declined"],
+    .hr-detail-status[data-status*="cancelled"],
+    .hr-detail-status[data-status*="canceled"] {
+        color: #ad3030;
+        background: #fff0f0;
+        border-color: #f3cece;
+    }
+
+    .hr-detail-status[data-status*="rejected"] .hr-detail-status-dot,
+    .hr-detail-status[data-status*="declined"] .hr-detail-status-dot,
+    .hr-detail-status[data-status*="cancelled"] .hr-detail-status-dot,
+    .hr-detail-status[data-status*="canceled"] .hr-detail-status-dot {
+        background: #d34a4a;
+    }
+
+    /* Reason */
+    .hr-detail-reason {
+        color: #554453;
+        font-size: .88rem;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-detail-no-reason {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 15px;
+        color: var(--hr-muted);
+        background: #fcf9fb;
+        border: 1px solid var(--hr-border);
+        border-radius: 9px;
+        font-size: .82rem;
+        line-height: 1.6;
+    }
+
+    .hr-detail-no-reason i {
+        margin-top: 2px;
+        color: var(--hr-primary);
+    }
+
+    /* Sidebar status card */
+    .hr-detail-status-card {
+        padding: 22px;
+        background: #fff;
+        border: 1px solid var(--hr-border);
+        border-top: 3px solid var(--hr-primary);
+        border-radius: 14px;
+        box-shadow: 0 5px 20px rgba(59, 41, 56, .04);
+    }
+
+    .hr-detail-status-card-icon {
+        display: grid;
+        place-items: center;
+        width: 45px;
+        height: 45px;
+        margin-bottom: 18px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border: 1px solid var(--hr-primary-border);
+        border-radius: 12px;
+        font-size: 1.35rem;
+    }
+
+    .hr-detail-status-card h2 {
+        margin: 7px 0 9px;
+        color: var(--hr-ink);
+        font-size: 1.25rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-detail-status-card > p {
+        margin: 0 0 16px;
+        color: var(--hr-muted);
+        font-size: .79rem;
+        line-height: 1.7;
+    }
+
+    .hr-detail-status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 12px;
+        color: #655260;
+        background: #f5f0f4;
+        border: 1px solid #e8dfe6;
+        border-radius: 9px;
+        font-size: .8rem;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .hr-detail-status-indicator[data-status*="pending"],
+    .hr-detail-status-indicator[data-status*="review"] {
+        color: #875900;
+        background: #fff7df;
+        border-color: #f1dfab;
+    }
+
+    .hr-detail-status-indicator[data-status*="approved"] {
+        color: #237747;
+        background: #eaf7ef;
+        border-color: #c7e8d2;
+    }
+
+    .hr-detail-status-indicator[data-status*="rejected"],
+    .hr-detail-status-indicator[data-status*="declined"],
+    .hr-detail-status-indicator[data-status*="cancelled"],
+    .hr-detail-status-indicator[data-status*="canceled"] {
+        color: #ad3030;
+        background: #fff0f0;
+        border-color: #f3cece;
+    }
+
+    /* Sidebar information card */
+    .hr-detail-help-card {
+        padding: 20px;
+        background: #fcf9fb;
+        border: 1px solid var(--hr-border);
+        border-radius: 13px;
+    }
+
+    .hr-detail-help-icon {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        margin-bottom: 12px;
+        color: var(--hr-primary);
+        background: var(--hr-primary-soft);
+        border-radius: 10px;
+        font-size: 1.05rem;
+    }
+
+    .hr-detail-help-card h3 {
+        margin: 0 0 8px;
+        color: var(--hr-ink);
+        font-size: .9rem;
+        font-weight: 800;
+    }
+
+    .hr-detail-help-card p {
+        margin: 0;
+        color: var(--hr-muted);
+        font-size: .78rem;
+        line-height: 1.8;
+    }
+
+    /* Bottom navigation */
+    .hr-detail-actions {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 991.98px) {
+        .hr-detail-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .hr-detail-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: stretch;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .hr-detail-header {
+            align-items: flex-start;
+        }
+
+        .hr-detail-heading {
+            align-items: flex-start;
+        }
+
+        .hr-detail-heading-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+
+        .hr-detail-header > .hr-detail-back-btn {
+            width: 100%;
+        }
+
+        .hr-detail-card-header {
+            padding: 16px;
+        }
+
+        .hr-detail-card-body {
+            padding: 17px;
+        }
+
+        .hr-detail-info-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 20px;
+        }
+
+        .hr-detail-info-wide {
+            grid-column: auto;
+        }
+
+        .hr-detail-date-range {
+            align-items: flex-start;
+            gap: 10px;
+            padding: 13px;
+        }
+
+        .hr-detail-date strong {
+            font-size: .78rem;
+            white-space: normal;
+        }
+
+        .hr-detail-date-connector {
+            width: 27px;
+            height: 27px;
+            margin-top: 16px;
+        }
+
+        .hr-detail-sidebar {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .hr-detail-actions > a {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hr-leave-detail-page *,
+        .hr-leave-detail-page *::before,
+        .hr-leave-detail-page *::after {
+            transition-duration: .01ms !important;
+            animation-duration: .01ms !important;
+        }
+    }
+</style>
+{% endblock %}

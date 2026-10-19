@@ -1,0 +1,566 @@
+{% extends "module_base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-people-fill" aria-hidden="true"></i>
+    Human Resources
+{% endblock %}
+
+{% block nav %}
+    <a href="{% url 'hr:dashboard' %}">
+        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+        Dashboard
+    </a>
+
+    <a class="active" href="{% url 'hr:staff' %}">
+        <i class="bi bi-person-vcard" aria-hidden="true"></i>
+        Staff Records
+    </a>
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label hr-text">
+        HUMAN RESOURCES
+    </span>
+    <h1>{{ title }}</h1>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="panel form-panel staff-form-panel">
+
+    <!-- Form Header -->
+    <div class="form-header">
+        <div class="form-header-icon">
+            <i class="bi bi-person-vcard-fill" aria-hidden="true"></i>
+        </div>
+
+        <div>
+            <h2>{{ title }}</h2>
+            <p>
+                Enter and maintain the staff member's official HR information.
+                Fields marked as required must be completed before saving.
+            </p>
+        </div>
+    </div>
+
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-4">
+                <div class="d-flex gap-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+
+                    <div>
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+
+<div class="row g-4">
+
+    {% for field in form %}
+
+        <div class="col-12 col-md-6">
+
+            {% if field.field.widget.input_type == "checkbox" %}
+
+                <!-- Boolean / Checkbox Field -->
+                <div class="boolean-field">
+
+                    <label
+                        for="{{ field.id_for_label }}"
+                        class="boolean-control"
+                    >
+                        {{ field }}
+
+                        <span class="boolean-content">
+                            <span class="boolean-title">
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                    <span class="required-mark">*</span>
+                                {% endif %}
+                            </span>
+
+                            {% if field.help_text %}
+                                <span class="boolean-help">
+                                    {{ field.help_text }}
+                                </span>
+                            {% endif %}
+                        </span>
+
+                    </label>
+
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <div>
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% else %}
+
+                <!-- Normal Field -->
+                <div class="form-field">
+
+                    <label
+                        for="{{ field.id_for_label }}"
+                        class="form-label"
+                    >
+                        {{ field.label }}
+
+                        {% if field.field.required %}
+                            <span class="required-mark">*</span>
+                        {% endif %}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <div class="form-help">
+                            <i class="bi bi-info-circle"></i>
+                            {{ field.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <div>
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+
+            <a
+                href="{% url 'hr:staff' %}"
+                class="btn btn-light"
+            >
+                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                Save staff record
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<style>
+    /* =========================================================
+       HR — Staff Record Form
+       ========================================================= */
+
+    .staff-form-panel {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.75rem;
+    }
+
+
+    /* Form header */
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+        padding-bottom: 1.35rem;
+        border-bottom: 1px solid #eaecf0;
+    }
+
+    .form-header-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: rgba(111, 66, 193, .09);
+        color: #6f42c1;
+        font-size: 1.3rem;
+    }
+
+    .form-header h2 {
+        margin: 0 0 .25rem;
+        color: #172033;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .form-header p {
+        margin: 0;
+        color: #667085;
+        font-size: .88rem;
+        line-height: 1.55;
+    }
+
+
+    /* =========================================================
+   Normal form fields
+   ========================================================= */
+
+.form-field {
+    height: 100%;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: .45rem;
+    color: #344054;
+    font-size: .84rem;
+    font-weight: 700;
+}
+
+.required-mark {
+    margin-left: 2px;
+    color: #dc3545;
+    font-weight: 800;
+}
+
+.form-field input:not([type="checkbox"]):not([type="radio"]),
+.form-field select,
+.form-field textarea {
+    display: block;
+    width: 100%;
+    padding: .72rem .85rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 9px;
+    background: #fff;
+    color: #172033;
+    font-size: .9rem;
+    line-height: 1.45;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.form-field textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: #6f42c1;
+    outline: 0;
+    box-shadow: 0 0 0 .2rem rgba(111, 66, 193, .12);
+}
+
+
+/* =========================================================
+   Boolean / Checkbox fields
+   ========================================================= */
+
+.boolean-field {
+    height: 100%;
+}
+
+.boolean-control {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    min-height: 72px;
+    padding: .85rem 1rem;
+    border: 1px solid #e4e7ec;
+    border-radius: 12px;
+    background: #f8f9fb;
+    cursor: pointer;
+    transition:
+        border-color .15s ease,
+        background-color .15s ease,
+        box-shadow .15s ease;
+}
+
+.boolean-control:hover {
+    border-color: #c7b5e8;
+    background: #faf9fd;
+}
+
+.boolean-control:has(input:checked) {
+    border-color: rgba(111, 66, 193, .4);
+    background: rgba(111, 66, 193, .045);
+}
+
+
+/* Actual checkbox */
+.boolean-control input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: #6f42c1;
+    cursor: pointer;
+}
+
+
+/* Checkbox text */
+.boolean-content {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    min-width: 0;
+}
+
+.boolean-title {
+    color: #344054;
+    font-size: .86rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.boolean-help {
+    color: #667085;
+    font-size: .75rem;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   Help & validation
+   ========================================================= */
+
+.form-help {
+    display: flex;
+    gap: .35rem;
+    margin-top: .4rem;
+    color: #667085;
+    font-size: .76rem;
+    line-height: 1.45;
+}
+
+.form-help i {
+    flex-shrink: 0;
+    margin-top: .1rem;
+}
+
+.field-errors {
+    margin-top: .4rem;
+    color: #b42318;
+    font-size: .77rem;
+    line-height: 1.45;
+}
+
+.field-errors div {
+    display: flex;
+    align-items: flex-start;
+    gap: .35rem;
+}
+
+.field-errors i {
+    flex-shrink: 0;
+    margin-top: .1rem;
+}
+
+    /* Individual field */
+    .form-field {
+        height: 100%;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: .45rem;
+        color: #344054;
+        font-size: .84rem;
+        font-weight: 700;
+    }
+
+    .required-mark {
+        margin-left: 2px;
+        color: #dc3545;
+        font-weight: 800;
+    }
+
+
+    /* Django-generated controls */
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        display: block;
+        width: 100%;
+        padding: .72rem .85rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 9px;
+        background-color: #fff;
+        color: #172033;
+        font-size: .9rem;
+        line-height: 1.45;
+        transition:
+            border-color .15s ease,
+            box-shadow .15s ease;
+    }
+
+    .form-field textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+        border-color: #6f42c1;
+        outline: 0;
+        box-shadow: 0 0 0 .2rem rgba(111, 66, 193, .12);
+    }
+
+    .form-field input::placeholder,
+    .form-field textarea::placeholder {
+        color: #98a2b3;
+    }
+
+
+    /* Checkbox / radio fields */
+    .form-field input[type="checkbox"],
+    .form-field input[type="radio"] {
+        width: auto;
+        padding: 0;
+    }
+
+
+    /* Help text */
+    .form-help {
+        display: flex;
+        gap: .35rem;
+        margin-top: .4rem;
+        color: #667085;
+        font-size: .76rem;
+        line-height: 1.45;
+    }
+
+    .form-help i {
+        flex-shrink: 0;
+        margin-top: .1rem;
+    }
+
+
+    /* Validation */
+    .field-errors {
+        margin-top: .4rem;
+        color: #b42318;
+        font-size: .77rem;
+        line-height: 1.45;
+    }
+
+    .field-errors div {
+        display: flex;
+        gap: .35rem;
+        align-items: flex-start;
+    }
+
+    .field-errors i {
+        flex-shrink: 0;
+        margin-top: .1rem;
+    }
+
+    .form-field input.is-invalid,
+    .form-field select.is-invalid,
+    .form-field textarea.is-invalid {
+        border-color: #dc3545;
+    }
+
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .75rem;
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid #eaecf0;
+    }
+
+    .form-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: .65rem 1rem;
+        border-radius: 9px;
+        font-size: .86rem;
+        font-weight: 700;
+    }
+
+
+    /* Mobile */
+    @media (max-width: 767.98px) {
+
+        .staff-form-panel {
+            padding: 1.15rem;
+        }
+
+        .form-header {
+            align-items: flex-start;
+        }
+
+        .form-header-icon {
+            flex-basis: 44px;
+            width: 44px;
+            height: 44px;
+            font-size: 1.1rem;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+
+
+    @media (prefers-reduced-motion: reduce) {
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            transition: none;
+        }
+    }
+
+    .form-field textarea[rows="2"] {
+        min-height: 4.5rem;
+    }
+</style>
+
+{% endblock %}

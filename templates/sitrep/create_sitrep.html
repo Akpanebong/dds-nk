@@ -1,0 +1,298 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Create Situation Report | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<style>
+    .situation-report {
+        --sr-primary: #e50078;
+        --sr-plum: #3b2938;
+        --sr-muted: #75808d;
+        --sr-border: #e6eaf0;
+        --sr-soft: #fff4f9;
+        color: var(--sr-plum);
+    }
+
+    .situation-report .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .situation-report .eyebrow {
+        margin-bottom: .45rem;
+        color: var(--sr-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .situation-report .page-heading h1 {
+        margin: 0 0 .45rem;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .situation-report .page-heading p {
+        max-width: 720px;
+        margin: 0;
+        color: var(--sr-muted);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .situation-report .report-card {
+        overflow: hidden;
+        border: 1px solid var(--sr-border);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 6px 24px rgba(59, 41, 56, .045);
+    }
+
+    .situation-report .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--sr-border);
+        background: linear-gradient(120deg, #fff 0%, #fff8fb 100%);
+    }
+
+    .situation-report .heading-icon {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        place-items: center;
+        border-radius: 13px;
+        background: #ffe6f2;
+        color: var(--sr-primary);
+        font-size: 1.3rem;
+    }
+
+    .situation-report .card-heading h2 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .situation-report .card-heading p {
+        margin: 0;
+        color: var(--sr-muted);
+        font-size: .82rem;
+        line-height: 1.5;
+    }
+
+    .situation-report .card-body-custom {
+        padding: 1.5rem;
+    }
+
+    .situation-report .guidance {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #f3d5e4;
+        border-radius: 12px;
+        background: var(--sr-soft);
+        color: #655766;
+        font-size: .84rem;
+        line-height: 1.7;
+    }
+
+    .situation-report .guidance i {
+        margin-top: .1rem;
+        color: var(--sr-primary);
+        font-size: 1.1rem;
+    }
+
+    .situation-report .form-fields p {
+        margin-bottom: 1.25rem;
+    }
+
+    .situation-report .form-fields label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--sr-plum);
+        font-size: .85rem;
+        font-weight: 750;
+    }
+
+    .situation-report .form-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .situation-report .form-fields select,
+    .situation-report .form-fields textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--sr-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .situation-report .form-fields textarea {
+        min-height: 140px;
+        resize: vertical;
+    }
+
+    .situation-report .form-fields input:focus,
+    .situation-report .form-fields select:focus,
+    .situation-report .form-fields textarea:focus {
+        outline: none;
+        border-color: var(--sr-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .situation-report .form-fields input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: .75rem;
+        border: 1px dashed #cbd2dc;
+        border-radius: 10px;
+        background: #fafbfc;
+        color: var(--sr-muted);
+        font-size: .85rem;
+    }
+
+    .situation-report .form-fields input[type="checkbox"],
+    .situation-report .form-fields input[type="radio"] {
+        accent-color: var(--sr-primary);
+    }
+
+    .situation-report .form-fields .helptext,
+    .situation-report .form-fields .form-text {
+        display: block;
+        margin-top: .4rem;
+        color: var(--sr-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .situation-report .form-fields ul.errorlist {
+        margin: .4rem 0;
+        padding: 0;
+        list-style: none;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .situation-report .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .75rem;
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--sr-border);
+    }
+
+    .situation-report .btn-submit-report {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1.25rem;
+        border: 1px solid var(--sr-primary);
+        border-radius: 10px;
+        background: var(--sr-primary);
+        color: #fff;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .situation-report .btn-submit-report:hover {
+        transform: translateY(-1px);
+        border-color: #c90069;
+        background: #c90069;
+        color: #fff;
+    }
+
+    @media (max-width: 575.98px) {
+        .situation-report .card-heading,
+        .situation-report .card-body-custom {
+            padding: 1rem;
+        }
+
+        .situation-report .form-actions,
+        .situation-report .btn-submit-report {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="situation-report">
+
+    <header class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-file-earmark-text me-1"></i>
+            DDS-NK THRIVE / Reporting
+        </div>
+
+        <h1>Create Situation Report</h1>
+
+        <p>
+            Document the current situation, key developments, operational
+            challenges, and relevant supporting information for review
+            and organisational decision-making.
+        </p>
+    </header>
+
+    <section class="report-card">
+
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-clipboard2-pulse"></i>
+            </div>
+
+            <div>
+                <h2>Situation Report Details</h2>
+                <p>Complete the report fields and attach supporting documents where applicable.</p>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+
+            <div class="guidance">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Reporting guidance</strong><br>
+                    Provide clear, factual, and up-to-date information.
+                    Distinguish confirmed facts from preliminary observations,
+                    and ensure attachments are relevant and appropriate to share.
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please correct the following:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-fields">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit-report">
+                        <i class="bi bi-send"></i>
+                        Submit Situation Report
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

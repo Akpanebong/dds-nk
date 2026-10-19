@@ -1,0 +1,578 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Orientation Plans | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<div class="hr-orientation-plans">
+
+    <style>
+        .hr-orientation-plans {
+            --hr-pink: #e50078;
+            --hr-plum: #3b2938;
+            --hr-muted: #77808c;
+            --hr-border: #e9e7ec;
+            --hr-soft: #f8f7fa;
+            color: var(--hr-plum);
+            padding-bottom: 2rem;
+        }
+
+        .hr-orientation-plans * {
+            box-sizing: border-box;
+        }
+
+        .hr-orientation-plans .orientation-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            background: linear-gradient(120deg, #3b2938, #56364d 70%, #8f1458);
+            border-radius: 20px;
+        }
+
+        .hr-orientation-plans .hero-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .65rem;
+            color: #ffd3e8;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        .hr-orientation-plans .orientation-hero h1 {
+            margin: 0 0 .55rem;
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        .hr-orientation-plans .orientation-hero p {
+            max-width: 620px;
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .hr-orientation-plans .hero-icon {
+            display: grid;
+            flex: 0 0 76px;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 22px;
+            font-size: 2rem;
+        }
+
+        .hr-orientation-plans .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hr-orientation-plans .overview-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            padding: 1.25rem;
+            background: #fff;
+            border: 1px solid var(--hr-border);
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(59, 41, 56, .035);
+        }
+
+        .hr-orientation-plans .overview-icon {
+            display: grid;
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            place-items: center;
+            color: var(--hr-pink);
+            background: #fff0f7;
+            border-radius: 14px;
+            font-size: 1.3rem;
+        }
+
+        .hr-orientation-plans .overview-label {
+            display: block;
+            margin-bottom: .25rem;
+            color: var(--hr-muted);
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .hr-orientation-plans .overview-value {
+            display: block;
+            color: var(--hr-plum);
+            font-size: 1.55rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .hr-orientation-plans .content-panel {
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--hr-border);
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(59, 41, 56, .045);
+        }
+
+        .hr-orientation-plans .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.4rem 1.5rem;
+            border-bottom: 1px solid var(--hr-border);
+        }
+
+        .hr-orientation-plans .panel-header h2 {
+            margin: 0;
+            color: var(--hr-plum);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .hr-orientation-plans .panel-header p {
+            margin: .35rem 0 0;
+            color: var(--hr-muted);
+            font-size: .84rem;
+        }
+
+        .hr-orientation-plans .search-wrap {
+            position: relative;
+            width: min(100%, 320px);
+        }
+
+        .hr-orientation-plans .search-wrap > i {
+            position: absolute;
+            top: 50%;
+            left: .9rem;
+            color: var(--hr-muted);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .hr-orientation-plans .search-input {
+            width: 100%;
+            min-height: 43px;
+            padding: .65rem .85rem .65rem 2.45rem;
+            color: var(--hr-plum);
+            background: var(--hr-soft);
+            border: 1px solid var(--hr-border);
+            border-radius: 11px;
+            outline: none;
+            font-size: .86rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .hr-orientation-plans .search-input:focus {
+            background: #fff;
+            border-color: var(--hr-pink);
+            box-shadow: 0 0 0 3px rgba(229, 0, 120, .09);
+        }
+
+        .hr-orientation-plans .records-list {
+            padding: .4rem 1.5rem;
+        }
+
+        .hr-orientation-plans .staff-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid #f0edf2;
+        }
+
+        .hr-orientation-plans .staff-row:last-child {
+            border-bottom: 0;
+        }
+
+        .hr-orientation-plans .staff-identity {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            min-width: 0;
+        }
+
+        .hr-orientation-plans .staff-avatar {
+            display: grid;
+            flex: 0 0 44px;
+            width: 44px;
+            height: 44px;
+            place-items: center;
+            color: var(--hr-pink);
+            background: #fff0f7;
+            border: 1px solid #f8d4e7;
+            border-radius: 13px;
+            font-size: 1.15rem;
+        }
+
+        .hr-orientation-plans .staff-name {
+            display: block;
+            color: var(--hr-plum);
+            font-size: .93rem;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .hr-orientation-plans .staff-caption {
+            display: block;
+            margin-top: .25rem;
+            color: var(--hr-muted);
+            font-size: .78rem;
+        }
+
+        .hr-orientation-plans .row-action {
+            display: inline-flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            min-height: 39px;
+            padding: .55rem .85rem;
+            color: #fff;
+            background: var(--hr-pink);
+            border: 1px solid var(--hr-pink);
+            border-radius: 10px;
+            font-size: .81rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: background .2s, transform .2s, box-shadow .2s;
+        }
+
+        .hr-orientation-plans .row-action:hover {
+            color: #fff;
+            background: #c90069;
+            border-color: #c90069;
+            box-shadow: 0 4px 12px rgba(229, 0, 120, .18);
+            transform: translateY(-1px);
+        }
+
+        .hr-orientation-plans .row-action.view-action {
+            color: var(--hr-plum);
+            background: #fff;
+            border-color: #dcd5df;
+        }
+
+        .hr-orientation-plans .row-action.view-action:hover {
+            color: var(--hr-pink);
+            background: #fff5fa;
+            border-color: #f0b5d5;
+            box-shadow: none;
+        }
+
+        .hr-orientation-plans .empty-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .hr-orientation-plans .empty-icon {
+            display: grid;
+            width: 66px;
+            height: 66px;
+            margin: 0 auto 1rem;
+            place-items: center;
+            color: var(--hr-pink);
+            background: #fff0f7;
+            border-radius: 20px;
+            font-size: 1.8rem;
+        }
+
+        .hr-orientation-plans .empty-state h3 {
+            margin-bottom: .5rem;
+            color: var(--hr-plum);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .hr-orientation-plans .empty-state p {
+            max-width: 440px;
+            margin: 0 auto;
+            color: var(--hr-muted);
+            font-size: .88rem;
+            line-height: 1.7;
+        }
+
+        .hr-orientation-plans .list-footer {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+            padding: .9rem 1.5rem;
+            color: var(--hr-muted);
+            background: #fcfbfd;
+            border-top: 1px solid var(--hr-border);
+            font-size: .78rem;
+        }
+
+        .hr-orientation-plans .no-search-results {
+            display: none;
+            padding: 2rem 1rem;
+            color: var(--hr-muted);
+            text-align: center;
+            font-size: .88rem;
+        }
+
+        @media (max-width: 900px) {
+            .hr-orientation-plans .overview-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hr-orientation-plans .orientation-hero {
+                padding: 1.35rem;
+                border-radius: 15px;
+            }
+
+            .hr-orientation-plans .hero-icon {
+                display: none;
+            }
+
+            .hr-orientation-plans .overview-grid {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .hr-orientation-plans .overview-card {
+                padding: 1rem;
+            }
+
+            .hr-orientation-plans .panel-header {
+                align-items: stretch;
+                padding: 1.1rem;
+            }
+
+            .hr-orientation-plans .search-wrap {
+                width: 100%;
+            }
+
+            .hr-orientation-plans .records-list {
+                padding: .25rem 1rem;
+            }
+
+            .hr-orientation-plans .staff-row {
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: .85rem;
+            }
+
+            .hr-orientation-plans .staff-identity {
+                width: 100%;
+            }
+
+            .hr-orientation-plans .row-action {
+                margin-left: 3.3rem;
+            }
+
+            .hr-orientation-plans .list-footer {
+                padding: .85rem 1rem;
+            }
+        }
+    </style>
+
+    <!-- Page header -->
+    <section class="orientation-hero">
+        <div>
+            <div class="hero-eyebrow">
+                <i class="bi bi-person-workspace"></i>
+                Human Resources
+            </div>
+            <h1>Orientation Plans</h1>
+            <p>
+                Manage staff orientation plans, review existing plans,
+                and initiate orientation for probationary employees.
+            </p>
+        </div>
+        <div class="hero-icon" aria-hidden="true">
+            <i class="bi bi-clipboard2-check"></i>
+        </div>
+    </section>
+
+    <!-- Summary cards -->
+    <section class="overview-grid" aria-label="Orientation plan summary">
+        <div class="overview-card">
+            <div class="overview-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div>
+                <span class="overview-label">Staff listed</span>
+                <span class="overview-value" id="orientationStaffCount">0</span>
+            </div>
+        </div>
+
+        <div class="overview-card">
+            <div class="overview-icon">
+                <i class="bi bi-file-earmark-check"></i>
+            </div>
+            <div>
+                <span class="overview-label">Plans available</span>
+                <span class="overview-value" id="orientationPlanCount">0</span>
+            </div>
+        </div>
+
+        <div class="overview-card">
+            <div class="overview-icon">
+                <i class="bi bi-file-earmark-plus"></i>
+            </div>
+            <div>
+                <span class="overview-label">Plans to create</span>
+                <span class="overview-value" id="orientationMissingCount">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Staff and plans -->
+    <section class="content-panel">
+        <div class="panel-header">
+            <div>
+                <h2>
+                    <i class="bi bi-list-check me-2"
+                       style="color: var(--hr-pink);"></i>
+                    Staff orientation register
+                </h2>
+                <p>Find an employee and manage their orientation plan.</p>
+            </div>
+
+            <div class="search-wrap">
+                <i class="bi bi-search"></i>
+                <input
+                    type="search"
+                    id="orientationSearch"
+                    class="search-input"
+                    placeholder="Search staff or plan action..."
+                    aria-label="Search staff orientation plans"
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <div class="records-list" id="orientationStaffList">
+            {% for staff, plan in staff_rows %}
+                <div class="staff-row"
+                     data-search="{{ staff|default:''|escape }} {% if plan %}view plan{% else %}create plan{% endif %}">
+                    <div class="staff-identity">
+                        <div class="staff-avatar" aria-hidden="true">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <span class="staff-name">{{ staff }}</span>
+                            <span class="staff-caption">
+                                {% if plan %}
+                                    <i class="bi bi-check-circle me-1"
+                                       style="color: #16845b;"></i>
+                                    Orientation plan available
+                                {% else %}
+                                    <i class="bi bi-clock me-1"
+                                       style="color: #b7791f;"></i>
+                                    Orientation plan not yet created
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if plan %}
+                        <a class="row-action view-action"
+                           href="{% url 'hr:orientation_hr_detail' plan.id %}">
+                            <i class="bi bi-eye"></i>
+                            View plan
+                        </a>
+                    {% else %}
+                        <a class="row-action"
+                           href="{% url 'hr:orientation_hr_create' staff.slug %}">
+                            <i class="bi bi-plus-circle"></i>
+                            Create plan
+                        </a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3>No probationary employees</h3>
+                    <p>
+                        There are currently no probationary employees to
+                        display. When staff records become available, they
+                        will appear here for orientation plan management.
+                    </p>
+                </div>
+            {% endfor %}
+
+            <div class="no-search-results" id="orientationNoResults">
+                <i class="bi bi-search d-block mb-2"
+                   style="font-size: 1.5rem;"></i>
+                No staff records match your search.
+            </div>
+        </div>
+
+        <div class="list-footer">
+            <span>
+                <i class="bi bi-shield-check me-1"></i>
+                Staff orientation management
+            </span>
+            <span id="orientationVisibleCount">0 records</span>
+        </div>
+    </section>
+
+    <script>
+        (function () {
+            const root = document.querySelector('.hr-orientation-plans');
+            if (!root) return;
+
+            const rows = Array.from(root.querySelectorAll('.staff-row'));
+            const searchInput = root.querySelector('#orientationSearch');
+            const noResults = root.querySelector('#orientationNoResults');
+            const visibleCount = root.querySelector('#orientationVisibleCount');
+
+            const total = rows.length;
+            const planCount = rows.filter(row =>
+                row.querySelector('.view-action')
+            ).length;
+            const missingCount = total - planCount;
+
+            root.querySelector('#orientationStaffCount').textContent = total;
+            root.querySelector('#orientationPlanCount').textContent = planCount;
+            root.querySelector('#orientationMissingCount').textContent = missingCount;
+
+            function updateSearch() {
+                const query = (searchInput.value || '').trim().toLowerCase();
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const content = (row.dataset.search || row.textContent).toLowerCase();
+                    const matches = content.includes(query);
+
+                    row.style.display = matches ? '' : 'none';
+
+                    if (matches) visible++;
+                });
+
+                noResults.style.display =
+                    rows.length > 0 && visible === 0 ? 'block' : 'none';
+
+                visibleCount.textContent =
+                    visible + (visible === 1 ? ' record' : ' records');
+            }
+
+            searchInput.addEventListener('input', updateSearch);
+            updateSearch();
+        })();
+    </script>
+
+</div>
+{% endblock %}

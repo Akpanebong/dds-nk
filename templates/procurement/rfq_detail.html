@@ -1,0 +1,1040 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}{{ rfq.reference_no }} | RFQ Management | DDS-NK{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-send-check me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1 class="mb-0">{{ rfq.reference_no }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --rfqd-primary: #e50078;
+        --rfqd-primary-dark: #b90060;
+        --rfqd-ink: #3b2938;
+        --rfqd-muted: #817582;
+        --rfqd-border: #ece5eb;
+        --rfqd-soft: #fff5fa;
+        --rfqd-green: #16845b;
+        --rfqd-blue: #3867c8;
+        --rfqd-amber: #a66a0a;
+        --rfqd-radius: 16px;
+    }
+
+    .rfqd-page {
+        padding-bottom: 2rem;
+        color: var(--rfqd-ink);
+    }
+
+    .rfqd-hero {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1.5rem;
+        padding: 1.65rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--rfqd-border);
+        border-radius: var(--rfqd-radius);
+        background: linear-gradient(120deg, #fff 0%, #fff5fa 100%);
+    }
+
+    .rfqd-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        margin-bottom: .7rem;
+        color: var(--rfqd-primary);
+        font-size: .71rem;
+        font-weight: 850;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+
+    .rfqd-hero h2 {
+        margin: 0 0 .7rem;
+        font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+        font-weight: 850;
+        letter-spacing: -.035em;
+        overflow-wrap: anywhere;
+    }
+
+    .rfqd-description {
+        margin: 0;
+        color: var(--rfqd-muted);
+        font-size: .88rem;
+        line-height: 1.8;
+    }
+
+    .rfqd-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem 1.1rem;
+        margin-top: 1rem;
+    }
+
+    .rfqd-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        color: var(--rfqd-muted);
+        font-size: .8rem;
+    }
+
+    .rfqd-meta-item i {
+        color: var(--rfqd-primary);
+    }
+
+    .rfqd-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .55rem;
+        flex-shrink: 0;
+    }
+
+    .rfqd-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        min-height: 40px;
+        padding: .6rem .9rem;
+        border: 1px solid var(--rfqd-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--rfqd-ink);
+        font-size: .81rem;
+        font-weight: 750;
+        text-decoration: none;
+        transition: all .18s ease;
+    }
+
+    .rfqd-btn:hover {
+        border-color: var(--rfqd-primary);
+        background: var(--rfqd-soft);
+        color: var(--rfqd-primary-dark);
+    }
+
+    .rfqd-btn-primary {
+        border-color: var(--rfqd-primary);
+        background: var(--rfqd-primary);
+        color: #fff;
+    }
+
+    .rfqd-btn-primary:hover {
+        border-color: var(--rfqd-primary-dark);
+        background: var(--rfqd-primary-dark);
+        color: #fff;
+    }
+
+    .rfqd-btn-success {
+        border-color: #bfe6d3;
+        background: #effaf4;
+        color: #13764e;
+    }
+
+    .rfqd-btn-success:hover {
+        border-color: #80cba8;
+        background: #e3f7ec;
+        color: #0c613e;
+    }
+
+    .rfqd-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .rfqd-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.95fr) minmax(290px, 1fr);
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    .rfqd-main,
+    .rfqd-sidebar {
+        min-width: 0;
+    }
+
+    .rfqd-panel {
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+        padding: 0;
+        border: 1px solid var(--rfqd-border);
+        border-radius: var(--rfqd-radius);
+        background: #fff;
+        box-shadow: 0 3px 14px rgba(59, 41, 56, .035);
+    }
+
+    .rfqd-panel:last-child {
+        margin-bottom: 0;
+    }
+
+    .rfqd-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .9rem;
+        padding: 1.2rem 1.3rem;
+        border-bottom: 1px solid var(--rfqd-border);
+    }
+
+    .rfqd-panel-header h3 {
+        margin: 0;
+        font-size: .98rem;
+        font-weight: 850;
+    }
+
+    .rfqd-panel-header p {
+        margin: .35rem 0 0;
+        color: var(--rfqd-muted);
+        font-size: .79rem;
+    }
+
+    .rfqd-panel-body {
+        padding: 1.25rem;
+    }
+
+    .rfqd-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .42rem .7rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-size: .72rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .rfqd-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .rfqd-status-sent,
+    .rfqd-status-awarded,
+    .rfqd-status-responded {
+        border-color: #ccebdd;
+        background: #eaf8f1;
+        color: #13764e;
+    }
+
+    .rfqd-status-pending {
+        border-color: #f3e2bb;
+        background: #fff7e5;
+        color: #94610b;
+    }
+
+    .rfqd-status-draft,
+    .rfqd-status-unsent {
+        border-color: #e8e0e8;
+        background: #f6f2f6;
+        color: #6f6170;
+    }
+
+    .rfqd-status-other {
+        border-color: #d7e3ff;
+        background: #edf3ff;
+        color: #315bb1;
+    }
+
+    .rfqd-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .rfqd-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: .81rem;
+    }
+
+    .rfqd-table thead th {
+        padding: .9rem .85rem;
+        border-bottom: 1px solid var(--rfqd-border);
+        background: #faf8fa;
+        color: #786b78;
+        font-size: .67rem;
+        font-weight: 850;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .rfqd-table tbody td {
+        padding: .95rem .85rem;
+        border-bottom: 1px solid #f1edf1;
+        vertical-align: middle;
+        color: var(--rfqd-ink);
+    }
+
+    .rfqd-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .rfqd-table tbody tr:hover td {
+        background: #fffafd;
+    }
+
+    .rfqd-supplier-name {
+        display: block;
+        max-width: 180px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .rfqd-subtext {
+        display: block;
+        margin-top: .3rem;
+        color: var(--rfqd-muted);
+        font-size: .74rem;
+        font-weight: 450;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .rfqd-amount {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+    }
+
+    .rfqd-amount-awarded {
+        color: var(--rfqd-green);
+        font-weight: 850;
+    }
+
+    .rfqd-actions-cell {
+        min-width: 125px;
+    }
+
+    .rfqd-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        min-height: 33px;
+        padding: .42rem .65rem;
+        border: 1px solid var(--rfqd-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--rfqd-ink);
+        font-size: .74rem;
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .rfqd-action-btn:hover {
+        border-color: var(--rfqd-primary);
+        background: var(--rfqd-soft);
+        color: var(--rfqd-primary-dark);
+    }
+
+    .rfqd-action-primary {
+        border-color: var(--rfqd-primary);
+        background: var(--rfqd-primary);
+        color: #fff;
+    }
+
+    .rfqd-action-primary:hover {
+        border-color: var(--rfqd-primary-dark);
+        background: var(--rfqd-primary-dark);
+        color: #fff;
+    }
+
+    .rfqd-action-success {
+        border-color: #bfe6d3;
+        background: #effaf4;
+        color: #13764e;
+    }
+
+    .rfqd-empty {
+        padding: 2.5rem 1rem;
+        text-align: center;
+        color: var(--rfqd-muted);
+        font-size: .84rem;
+    }
+
+    .rfqd-empty i {
+        display: block;
+        margin-bottom: .7rem;
+        color: #d8cbd7;
+        font-size: 1.8rem;
+    }
+
+    .rfqd-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f1edf1;
+    }
+
+    .rfqd-item:last-child {
+        border-bottom: 0;
+    }
+
+    .rfqd-item-description {
+        min-width: 0;
+        font-size: .84rem;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .rfqd-item-quantity {
+        display: block;
+        margin-top: .35rem;
+        color: var(--rfqd-muted);
+        font-size: .75rem;
+        font-weight: 450;
+    }
+
+    .rfqd-item-total {
+        flex-shrink: 0;
+        text-align: right;
+        font-size: .81rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .rfqd-grand-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem;
+        border-top: 1px solid var(--rfqd-border);
+        background: #fff8fc;
+    }
+
+    .rfqd-grand-total span {
+        font-size: .84rem;
+        font-weight: 800;
+    }
+
+    .rfqd-grand-total strong {
+        color: var(--rfqd-primary-dark);
+        font-size: .98rem;
+        font-weight: 900;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .rfqd-control-list {
+        padding: 1.15rem 1.25rem;
+    }
+
+    .rfqd-control-row {
+        display: flex;
+        align-items: flex-start;
+        gap: .8rem;
+        margin-bottom: 1.15rem;
+    }
+
+    .rfqd-control-row:last-of-type {
+        margin-bottom: 1.2rem;
+    }
+
+    .rfqd-control-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: var(--rfqd-soft);
+        color: var(--rfqd-primary);
+        font-size: 1rem;
+    }
+
+    .rfqd-control-label {
+        display: block;
+        margin-bottom: .25rem;
+        color: var(--rfqd-muted);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+    }
+
+    .rfqd-control-value {
+        display: block;
+        color: var(--rfqd-ink);
+        font-size: .84rem;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .rfqd-control-note {
+        margin: 0 0 1rem;
+        color: var(--rfqd-muted);
+        font-size: .79rem;
+        line-height: 1.75;
+    }
+
+    .rfqd-log-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        width: 100%;
+        min-height: 42px;
+        padding: .7rem 1rem;
+        border: 1px solid var(--rfqd-border);
+        border-radius: 9px;
+        color: var(--rfqd-ink);
+        background: #fff;
+        text-decoration: none;
+        font-size: .82rem;
+        font-weight: 750;
+    }
+
+    .rfqd-log-link:hover {
+        border-color: var(--rfqd-primary);
+        background: var(--rfqd-soft);
+        color: var(--rfqd-primary-dark);
+    }
+
+    .rfqd-note {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        padding: .85rem 1rem;
+        border: 1px solid #f2d7e5;
+        border-radius: 10px;
+        background: #fff8fc;
+        color: #71586a;
+        font-size: .77rem;
+        line-height: 1.65;
+    }
+
+    .rfqd-note i {
+        flex-shrink: 0;
+        margin-top: .1rem;
+        color: var(--rfqd-primary);
+    }
+
+    @media (max-width: 1199.98px) {
+        .rfqd-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .rfqd-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .rfqd-sidebar .rfqd-panel {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .rfqd-hero {
+            flex-direction: column;
+            padding: 1.2rem;
+        }
+
+        .rfqd-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .rfqd-actions form {
+            display: flex;
+        }
+
+        .rfqd-actions .rfqd-btn {
+            flex: 1;
+        }
+
+        .rfqd-sidebar {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .rfqd-panel-header {
+            padding: 1rem;
+        }
+
+        .rfqd-table thead th,
+        .rfqd-table tbody td {
+            padding: .8rem;
+        }
+
+        .rfqd-actions-cell {
+            min-width: 120px;
+        }
+    }
+
+    @media print {
+        .rfqd-actions,
+        .rfqd-no-print {
+            display: none !important;
+        }
+
+        .rfqd-layout {
+            display: block;
+        }
+
+        .rfqd-panel,
+        .rfqd-hero {
+            margin-bottom: 1rem;
+            box-shadow: none;
+            break-inside: avoid;
+        }
+
+        .rfqd-table-wrap {
+            overflow: visible;
+        }
+
+        .rfqd-table {
+            font-size: 8pt;
+        }
+
+        .rfqd-table thead th,
+        .rfqd-table tbody td {
+            padding: .4rem;
+            white-space: normal;
+        }
+
+        body {
+            background: #fff !important;
+        }
+    }
+</style>
+
+<div class="rfqd-page">
+
+    <!-- RFQ header and workflow actions -->
+    <section class="rfqd-hero">
+        <div class="flex-grow-1">
+            <span class="rfqd-eyebrow">
+                <i class="bi bi-file-earmark-text"></i>
+                DDS-NK THRIVE · REQUEST FOR QUOTATION
+            </span>
+
+            <h2>{{ rfq.reference_no }}</h2>
+
+            <p class="rfqd-description">
+                Supplier quotation tracking and procurement award management.
+            </p>
+
+            <div class="rfqd-meta">
+                <span class="rfqd-meta-item">
+                    <i class="bi bi-receipt"></i>
+                    Requisition:
+                    <strong>{{ requisition.number }}</strong>
+                </span>
+
+                <span class="rfqd-meta-item">
+                    <i class="bi bi-folder2"></i>
+                    {{ requisition.project.name|default:"No project assigned" }}
+                </span>
+
+                <span class="rfqd-meta-item">
+                    <i class="bi bi-calendar-event"></i>
+                    Deadline:
+                    <strong>
+                        {% if rfq.deadline %}
+                            {{ rfq.deadline|date:'d M Y' }}
+                        {% else %}
+                            Not set
+                        {% endif %}
+                    </strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="rfqd-actions">
+            <a class="rfqd-btn"
+               href="{% url 'procurement:rfq_pdf' rfq.slug %}">
+                <i class="bi bi-file-earmark-pdf"></i>
+                Download PDF
+            </a>
+
+            {% if can_send %}
+                <form method="post"
+                      action="{% url 'procurement:rfq_send' rfq.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rfqd-btn rfqd-btn-primary">
+                        <i class="bi bi-envelope-arrow-up"></i>
+                        Send to suppliers
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if rfq.status == 'Sent' and not all_responded %}
+                <form method="post"
+                      action="{% url 'procurement:rfq_mark_all_responded' rfq.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rfqd-btn rfqd-btn-success">
+                        <i class="bi bi-check2-all"></i>
+                        Mark all responded
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="rfqd-layout">
+
+        <!-- Main supplier quotation area -->
+        <main class="rfqd-main">
+            <section class="rfqd-panel">
+
+                <header class="rfqd-panel-header">
+                    <div>
+                        <h3>
+                            <i class="bi bi-buildings me-2"
+                               style="color:var(--rfqd-primary);"></i>
+                            Supplier Quotations
+                        </h3>
+                        <p>
+                            Track supplier responses, award amounts and purchase orders.
+                        </p>
+                    </div>
+
+                    {% if rfq.status == 'Sent' %}
+                        <span class="rfqd-status rfqd-status-sent">
+                            {{ rfq.status }}
+                        </span>
+                    {% elif rfq.status == 'Responded' %}
+                        <span class="rfqd-status rfqd-status-responded">
+                            {{ rfq.status }}
+                        </span>
+                    {% elif rfq.status == 'Pending' %}
+                        <span class="rfqd-status rfqd-status-pending">
+                            {{ rfq.status }}
+                        </span>
+                    {% else %}
+                        <span class="rfqd-status rfqd-status-other">
+                            {{ rfq.status|default:"Unknown" }}
+                        </span>
+                    {% endif %}
+                </header>
+
+                <div class="rfqd-panel-body"
+                     style="padding-bottom:1rem;">
+                    <div class="d-flex align-items-center justify-content-between
+                                flex-wrap gap-2">
+                        <span class="text-muted small">
+                            <i class="bi bi-wallet2 me-1"></i>
+                            Requisition value
+                        </span>
+
+                        <strong style="font-size:1rem;">
+                            UGX {{ requisition.total|floatformat:2|intcomma }}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="rfqd-table-wrap">
+                    <table class="rfqd-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Supplier</th>
+                                <th scope="col">Contact</th>
+                                <th scope="col" class="text-end">RFQ amount</th>
+                                <th scope="col" class="text-end">Award amount</th>
+                                <th scope="col">Response status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for row in supplier_rows %}
+                                <tr>
+                                    <td>
+                                        <span class="rfqd-supplier-name">
+                                            {{ row.supplier.name|default:"Unnamed supplier" }}
+                                        </span>
+
+                                        <span class="rfqd-subtext">
+                                            {% if row.supplier.supplier_code %}
+                                                {{ row.supplier.supplier_code }}
+                                            {% else %}
+                                                Supplier record
+                                            {% endif %}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            {{ row.supplier.contact_person|default:"—" }}
+                                        </span>
+
+                                        <span class="rfqd-subtext">
+                                            {% if row.supplier.email %}
+                                                <a href="mailto:{{ row.supplier.email }}"
+                                                   style="color:inherit;text-decoration:none;">
+                                                    {{ row.supplier.email }}
+                                                </a>
+                                            {% else %}
+                                                No email recorded
+                                            {% endif %}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <span class="rfqd-amount">
+                                            UGX {{ requisition.total|floatformat:2|intcomma }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        {% if row.po %}
+                                            <span class="rfqd-amount rfqd-amount-awarded">
+                                                UGX {{ row.po.final_amount|floatformat:2|intcomma }}
+                                            </span>
+                                        {% elif row.log and row.log.awarded_amount %}
+                                            <span class="rfqd-amount rfqd-amount-awarded">
+                                                UGX {{ row.log.awarded_amount|floatformat:2|intcomma }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if row.po %}
+                                            <span class="rfqd-status rfqd-status-awarded">
+                                                Awarded
+                                            </span>
+                                        {% elif row.log and row.log.responded %}
+                                            <span class="rfqd-status rfqd-status-responded">
+                                                Responded
+                                            </span>
+                                        {% elif row.log %}
+                                            <span class="rfqd-status rfqd-status-pending">
+                                                Awaiting response
+                                            </span>
+                                        {% else %}
+                                            <span class="rfqd-status rfqd-status-unsent">
+                                                Not sent
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="rfqd-actions-cell">
+                                        {% if row.po %}
+                                            <a class="rfqd-action-btn"
+                                               href="{% url 'procurement:purchase_order_detail' row.po.slug %}">
+                                                <i class="bi bi-eye"></i>
+                                                View PO
+                                            </a>
+
+                                        {% elif row.log and not row.log.responded %}
+                                            <form method="post"
+                                                  action="{% url 'procurement:rfq_mark_responded' row.log.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                        class="rfqd-action-btn rfqd-action-success">
+                                                    <i class="bi bi-check2-circle"></i>
+                                                    Mark responded
+                                                </button>
+                                            </form>
+
+                                        {% elif row.can_award %}
+                                            <a class="rfqd-action-btn rfqd-action-primary"
+                                               href="{% url 'procurement:purchase_order_create' row.log.pk %}">
+                                                <i class="bi bi-file-earmark-plus"></i>
+                                                Create PO
+                                            </a>
+
+                                        {% else %}
+                                            <span class="text-muted small">No action</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="rfqd-empty">
+                                            <i class="bi bi-buildings"></i>
+                                            <strong class="d-block mb-1">
+                                                No suppliers selected
+                                            </strong>
+                                            No supplier quotation records are available for this RFQ.
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="rfqd-panel-header">
+                    <span class="text-muted small">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Supplier quotation register
+                    </span>
+
+                    <span class="text-muted small">
+                        {{ supplier_rows|length }}
+                        supplier{{ supplier_rows|length|pluralize }}
+                    </span>
+                </footer>
+            </section>
+
+            <!-- Procurement guidance -->
+            <div class="rfqd-note">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Procurement control:</strong>
+                    Confirm supplier responses and the approved award decision
+                    before creating a purchase order. Verify the awarded amount
+                    against the accepted quotation and applicable procurement
+                    approval requirements.
+                </div>
+            </div>
+        </main>
+
+        <!-- Requisition details and RFQ controls -->
+        <aside class="rfqd-sidebar">
+
+            <section class="rfqd-panel">
+                <header class="rfqd-panel-header">
+                    <div>
+                        <h3>
+                            <i class="bi bi-box-seam me-2"
+                               style="color:var(--rfqd-primary);"></i>
+                            Requisition Items
+                        </h3>
+                        <p>Items and values included in this RFQ.</p>
+                    </div>
+                </header>
+
+                {% for item in items %}
+                    <div class="rfqd-item">
+                        <div class="rfqd-item-description">
+                            {{ item.description|default:"Unspecified item" }}
+
+                            <span class="rfqd-item-quantity">
+                                <i class="bi bi-boxes me-1"></i>
+                                Quantity: {{ item.qty|floatformat:2|intcomma }}
+                                {{ item.unit_measure }}
+                            </span>
+                        </div>
+
+                        <div class="rfqd-item-total">
+                            UGX {{ item.line_total|floatformat:2|intcomma }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="rfqd-empty">
+                        <i class="bi bi-inbox"></i>
+                        No requisition items available.
+                    </div>
+                {% endfor %}
+
+                <div class="rfqd-grand-total">
+                    <span>Requisition total</span>
+                    <strong>
+                        UGX {{ requisition.total|floatformat:2|intcomma }}
+                    </strong>
+                </div>
+            </section>
+
+            <section class="rfqd-panel">
+                <header class="rfqd-panel-header">
+                    <div>
+                        <h3>
+                            <i class="bi bi-clipboard2-check me-2"
+                               style="color:var(--rfqd-primary);"></i>
+                            RFQ Control
+                        </h3>
+                        <p>Issue details and communication history.</p>
+                    </div>
+                </header>
+
+                <div class="rfqd-control-list">
+                    <div class="rfqd-control-row">
+                        <span class="rfqd-control-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </span>
+
+                        <div>
+                            <span class="rfqd-control-label">Date issued</span>
+                            <span class="rfqd-control-value">
+                                {% if rfq.date_issued %}
+                                    {{ rfq.date_issued|date:'d M Y' }}
+                                {% else %}
+                                    Not issued
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="rfqd-control-row">
+                        <span class="rfqd-control-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </span>
+
+                        <div>
+                            <span class="rfqd-control-label">Response deadline</span>
+                            <span class="rfqd-control-value">
+                                {% if rfq.deadline %}
+                                    {{ rfq.deadline|date:'d M Y' }}
+                                {% else %}
+                                    Not specified
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="rfqd-control-row">
+                        <span class="rfqd-control-icon">
+                            <i class="bi bi-activity"></i>
+                        </span>
+
+                        <div>
+                            <span class="rfqd-control-label">Current status</span>
+
+                            <span class="rfqd-control-value">
+                                {{ rfq.status|default:"Unknown" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="rfqd-control-note">
+                        Use the communication log to review recorded RFQ activity
+                        and confirm the history of supplier notifications.
+                    </p>
+
+                    <a class="rfqd-log-link"
+                       href="{% url 'procurement:rfq_log' rfq.slug %}">
+                        <i class="bi bi-clock-history"></i>
+                        View communication log
+                        <i class="bi bi-arrow-right ms-auto"></i>
+                    </a>
+                </div>
+            </section>
+
+        </aside>
+    </div>
+
+</div>
+{% endblock %}

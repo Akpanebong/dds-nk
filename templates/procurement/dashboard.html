@@ -1,0 +1,1287 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}Procurement Dashboard | DDS-NK{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-cart-check me-1"></i> PROCUREMENT
+    </span>
+    <h1>Procurement Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 dds-procurement-dashboard">
+
+    <!-- Dashboard hero -->
+    <section class="dashboard-hero mb-4">
+        <div class="hero-content">
+            <div class="hero-eyebrow">
+                <span class="hero-dot"></span>
+                DDS-NK PROCUREMENT INTELLIGENCE
+            </div>
+
+            <h2>Procurement Overview</h2>
+            <p>
+                Monitor procurement plans, approval workflows, financial
+                commitments and supplier readiness from one workspace.
+            </p>
+
+            <div class="hero-meta">
+                <span>
+                    <i class="bi bi-calendar3 me-1"></i>
+                    {{ today|date:"l, d M Y" }}
+                </span>
+                <span class="hero-meta-divider" aria-hidden="true"></span>
+                <span>
+                    <i class="bi bi-bar-chart-line me-1"></i>
+                    Fiscal overview Â· {{ current_year }}
+                </span>
+            </div>
+        </div>
+
+        <div class="hero-actions">
+            <a href="{% url 'procurement:plans' %}" class="btn btn-hero-outline">
+                <i class="bi bi-folder2-open me-2"></i> View Plans
+            </a>
+            <a href="{% url 'procurement:plan_create' %}" class="btn btn-hero-primary">
+                <i class="bi bi-plus-lg me-2"></i> New Procurement Plan
+            </a>
+        </div>
+
+        <div class="hero-watermark" aria-hidden="true">
+            <i class="bi bi-clipboard2-data"></i>
+        </div>
+    </section>
+
+    <!-- Primary KPIs -->
+    <section class="mb-4" aria-label="Procurement performance indicators">
+        <div class="section-heading">
+            <div>
+                <h3>Performance at a glance</h3>
+                <p>Core procurement performance indicators</p>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-sm-6 col-xxl-3">
+                <article class="metric-card metric-orange h-100">
+                    <div class="metric-top">
+                        <span class="metric-label">Procurement Plans</span>
+                        <span class="metric-icon"><i class="bi bi-clipboard2-check"></i></span>
+                    </div>
+                    <div class="metric-value">{{ total_plans|intcomma }}</div>
+                    <div class="metric-footer">
+                        <span class="metric-caption">
+                            <i class="bi bi-file-earmark-text me-1"></i>
+                            {{ draft_plans|intcomma }} draft
+                        </span>
+                        <span class="metric-tag">Plans</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xxl-3">
+                <article class="metric-card metric-red h-100">
+                    <div class="metric-top">
+                        <span class="metric-label">Awaiting Review</span>
+                        <span class="metric-icon"><i class="bi bi-hourglass-split"></i></span>
+                    </div>
+                    <div class="metric-value">{{ pending_review|intcomma }}</div>
+                    <div class="metric-footer">
+                        <span class="metric-caption">
+                            <i class="bi bi-inbox me-1"></i> Submitted plans
+                        </span>
+                        <span class="metric-tag">Action</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xxl-3">
+                <article class="metric-card metric-green h-100">
+                    <div class="metric-top">
+                        <span class="metric-label">Approved Plans</span>
+                        <span class="metric-icon"><i class="bi bi-check2-circle"></i></span>
+                    </div>
+                    <div class="metric-value">{{ approved|intcomma }}</div>
+                    <div class="metric-footer">
+                        <span class="metric-caption">
+                            <i class="bi bi-shield-check me-1"></i> Final approval recorded
+                        </span>
+                        <span class="metric-tag">Approved</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xxl-3">
+                <article class="metric-card metric-blue h-100">
+                    <div class="metric-top">
+                        <span class="metric-label">Active Suppliers</span>
+                        <span class="metric-icon"><i class="bi bi-buildings"></i></span>
+                    </div>
+                    <div class="metric-value">{{ active_suppliers|intcomma }}</div>
+                    <div class="metric-footer">
+                        <span class="metric-caption">
+                            <i class="bi bi-person-check me-1"></i> Active supplier records
+                        </span>
+                        <span class="metric-tag">Suppliers</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Financial overview -->
+    <section class="mb-4" aria-label="Financial overview">
+        <div class="section-heading">
+            <div>
+                <h3>Financial overview</h3>
+                <p>Plan values and purchase-order commitments</p>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-xxl-3">
+                <article class="finance-card h-100">
+                    <div class="finance-card-top">
+                        <span class="finance-icon finance-icon-orange"><i class="bi bi-wallet2"></i></span>
+                        <span class="finance-label">Plan Budget Total</span>
+                    </div>
+                    <div class="finance-value">UGX {{ total_budget|floatformat:2|intcomma }}</div>
+                    <p class="finance-description mb-0">Budget recorded across procurement plans</p>
+                </article>
+            </div>
+
+            <div class="col-12 col-md-6 col-xxl-3">
+                <article class="finance-card h-100">
+                    <div class="finance-card-top">
+                        <span class="finance-icon finance-icon-red"><i class="bi bi-calculator"></i></span>
+                        <span class="finance-label">Planned Value</span>
+                    </div>
+                    <div class="finance-value">UGX {{ total_planned|floatformat:2|intcomma }}</div>
+                    <p class="finance-description mb-0">Total value of procurement plans</p>
+                </article>
+            </div>
+
+            <div class="col-12 col-md-6 col-xxl-3">
+                <article class="finance-card h-100">
+                    <div class="finance-card-top">
+                        <span class="finance-icon finance-icon-green"><i class="bi bi-piggy-bank"></i></span>
+                        <span class="finance-label">Budget Difference</span>
+                    </div>
+                    <div class="finance-value {% if remaining_plan_budget < 0 %}text-danger{% else %}text-success{% endif %}">
+                        UGX {{ remaining_plan_budget|floatformat:2|intcomma }}
+                    </div>
+                    <p class="finance-description mb-0">Recorded budget less planned value</p>
+                </article>
+            </div>
+
+            <div class="col-12 col-md-6 col-xxl-3">
+                <article class="finance-card h-100">
+                    <div class="finance-card-top">
+                        <span class="finance-icon finance-icon-blue"><i class="bi bi-receipt"></i></span>
+                        <span class="finance-label">PO Commitments</span>
+                    </div>
+                    <div class="finance-value">UGX {{ committed_value|floatformat:2|intcomma }}</div>
+                    <p class="finance-description mb-0">
+                        Sent purchase orders Â· {{ sent_purchase_orders|intcomma }} orders
+                    </p>
+                </article>
+            </div>
+        </div>
+
+        <p class="dashboard-disclaimer mt-2 mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            Amounts use your configured project reporting currency. Budget totals may repeat
+            a project allocation when multiple procurement plans reference the same budget.
+        </p>
+    </section>
+
+    <!-- Analytics -->
+    <section class="mb-4" aria-label="Procurement analytics">
+        <div class="section-heading">
+            <div>
+                <h3>Procurement analytics</h3>
+                <p>Workflow distribution, monthly commitments and supplier status</p>
+            </div>
+            <span class="analytics-badge">
+                <i class="bi bi-graph-up-arrow me-1"></i> Database metrics
+            </span>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-xl-5">
+                <article class="analytics-card h-100">
+                    <div class="analytics-card-header">
+                        <div>
+                            <h4>Plan workflow</h4>
+                            <p>Distribution by approval status</p>
+                        </div>
+                        <span class="chart-header-icon"><i class="bi bi-pie-chart"></i></span>
+                    </div>
+
+                    <div class="chart-container chart-doughnut">
+                        <canvas id="planStatusChart" role="img"
+                                aria-label="Procurement plans by approval status"></canvas>
+                    </div>
+
+                    <div class="chart-footnote">
+                        <span><i class="bi bi-circle-fill status-orange"></i>{{ draft_plans|intcomma }} draft</span>
+                        <span><i class="bi bi-circle-fill status-red"></i>{{ pending_review|intcomma }} submitted</span>
+                        <span><i class="bi bi-circle-fill status-green"></i>{{ approved|intcomma }} approved</span>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-12 col-xl-7">
+                <article class="analytics-card h-100">
+                    <div class="analytics-card-header">
+                        <div>
+                            <h4>Monthly PO commitments</h4>
+                            <p>Sent purchase orders Â· {{ current_year }}</p>
+                        </div>
+                        <span class="chart-header-icon"><i class="bi bi-bar-chart-line"></i></span>
+                    </div>
+
+                    <div class="chart-container chart-bar">
+                        <canvas id="monthlyCommitmentsChart" role="img"
+                                aria-label="Monthly purchase-order commitments"></canvas>
+                    </div>
+
+                    <div class="chart-bottom-note">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Based on sent purchase orders with an issue date in the reporting year.
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-12 col-xl-5">
+                <article class="analytics-card h-100">
+                    <div class="analytics-card-header">
+                        <div>
+                            <h4>Supplier readiness</h4>
+                            <p>Active versus inactive suppliers</p>
+                        </div>
+                        <span class="chart-header-icon"><i class="bi bi-buildings"></i></span>
+                    </div>
+
+                    <div class="chart-container chart-doughnut chart-supplier">
+                        <canvas id="supplierStatusChart" role="img"
+                                aria-label="Active and inactive suppliers"></canvas>
+                    </div>
+
+                    <div class="supplier-summary">
+                        <div class="supplier-summary-item">
+                            <span class="supplier-dot supplier-dot-active"></span>
+                            <div><strong>{{ active_suppliers|intcomma }}</strong><small>Active</small></div>
+                        </div>
+                        <div class="supplier-summary-item">
+                            <span class="supplier-dot supplier-dot-inactive"></span>
+                            <div><strong>{{ total_suppliers|intcomma }}</strong><small>Total suppliers</small></div>
+                        </div>
+                        <div class="supplier-summary-item">
+                            <span class="supplier-dot supplier-dot-qualified"></span>
+                            <div><strong>{{ prequalified_suppliers|intcomma }}</strong><small>Prequalified</small></div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-12 col-xl-7">
+                <article class="analytics-card h-100">
+                    <div class="analytics-card-header">
+                        <div>
+                            <h4>Workflow control centre</h4>
+                            <p>Outstanding activities across procurement stages</p>
+                        </div>
+                        <span class="chart-header-icon"><i class="bi bi-diagram-3"></i></span>
+                    </div>
+
+                    <div class="workflow-list">
+                        <div class="workflow-item">
+                            <span class="workflow-icon workflow-icon-orange"><i class="bi bi-clipboard2-check"></i></span>
+                            <div class="workflow-copy">
+                                <strong>Procurement plans</strong>
+                                <small>{{ total_plans|intcomma }} total plans</small>
+                            </div>
+                            <div class="workflow-number">{{ pending_review|intcomma }}</div>
+                            <span class="workflow-status">For review</span>
+                        </div>
+
+                        <div class="workflow-item">
+                            <span class="workflow-icon workflow-icon-red"><i class="bi bi-person-check"></i></span>
+                            <div class="workflow-copy">
+                                <strong>Executive approval</strong>
+                                <small>Review-approved plans</small>
+                            </div>
+                            <div class="workflow-number">{{ awaiting_ed|intcomma }}</div>
+                            <span class="workflow-status">Awaiting ED</span>
+                        </div>
+
+                        <div class="workflow-item">
+                            <span class="workflow-icon workflow-icon-blue"><i class="bi bi-file-earmark-text"></i></span>
+                            <div class="workflow-copy">
+                                <strong>Requisitions</strong>
+                                <small>{{ total_requisitions|intcomma }} total requisitions</small>
+                            </div>
+                            <div class="workflow-number">{{ pending_requisitions|intcomma }}</div>
+                            <span class="workflow-status">Pending</span>
+                        </div>
+
+                        <div class="workflow-item">
+                            <span class="workflow-icon workflow-icon-purple"><i class="bi bi-envelope-paper"></i></span>
+                            <div class="workflow-copy">
+                                <strong>Requests for quotation</strong>
+                                <small>{{ total_rfqs|intcomma }} total RFQs</small>
+                            </div>
+                            <div class="workflow-number">{{ pending_rfqs|intcomma }}</div>
+                            <span class="workflow-status">Pending</span>
+                        </div>
+
+                        <div class="workflow-item">
+                            <span class="workflow-icon workflow-icon-green"><i class="bi bi-receipt-cutoff"></i></span>
+                            <div class="workflow-copy">
+                                <strong>Purchase orders</strong>
+                                <small>{{ total_purchase_orders|intcomma }} total orders</small>
+                            </div>
+                            <div class="workflow-number">{{ sent_purchase_orders|intcomma }}</div>
+                            <span class="workflow-status">Sent</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent plans and audit activity -->
+    <section class="mb-4" aria-label="Recent procurement activity">
+        <div class="row g-3">
+            <div class="col-12 col-xxl-8">
+                <article class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <h3>Recent procurement plans</h3>
+                            <p>Latest plan records and workflow progress</p>
+                        </div>
+                        <a href="{% url 'procurement:plans' %}" class="panel-action">
+                            View all <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table procurement-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Plan reference</th>
+                                    <th scope="col">Project</th>
+                                    <th scope="col">Plan value</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for plan in recent %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'procurement:plan_detail' plan.slug %}" class="plan-reference">
+                                                {{ plan.number }}
+                                            </a>
+                                            <small class="table-subtext">FY {{ plan.fiscal_year }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="project-name">{{ plan.project.name|default:"â€”" }}</span>
+                                            {% if plan.donor %}
+                                                <small class="table-subtext">{{ plan.donor }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td class="amount-cell">
+                                            UGX {{ plan.total_amount|floatformat:2|intcomma }}
+                                        </td>
+                                        <td>
+                                            {% if plan.status == 'approved' %}
+                                                <span class="status-pill status-pill-approved">
+                                                    <i class="bi bi-check-circle"></i> Approved
+                                                </span>
+                                            {% elif plan.status == 'submitted' %}
+                                                <span class="status-pill status-pill-pending">
+                                                    <i class="bi bi-hourglass-split"></i> Submitted
+                                                </span>
+                                            {% elif plan.status == 'review_approved' %}
+                                                <span class="status-pill status-pill-review">
+                                                    <i class="bi bi-person-check"></i> Awaiting ED
+                                                </span>
+                                            {% elif plan.status == 'review_rejected' or plan.status == 'ed_rejected' %}
+                                                <span class="status-pill status-pill-rejected">
+                                                    <i class="bi bi-x-circle"></i> Rejected
+                                                </span>
+                                            {% else %}
+                                                <span class="status-pill status-pill-draft">
+                                                    <i class="bi bi-pencil"></i> Draft
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% with progress=plan.progress_percentage|default:0 %}
+                                                <div class="progress-cell">
+                                                    <div class="progress procurement-progress">
+                                                        <div class="progress-bar
+                                                            {% if plan.status == 'approved' %}progress-approved
+                                                            {% elif plan.status == 'review_rejected' or plan.status == 'ed_rejected' %}progress-rejected
+                                                            {% else %}progress-active{% endif %}"
+                                                            role="progressbar"
+                                                            style="width:{% if progress < 0 %}0{% elif progress > 100 %}100{% else %}{{ progress }}{% endif %}%"
+                                                            aria-valuenow="{% if progress < 0 %}0{% elif progress > 100 %}100{% else %}{{ progress }}{% endif %}"
+                                                            aria-valuemin="0" aria-valuemax="100"
+                                                            aria-label="Plan progress">
+                                                        </div>
+                                                    </div>
+                                                    <small>{{ progress }}%</small>
+                                                </div>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="empty-state">
+                                                <i class="bi bi-clipboard2-x"></i>
+                                                <strong>No procurement plans yet</strong>
+                                                <span>Create a plan to start tracking procurement activity.</span>
+                                                <a href="{% url 'procurement:plan_create' %}">Create first plan</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    {% include 'core/_audit_activity.html' %}
+
+    <!-- Additional indicators -->
+    <section class="mb-2" aria-label="Additional procurement statistics">
+        <div class="section-heading">
+            <div>
+                <h3>Additional indicators</h3>
+                <p>Supporting measures for procurement planning</p>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="mini-stat h-100">
+                    <span class="mini-stat-icon"><i class="bi bi-box-seam"></i></span>
+                    <strong>{{ products|intcomma }}</strong>
+                    <span>Active products</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="mini-stat h-100">
+                    <span class="mini-stat-icon"><i class="bi bi-diagram-3"></i></span>
+                    <strong>{{ projects|intcomma }}</strong>
+                    <span>Projects</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="mini-stat h-100">
+                    <span class="mini-stat-icon"><i class="bi bi-patch-check"></i></span>
+                    <strong>{{ prequalified_suppliers|intcomma }}</strong>
+                    <span>Prequalified suppliers</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="mini-stat h-100">
+                    <span class="mini-stat-icon"><i class="bi bi-receipt"></i></span>
+                    <strong>{{ total_requisitions|intcomma }}</strong>
+                    <span>Requisitions</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="mini-stat h-100">
+                    <span class="mini-stat-icon"><i class="bi bi-send"></i></span>
+                    <strong>{{ sent_rfqs|intcomma }}</strong>
+                    <span>RFQs sent</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="mini-stat h-100">
+                    <span class="mini-stat-icon"><i class="bi bi-x-octagon"></i></span>
+                    <strong>{{ rejected_plans|intcomma }}</strong>
+                    <span>Rejected plans</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+{{ chart_data|json_script:"procurement-chart-data" }}
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.dds-procurement-dashboard {
+    --proc-orange: #f97316;
+    --proc-orange-dark: #c2410c;
+    --proc-red: #dc2626;
+    --proc-green: #16a34a;
+    --proc-blue: #0284c7;
+    --proc-ink: #1e293b;
+    --proc-muted: #64748b;
+    --proc-border: #e2e8f0;
+    --proc-surface: #fff;
+    color: var(--proc-ink);
+}
+.dds-procurement-dashboard,
+.dds-procurement-dashboard * { box-sizing: border-box; }
+
+.dds-procurement-dashboard .dashboard-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    overflow: hidden;
+    padding: clamp(1.4rem, 3vw, 2.5rem);
+    border: 1px solid #fed7aa;
+    border-radius: 18px;
+    background: radial-gradient(circle at 90% 10%, #f9731622, transparent 30%),
+                linear-gradient(120deg, #fff7ed, #fff 65%, #fff1f2);
+}
+.dds-procurement-dashboard .hero-content,
+.dds-procurement-dashboard .hero-actions { position: relative; z-index: 1; }
+.dds-procurement-dashboard .hero-content { max-width: 700px; }
+.dds-procurement-dashboard .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .8rem;
+    color: var(--proc-orange-dark);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+.dds-procurement-dashboard .hero-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--proc-orange);
+    box-shadow: 0 0 0 4px #f9731622;
+}
+.dds-procurement-dashboard .dashboard-hero h2 {
+    margin: 0 0 .6rem;
+    color: var(--proc-ink);
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    font-weight: 850;
+    letter-spacing: -.04em;
+}
+.dds-procurement-dashboard .dashboard-hero p {
+    max-width: 650px;
+    margin-bottom: 1rem;
+    color: var(--proc-muted);
+    font-size: .94rem;
+    line-height: 1.7;
+}
+.dds-procurement-dashboard .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .8rem;
+    color: var(--proc-muted);
+    font-size: .8rem;
+}
+.dds-procurement-dashboard .hero-meta-divider {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #cbd5e1;
+}
+.dds-procurement-dashboard .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    flex-shrink: 0;
+}
+.dds-procurement-dashboard .hero-actions .btn {
+    min-height: 44px;
+    padding: .7rem 1rem;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 750;
+}
+.dds-procurement-dashboard .btn-hero-primary {
+    border: 1px solid var(--proc-orange-dark);
+    background: var(--proc-orange-dark);
+    color: #fff;
+}
+.dds-procurement-dashboard .btn-hero-primary:hover {
+    border-color: #9a3412;
+    background: #9a3412;
+    color: #fff;
+}
+.dds-procurement-dashboard .btn-hero-outline {
+    border: 1px solid #fed7aa;
+    background: #fff;
+    color: #9a3412;
+}
+.dds-procurement-dashboard .btn-hero-outline:hover {
+    border-color: var(--proc-orange);
+    background: #fff7ed;
+    color: #9a3412;
+}
+.dds-procurement-dashboard .hero-watermark {
+    position: absolute;
+    right: 18%;
+    bottom: -55px;
+    color: #ea580c0d;
+    font-size: 13rem;
+    pointer-events: none;
+}
+
+.dds-procurement-dashboard .section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.dds-procurement-dashboard .section-heading h3 {
+    margin: 0 0 .3rem;
+    color: var(--proc-ink);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+.dds-procurement-dashboard .section-heading p {
+    margin: 0;
+    color: var(--proc-muted);
+    font-size: .82rem;
+}
+
+.dds-procurement-dashboard .metric-card,
+.dds-procurement-dashboard .finance-card,
+.dds-procurement-dashboard .analytics-card,
+.dds-procurement-dashboard .dashboard-panel,
+.dds-procurement-dashboard .mini-stat {
+    border: 1px solid var(--proc-border);
+    border-radius: 14px;
+    background: var(--proc-surface);
+    box-shadow: 0 3px 12px #0f172a06;
+}
+.dds-procurement-dashboard .metric-card {
+    padding: 1.2rem;
+    border-top: 3px solid transparent;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.dds-procurement-dashboard .metric-card:hover,
+.dds-procurement-dashboard .mini-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 22px #0f172a0c;
+}
+.dds-procurement-dashboard .metric-top,
+.dds-procurement-dashboard .metric-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .7rem;
+}
+.dds-procurement-dashboard .metric-label,
+.dds-procurement-dashboard .finance-label {
+    color: var(--proc-muted);
+    font-size: .79rem;
+    font-weight: 700;
+}
+.dds-procurement-dashboard .metric-icon,
+.dds-procurement-dashboard .finance-icon,
+.dds-procurement-dashboard .chart-header-icon,
+.dds-procurement-dashboard .panel-heading-icon,
+.dds-procurement-dashboard .workflow-icon,
+.dds-procurement-dashboard .mini-stat-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 10px;
+}
+.dds-procurement-dashboard .metric-icon { width: 43px; height: 43px; font-size: 1.2rem; }
+.dds-procurement-dashboard .metric-value {
+    margin: 1rem 0;
+    color: var(--proc-ink);
+    font-size: clamp(1.7rem, 2.5vw, 2.15rem);
+    font-weight: 850;
+    line-height: 1.2;
+    letter-spacing: -.04em;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+.dds-procurement-dashboard .metric-footer {
+    flex-wrap: wrap;
+    padding-top: .8rem;
+    border-top: 1px solid #f1f5f9;
+}
+.dds-procurement-dashboard .metric-caption { color: var(--proc-muted); font-size: .73rem; }
+.dds-procurement-dashboard .metric-tag {
+    padding: .25rem .5rem;
+    border-radius: 6px;
+    font-size: .67rem;
+    font-weight: 800;
+}
+.dds-procurement-dashboard .metric-orange { border-top-color: var(--proc-orange); }
+.dds-procurement-dashboard .metric-orange .metric-icon,
+.dds-procurement-dashboard .metric-orange .metric-tag { background: #fff0e5; color: #c2410c; }
+.dds-procurement-dashboard .metric-red { border-top-color: var(--proc-red); }
+.dds-procurement-dashboard .metric-red .metric-icon,
+.dds-procurement-dashboard .metric-red .metric-tag { background: #fef2f2; color: #b91c1c; }
+.dds-procurement-dashboard .metric-green { border-top-color: var(--proc-green); }
+.dds-procurement-dashboard .metric-green .metric-icon,
+.dds-procurement-dashboard .metric-green .metric-tag { background: #f0fdf4; color: #15803d; }
+.dds-procurement-dashboard .metric-blue { border-top-color: var(--proc-blue); }
+.dds-procurement-dashboard .metric-blue .metric-icon,
+.dds-procurement-dashboard .metric-blue .metric-tag { background: #f0f9ff; color: #0369a1; }
+
+.dds-procurement-dashboard .finance-card { padding: 1.1rem; }
+.dds-procurement-dashboard .finance-card-top { display: flex; align-items: center; gap: .7rem; }
+.dds-procurement-dashboard .finance-icon { width: 39px; height: 39px; font-size: 1.05rem; }
+.dds-procurement-dashboard .finance-icon-orange { background: #fff0e5; color: #c2410c; }
+.dds-procurement-dashboard .finance-icon-red { background: #fef2f2; color: #b91c1c; }
+.dds-procurement-dashboard .finance-icon-green { background: #f0fdf4; color: #15803d; }
+.dds-procurement-dashboard .finance-icon-blue { background: #f0f9ff; color: #0369a1; }
+.dds-procurement-dashboard .finance-value {
+    margin: 1rem 0 .5rem;
+    color: var(--proc-ink);
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    font-weight: 850;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+}
+.dds-procurement-dashboard .finance-description,
+.dds-procurement-dashboard .dashboard-disclaimer {
+    color: #64748b;
+    font-size: .73rem;
+    line-height: 1.6;
+}
+.dds-procurement-dashboard .dashboard-disclaimer { opacity: .85; }
+
+.dds-procurement-dashboard .analytics-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: .45rem .7rem;
+    border: 1px solid #fed7aa;
+    border-radius: 999px;
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: .72rem;
+    font-weight: 750;
+}
+.dds-procurement-dashboard .analytics-card { overflow: hidden; padding: 1.2rem; }
+.dds-procurement-dashboard .analytics-card-header,
+.dds-procurement-dashboard .panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf2f7;
+}
+.dds-procurement-dashboard .analytics-card-header h4 {
+    margin: 0 0 .3rem;
+    color: var(--proc-ink);
+    font-size: .96rem;
+    font-weight: 800;
+}
+.dds-procurement-dashboard .analytics-card-header p,
+.dds-procurement-dashboard .panel-heading p {
+    margin: 0;
+    color: var(--proc-muted);
+    font-size: .75rem;
+}
+.dds-procurement-dashboard .chart-header-icon,
+.dds-procurement-dashboard .panel-heading-icon {
+    width: 38px;
+    height: 38px;
+    background: #fff7ed;
+    color: #ea580c;
+    font-size: 1.1rem;
+}
+.dds-procurement-dashboard .chart-container { position: relative; width: 100%; }
+.dds-procurement-dashboard .chart-doughnut { height: 255px; max-width: 420px; margin: .5rem auto 0; }
+.dds-procurement-dashboard .chart-supplier { height: 215px; }
+.dds-procurement-dashboard .chart-bar { height: 300px; margin-top: .75rem; }
+.dds-procurement-dashboard .chart-container canvas { max-width: 100%; }
+.dds-procurement-dashboard .chart-footnote {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .7rem 1rem;
+    padding-top: .75rem;
+    color: var(--proc-muted);
+    font-size: .72rem;
+}
+.dds-procurement-dashboard .chart-footnote i { margin-right: .3rem; font-size: .6rem; }
+.dds-procurement-dashboard .status-orange { color: #f97316; }
+.dds-procurement-dashboard .status-red { color: #dc2626; }
+.dds-procurement-dashboard .status-green { color: #16a34a; }
+.dds-procurement-dashboard .chart-bottom-note { padding-top: .7rem; color: var(--proc-muted); font-size: .72rem; line-height: 1.5; }
+.dds-procurement-dashboard .supplier-summary {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: .8rem;
+    padding-top: .9rem;
+    border-top: 1px solid #edf2f7;
+}
+.dds-procurement-dashboard .supplier-summary-item { display: flex; align-items: center; gap: .5rem; }
+.dds-procurement-dashboard .supplier-summary-item strong,
+.dds-procurement-dashboard .supplier-summary-item small { display: block; }
+.dds-procurement-dashboard .supplier-summary-item strong { color: var(--proc-ink); font-size: .9rem; font-weight: 800; }
+.dds-procurement-dashboard .supplier-summary-item small { color: var(--proc-muted); font-size: .69rem; }
+.dds-procurement-dashboard .supplier-dot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; }
+.dds-procurement-dashboard .supplier-dot-active { background: #16a34a; }
+.dds-procurement-dashboard .supplier-dot-inactive { background: #dc2626; }
+.dds-procurement-dashboard .supplier-dot-qualified { background: #f97316; }
+
+.dds-procurement-dashboard .workflow-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .9rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.dds-procurement-dashboard .workflow-item:last-child { border-bottom: 0; }
+.dds-procurement-dashboard .workflow-item > * { min-width: 0; }
+.dds-procurement-dashboard .workflow-icon { width: 40px; height: 40px; font-size: 1.05rem; }
+.dds-procurement-dashboard .workflow-icon-orange { background: #fff0e5; color: #c2410c; }
+.dds-procurement-dashboard .workflow-icon-red { background: #fef2f2; color: #b91c1c; }
+.dds-procurement-dashboard .workflow-icon-blue { background: #f0f9ff; color: #0369a1; }
+.dds-procurement-dashboard .workflow-icon-purple { background: #f5f3ff; color: #7c3aed; }
+.dds-procurement-dashboard .workflow-icon-green { background: #f0fdf4; color: #15803d; }
+.dds-procurement-dashboard .workflow-copy { flex: 1; min-width: 0; }
+.dds-procurement-dashboard .workflow-copy strong,
+.dds-procurement-dashboard .workflow-copy small { display: block; }
+.dds-procurement-dashboard .workflow-copy strong { color: var(--proc-ink); font-size: .82rem; font-weight: 750; }
+.dds-procurement-dashboard .workflow-copy small { margin-top: .2rem; color: var(--proc-muted); font-size: .71rem; }
+.dds-procurement-dashboard .workflow-number {
+    min-width: 26px;
+    color: var(--proc-ink);
+    font-size: 1rem;
+    font-weight: 850;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.dds-procurement-dashboard .workflow-status {
+    flex-shrink: 0;
+    padding: .32rem .5rem;
+    border-radius: 7px;
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: .65rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.dds-procurement-dashboard .dashboard-panel { overflow: hidden; }
+.dds-procurement-dashboard .panel-heading { padding: 1.2rem 1.25rem; }
+.dds-procurement-dashboard .panel-heading h3 {
+    margin: 0 0 .3rem;
+    color: var(--proc-ink);
+    font-size: .98rem;
+    font-weight: 800;
+}
+.dds-procurement-dashboard .panel-action {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: #ea580c;
+    font-size: .78rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+.dds-procurement-dashboard .panel-action:hover { color: #9a3412; text-decoration: underline; }
+.dds-procurement-dashboard .procurement-table { min-width: 780px; color: #334155; font-size: .79rem; }
+.dds-procurement-dashboard .procurement-table thead th {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--proc-border);
+    background: #f8fafc;
+    color: var(--proc-muted);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.dds-procurement-dashboard .procurement-table tbody td { padding: 1rem; border-color: #f1f5f9; }
+.dds-procurement-dashboard .procurement-table tbody tr:hover { background: #fffaf5; }
+.dds-procurement-dashboard .plan-reference { color: #c2410c; font-weight: 800; text-decoration: none; }
+.dds-procurement-dashboard .plan-reference:hover { color: #9a3412; text-decoration: underline; }
+.dds-procurement-dashboard .table-subtext { display: block; margin-top: .3rem; color: var(--proc-muted); font-size: .69rem; }
+.dds-procurement-dashboard .project-name { display: block; max-width: 220px; color: #334155; font-weight: 650; }
+.dds-procurement-dashboard .amount-cell { color: var(--proc-ink); font-weight: 750; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dds-procurement-dashboard .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .55rem;
+    border-radius: 7px;
+    font-size: .67rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+.dds-procurement-dashboard .status-pill-approved { background: #f0fdf4; color: #15803d; }
+.dds-procurement-dashboard .status-pill-pending { background: #fff7ed; color: #c2410c; }
+.dds-procurement-dashboard .status-pill-review { background: #eff6ff; color: #1d4ed8; }
+.dds-procurement-dashboard .status-pill-rejected { background: #fef2f2; color: #b91c1c; }
+.dds-procurement-dashboard .status-pill-draft { background: #f1f5f9; color: #475569; }
+.dds-procurement-dashboard .progress-cell { display: flex; align-items: center; gap: .55rem; min-width: 90px; }
+.dds-procurement-dashboard .procurement-progress { width: 65px; height: 6px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
+.dds-procurement-dashboard .progress-active { background: linear-gradient(90deg, #fb923c, #ea580c); }
+.dds-procurement-dashboard .progress-approved { background: #16a34a; }
+.dds-procurement-dashboard .progress-rejected { background: #dc2626; }
+.dds-procurement-dashboard .progress-cell small { color: var(--proc-muted); font-size: .68rem; font-weight: 750; }
+
+.dds-procurement-dashboard .activity-list { padding: .4rem 1.25rem 1rem; }
+.dds-procurement-dashboard .activity-item { display: flex; gap: .85rem; padding: .95rem 0; }
+.dds-procurement-dashboard .activity-timeline { position: relative; display: flex; justify-content: center; flex: 0 0 12px; }
+.dds-procurement-dashboard .activity-timeline::after {
+    position: absolute;
+    top: 15px;
+    bottom: -18px;
+    width: 1px;
+    background: #e2e8f0;
+    content: "";
+}
+.dds-procurement-dashboard .activity-item:last-child .activity-timeline::after { display: none; }
+.dds-procurement-dashboard .activity-marker {
+    position: relative;
+    z-index: 1;
+    width: 9px;
+    height: 9px;
+    margin-top: 4px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #f97316;
+    box-shadow: 0 0 0 2px #ffedd5;
+}
+.dds-procurement-dashboard .activity-body { flex: 1; min-width: 0; }
+.dds-procurement-dashboard .activity-title { color: #334155; font-size: .8rem; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+.dds-procurement-dashboard .activity-meta { margin-top: .3rem; color: var(--proc-muted); font-size: .7rem; }
+.dds-procurement-dashboard .activity-time { display: block; margin-top: .3rem; color: var(--proc-muted); font-size: .68rem; }
+
+.dds-procurement-dashboard .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 210px;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+.dds-procurement-dashboard .empty-state > i { color: #fdba74; font-size: 2rem; }
+.dds-procurement-dashboard .empty-state strong { color: #334155; font-size: .9rem; }
+.dds-procurement-dashboard .empty-state span { color: var(--proc-muted); font-size: .77rem; }
+.dds-procurement-dashboard .empty-state a { margin-top: .35rem; color: #ea580c; font-size: .8rem; font-weight: 750; text-decoration: none; }
+.dds-procurement-dashboard .empty-state a:hover { text-decoration: underline; }
+.dds-procurement-dashboard .activity-empty { min-height: 250px; }
+
+.dds-procurement-dashboard .mini-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .6rem;
+    min-height: 140px;
+    padding: 1rem;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.dds-procurement-dashboard .mini-stat-icon { width: 35px; height: 35px; background: #fff7ed; color: #ea580c; font-size: 1rem; }
+.dds-procurement-dashboard .mini-stat strong { color: var(--proc-ink); font-size: 1.45rem; font-weight: 850; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.dds-procurement-dashboard .mini-stat > span:last-child { color: var(--proc-muted); font-size: .73rem; line-height: 1.4; }
+
+.dds-procurement-dashboard a:focus-visible,
+.dds-procurement-dashboard button:focus-visible {
+    outline: 3px solid #fdba74;
+    outline-offset: 3px;
+}
+
+@media (max-width: 1199.98px) {
+    .dds-procurement-dashboard .dashboard-hero { align-items: flex-start; flex-direction: column; }
+    .dds-procurement-dashboard .hero-actions { width: 100%; }
+    .dds-procurement-dashboard .hero-watermark { right: 3%; bottom: -45px; }
+}
+@media (max-width: 767.98px) {
+    .dds-procurement-dashboard .dashboard-hero { padding: 1.25rem; border-radius: 14px; }
+    .dds-procurement-dashboard .dashboard-hero h2 { font-size: 1.7rem; }
+    .dds-procurement-dashboard .hero-actions { display: grid; grid-template-columns: 1fr; }
+    .dds-procurement-dashboard .hero-actions .btn { width: 100%; }
+    .dds-procurement-dashboard .hero-watermark { right: -25px; bottom: -25px; font-size: 8rem; }
+    .dds-procurement-dashboard .section-heading { align-items: flex-start; flex-direction: column; }
+    .dds-procurement-dashboard .analytics-card { padding: 1rem; }
+    .dds-procurement-dashboard .chart-doughnut { height: 235px; }
+    .dds-procurement-dashboard .chart-bar { height: 260px; }
+    .dds-procurement-dashboard .workflow-item { gap: .55rem; }
+    .dds-procurement-dashboard .workflow-icon { width: 34px; height: 34px; }
+    .dds-procurement-dashboard .workflow-status { white-space: normal; text-align: center; }
+    .dds-procurement-dashboard .panel-heading { padding: 1rem; }
+    .dds-procurement-dashboard .activity-list { padding-right: 1rem; padding-left: 1rem; }
+}
+@media (max-width: 399.98px) {
+    .dds-procurement-dashboard .workflow-status { display: none; }
+    .dds-procurement-dashboard .metric-card,
+    .dds-procurement-dashboard .finance-card { padding: .9rem; }
+    .dds-procurement-dashboard .metric-label,
+    .dds-procurement-dashboard .finance-label { font-size: .72rem; }
+    .dds-procurement-dashboard .finance-value { font-size: 1.05rem; }
+}
+@media print {
+    .dds-procurement-dashboard .hero-actions,
+    .dds-procurement-dashboard .panel-action { display: none !important; }
+    .dds-procurement-dashboard .metric-card,
+    .dds-procurement-dashboard .finance-card,
+    .dds-procurement-dashboard .analytics-card,
+    .dds-procurement-dashboard .dashboard-panel,
+    .dds-procurement-dashboard .mini-stat {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dds-procurement-dashboard *,
+    .dds-procurement-dashboard *::before,
+    .dds-procurement-dashboard *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
+<script>
+(function () {
+    "use strict";
+
+    function initializeProcurementCharts() {
+        const dataElement = document.getElementById("procurement-chart-data");
+
+        if (!dataElement || typeof Chart === "undefined") {
+            return;
+        }
+
+        let data;
+
+        try {
+            data = JSON.parse(dataElement.textContent || "{}");
+        } catch (error) {
+            console.error("Invalid procurement chart data.", error);
+            return;
+        }
+
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+            console.error("Procurement chart data must be a JSON object.");
+            return;
+        }
+
+        const asArray = value => Array.isArray(value) ? value : [];
+
+        const asNumber = value => {
+            const number = Number(value);
+            return Number.isFinite(number) && number >= 0 ? number : 0;
+        };
+
+        const formatNumber = new Intl.NumberFormat(undefined, {
+            maximumFractionDigits: 2
+        });
+
+        Chart.defaults.font.family =
+            'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        Chart.defaults.color = "#64748b";
+        Chart.defaults.responsive = true;
+        Chart.defaults.maintainAspectRatio = false;
+
+        const tooltipOptions = {
+            backgroundColor: "#1e293b",
+            titleColor: "#fff",
+            bodyColor: "#f8fafc",
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: true
+        };
+
+        function createDoughnut(canvasId, labelsInput, valuesInput, colors, centerLabel) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const previousChart = Chart.getChart(canvas);
+            if (previousChart) previousChart.destroy();
+
+            const labels = asArray(labelsInput);
+            const values = asArray(valuesInput).map(asNumber);
+            const chartLength = Math.min(labels.length, values.length);
+            const safeLabels = labels.slice(0, chartLength);
+            const safeValues = values.slice(0, chartLength);
+            const total = safeValues.reduce((sum, value) => sum + value, 0);
+
+            new Chart(canvas, {
+                type: "doughnut",
+                data: {
+                    labels: safeLabels,
+                    datasets: [{
+                        data: safeValues,
+                        backgroundColor: colors.slice(0, chartLength),
+                        borderColor: "#ffffff",
+                        borderWidth: 3,
+                        hoverOffset: 6,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    cutout: "70%",
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: "circle",
+                                padding: 14,
+                                boxWidth: 8,
+                                font: { size: 10 }
+                            }
+                        },
+                        tooltip: {
+                            ...tooltipOptions,
+                            callbacks: {
+                                label: context =>
+                                    " " + context.label + ": " +
+                                    formatNumber.format(context.parsed)
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: canvasId + "CenterText",
+                    afterDraw(chart) {
+                        const { ctx, chartArea } = chart;
+                        if (!chartArea) return;
+
+                        const x = (chartArea.left + chartArea.right) / 2;
+                        const y = (chartArea.top + chartArea.bottom) / 2;
+
+                        ctx.save();
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+
+                        ctx.fillStyle = "#1e293b";
+                        ctx.font = "800 25px Inter, system-ui, sans-serif";
+                        ctx.fillText(formatNumber.format(total), x, y - 7);
+
+                        ctx.fillStyle = "#64748b";
+                        ctx.font = "600 10px Inter, system-ui, sans-serif";
+                        ctx.fillText(centerLabel, x, y + 15);
+
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+
+        createDoughnut(
+            "planStatusChart",
+            data.planStatusLabels,
+            data.planStatusValues,
+            ["#94a3b8", "#f97316", "#3b82f6", "#f59e0b", "#16a34a", "#dc2626"],
+            "TOTAL PLANS"
+        );
+
+        const monthlyCanvas = document.getElementById("monthlyCommitmentsChart");
+
+        if (monthlyCanvas) {
+            const previousChart = Chart.getChart(monthlyCanvas);
+            if (previousChart) previousChart.destroy();
+
+            const labels = asArray(data.monthlyLabels);
+            const values = asArray(data.monthlyValues).map(asNumber);
+            const chartLength = Math.min(labels.length, values.length);
+            const monthlyLabels = labels.slice(0, chartLength);
+            const monthlyValues = values.slice(0, chartLength);
+            const maxValue = Math.max(0, ...monthlyValues);
+
+            new Chart(monthlyCanvas, {
+                type: "bar",
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: "PO commitments (UGX)",
+                        data: monthlyValues,
+                        backgroundColor: context =>
+                            context.dataset.data[context.dataIndex] === maxValue && maxValue > 0
+                                ? "#dc2626"
+                                : "#f97316",
+                        hoverBackgroundColor: "#c2410c",
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        maxBarThickness: 32
+                    }]
+                },
+                options: {
+                    interaction: { intersect: false, mode: "index" },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            ...tooltipOptions,
+                            callbacks: {
+                                label: context =>
+                                    " Commitment: UGX " +
+                                    formatNumber.format(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            border: { display: false },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkip: true,
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { display: false },
+                            grid: { color: "#f1f5f9" },
+                            ticks: {
+                                padding: 10,
+                                callback: value => formatNumber.format(value),
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        createDoughnut(
+            "supplierStatusChart",
+            data.supplierLabels,
+            data.supplierValues,
+            ["#16a34a", "#dc2626"],
+            "SUPPLIERS"
+        );
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeProcurementCharts, { once: true });
+    } else {
+        initializeProcurementCharts();
+    }
+})();
+</script>
+{% endblock %}

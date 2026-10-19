@@ -1,0 +1,1275 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}{{ title }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">PROCUREMENT</span>
+    <h1 class="mb-0">{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --proc-primary: #b8663f;
+        --proc-primary-dark: #87452d;
+        --proc-accent: #a65a7a;
+        --proc-light: #fbf0ea;
+        --proc-border: #e8edf4;
+        --proc-text: #14213d;
+        --proc-muted: #6b7890;
+        --proc-danger: #b91c1c;
+        --proc-surface: #ffffff;
+        --proc-page: #fbf9fa;
+    }
+
+    .req-form-page {
+        background: var(--proc-page);
+        padding: 24px;
+        border-radius: 14px;
+        color: var(--proc-text);
+        min-height: 100%;
+    }
+
+    .req-form-hero {
+        background: linear-gradient(120deg, #87452d, #b8663f 60%, #a65a7a);
+        color: #fff;
+        border-radius: 15px;
+        padding: 24px 26px;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .req-form-hero::after {
+        content: "";
+        position: absolute;
+        width: 190px;
+        height: 190px;
+        border: 30px solid rgba(255,255,255,.09);
+        border-radius: 50%;
+        right: -60px;
+        top: -95px;
+        pointer-events: none;
+    }
+
+    .req-form-hero h2 {
+        font-size: clamp(20px, 2.5vw, 27px);
+        font-weight: 800;
+        margin: 0 0 8px;
+    }
+
+    .req-form-hero p {
+        font-size: 13px;
+        line-height: 1.7;
+        margin: 0;
+        color: rgba(255,255,255,.88);
+        max-width: 720px;
+    }
+
+    .req-form-eyebrow {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        opacity: .85;
+    }
+
+    .req-panel {
+        background: var(--proc-surface);
+        border: 1px solid var(--proc-border);
+        border-radius: 13px;
+        margin-bottom: 22px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(41,37,36,.045);
+    }
+
+    .req-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--proc-border);
+        background: #fff;
+    }
+
+    .req-panel-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .req-panel-icon {
+        width: 39px;
+        height: 39px;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--proc-light);
+        color: var(--proc-primary);
+        font-size: 18px;
+    }
+
+    .req-panel-head h3 {
+        font-size: 15px;
+        font-weight: 800;
+        margin: 1px 0 5px;
+        color: var(--proc-text);
+    }
+
+    .req-panel-head small {
+        display: block;
+        color: var(--proc-muted);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .req-panel-body {
+        padding: 24px;
+    }
+
+    .req-form-page label {
+        display: block;
+        font-size: 12px;
+        font-weight: 750;
+        margin-bottom: 7px;
+        color: #44403c;
+    }
+
+    .req-form-page input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    .req-form-page select,
+    .req-form-page textarea {
+        width: 100%;
+        min-height: 41px;
+        padding: 9px 12px;
+        border: 1px solid #d6d3d1;
+        border-radius: 8px;
+        background-color: #fff;
+        color: var(--proc-text);
+        font-size: 13px;
+        transition: border-color .18s, box-shadow .18s;
+    }
+
+    .req-form-page input:focus,
+    .req-form-page select:focus,
+    .req-form-page textarea:focus {
+        outline: none;
+        border-color: var(--proc-accent);
+        box-shadow: 0 0 0 3px rgba(234,88,12,.12);
+    }
+
+    .req-form-page input[type="checkbox"],
+    .req-form-page input[type="radio"] {
+        width: auto;
+        min-height: auto;
+        accent-color: var(--proc-primary);
+    }
+
+    .req-field {
+        min-width: 0;
+    }
+
+    .req-field ul.errorlist,
+    .req-table ul.errorlist,
+    .req-form-page ul.errorlist {
+        margin: 6px 0 0;
+        padding: 0;
+        list-style: none;
+        color: var(--proc-danger);
+        font-size: 11px;
+    }
+
+    .req-form-page .errorlist li {
+        margin-bottom: 3px;
+    }
+
+    .req-form-page .helptext {
+        display: block;
+        color: var(--proc-muted);
+        font-size: 11px;
+        margin-top: 5px;
+        line-height: 1.5;
+    }
+
+    .req-error-summary {
+        border: 1px solid #fecaca;
+        border-left: 4px solid var(--proc-danger);
+        background: #fef2f2;
+        color: #991b1b;
+        padding: 14px 17px;
+        border-radius: 9px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+
+    .req-error-summary ul {
+        padding-left: 20px;
+        margin: 8px 0 0;
+    }
+
+    .req-add-btn,
+    .req-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 12px;
+        font-weight: 750;
+        line-height: 1.4;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .18s, border-color .18s, transform .18s;
+    }
+
+    .req-add-btn {
+        background: #fff7ed;
+        color: var(--proc-primary-dark);
+        border: 1px solid #fdba74;
+    }
+
+    .req-add-btn:hover {
+        background: #ffedd5;
+        color: #7c2d12;
+    }
+
+    .req-btn:hover,
+    .req-add-btn:hover {
+        text-decoration: none;
+    }
+
+    .req-btn:focus-visible,
+    .req-add-btn:focus-visible {
+        outline: 3px solid rgba(234,88,12,.3);
+        outline-offset: 2px;
+    }
+
+    .req-btn-primary {
+        background: var(--proc-primary);
+        color: #fff;
+        border: 1px solid var(--proc-primary);
+    }
+
+    .req-btn-primary:hover {
+        background: var(--proc-primary-dark);
+        color: #fff;
+    }
+
+    .req-btn-secondary {
+        background: #fff;
+        color: #57534e;
+        border: 1px solid #d6d3d1;
+    }
+
+    .req-btn-secondary:hover {
+        background: #f5f5f4;
+        color: #292524;
+    }
+
+    .req-btn-danger {
+        background: #fff;
+        color: var(--proc-danger);
+        border: 1px solid #fecaca;
+        padding: 8px 11px;
+    }
+
+    .req-btn-danger:hover {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    .req-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .req-table {
+        width: 100%;
+        min-width: 1040px;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+    }
+
+    .req-table thead th {
+        background: #fff7ed;
+        color: #7c2d12;
+        padding: 14px 12px;
+        border-bottom: 1px solid #fed7aa;
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: .55px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .req-table tbody td {
+        padding: 12px;
+        border-bottom: 1px solid #f0eeeb;
+        vertical-align: top;
+        background: #fff;
+    }
+
+    .req-table tbody tr:hover td {
+        background: #fffaf5;
+    }
+
+    .req-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .req-table input:not([type="checkbox"]):not([type="hidden"]),
+    .req-table select {
+        min-width: 85px;
+        width: 100%;
+        min-height: 38px;
+        padding: 7px 9px;
+        font-size: 12px;
+    }
+
+    .req-table td:first-child select {
+        min-width: 175px;
+    }
+
+    .req-table td:nth-child(2) input {
+        min-width: 150px;
+    }
+
+    .req-table td:nth-child(6) input {
+        min-width: 135px;
+    }
+
+    .req-table td:last-child {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .req-table .line-total {
+        text-align: right;
+        vertical-align: middle;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--proc-primary-dark);
+        min-width: 95px;
+        padding-top: 22px;
+    }
+
+    .req-table .row-delete {
+        display: none;
+    }
+
+    .req-empty-state {
+        text-align: center;
+        padding: 35px 20px;
+        color: var(--proc-muted);
+        font-size: 13px;
+    }
+
+    .req-empty-state i {
+        display: block;
+        font-size: 28px;
+        color: #d6d3d1;
+        margin-bottom: 9px;
+    }
+
+    .req-totals {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding-top: 19px;
+        border-top: 1px solid var(--proc-border);
+        margin-top: 2px;
+    }
+
+    .req-total-label {
+        color: var(--proc-muted);
+        font-size: 12px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .req-total-value {
+        color: var(--proc-primary-dark);
+        font-size: 24px;
+        font-weight: 850;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .req-budget-note {
+        margin-top: 8px;
+        text-align: right;
+        color: var(--proc-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .req-budget-note.is-over {
+        color: var(--proc-danger);
+        font-weight: 750;
+    }
+
+    .req-budget-note.is-loading {
+        color: var(--proc-primary);
+    }
+
+    .req-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 18px 22px;
+        background: #fafaf9;
+        border-top: 1px solid var(--proc-border);
+    }
+
+    .req-footer-note {
+        color: var(--proc-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .req-footer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .req-loading {
+        opacity: .65;
+        pointer-events: none;
+    }
+
+    @media (max-width: 767px) {
+        .req-form-page {
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .req-form-hero {
+            padding: 20px;
+        }
+
+        .req-panel-head,
+        .req-panel-body {
+            padding: 16px;
+        }
+
+        .req-form-footer {
+            padding: 16px;
+            align-items: stretch;
+        }
+
+        .req-footer-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .req-footer-actions .req-btn {
+            width: 100%;
+        }
+
+        .req-total-value {
+            font-size: 21px;
+        }
+    }
+</style>
+<style>
+    .req-form-page .req-add-btn { background: #fbf0ea; color: #87452d; border-color: #e5c4b4; }
+    .req-form-page .req-add-btn:hover { background: #f6e4da; color: #713921; }
+    .req-form-page .req-table thead th { background: #fcf7f4; color: #87452d; border-bottom-color: #e5c4b4; }
+    .req-form-page .req-table .line-total,
+    .req-form-page .req-total-value { color: #87452d; }
+    .req-form-page .req-form-footer { background: #fff8f4; }
+</style>
+
+<div
+    class="req-form-page"
+    id="requisition-form"
+    data-items-url="{% url 'procurement:req_plan_items' 'PLAN_SLUG' %}"
+    data-budget=""
+    data-committed=""
+    data-editing="{% if requisition %}true{% else %}false{% endif %}"
+>
+    <!-- Page introduction -->
+    <section class="req-form-hero">
+        <div class="req-form-eyebrow">
+            <i class="bi bi-diagram-3 me-1"></i>
+            DDS-NK Enterprise Procurement
+        </div>
+
+        <h2>
+            <i class="bi bi-file-earmark-plus me-2"></i>
+            {{ title }}
+        </h2>
+
+        <p>
+            Prepare a procurement requisition using an approved procurement plan.
+            Verify item quantities, unit prices and delivery dates before submitting.
+        </p>
+    </section>
+
+    <form method="post" novalidate id="requisition-entry-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="req-error-summary" role="alert">
+                <strong>
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Please correct the following errors.
+                </strong>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Requisition details -->
+        <section class="req-panel">
+            <div class="req-panel-head">
+                <div class="req-panel-heading">
+                    <span class="req-panel-icon">
+                        <i class="bi bi-clipboard-data"></i>
+                    </span>
+
+                    <div>
+                        <h3>Requisition details</h3>
+                        <small>
+                            Select the approved procurement plan and complete
+                            the required requisition information.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="req-panel-body">
+                <div class="row g-4">
+                    {% for field in form %}
+                        <div class="col-12 col-md-6 req-field">
+                            {{ field.label_tag }}
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                                <small class="helptext">
+                                    {{ field.help_text }}
+                                </small>
+                            {% endif %}
+
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Requisition items -->
+        <section class="req-panel">
+            <div class="req-panel-head">
+                <div class="req-panel-heading">
+                    <span class="req-panel-icon">
+                        <i class="bi bi-cart-check"></i>
+                    </span>
+
+                    <div>
+                        <h3>Requisition items</h3>
+                        <small>
+                            Select items from the approved plan. Quantities,
+                            descriptions, units, prices and delivery dates
+                            can be reviewed before submission.
+                        </small>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    class="req-add-btn"
+                    id="add-item"
+                >
+                    <i class="bi bi-plus-lg"></i>
+                    Add item
+                </button>
+            </div>
+
+            <div class="req-panel-body">
+                {{ formset.management_form }}
+
+                {% if formset.non_form_errors %}
+                    <div class="req-error-summary" role="alert">
+                        <strong>Item validation errors</strong>
+                        {{ formset.non_form_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="req-table-wrap">
+                    <table class="req-table" id="items-table">
+                        <thead>
+                            <tr>
+                                <th style="min-width:190px;">Plan item</th>
+                                <th style="min-width:160px;">Description</th>
+                                <th style="width:100px;">Quantity</th>
+                                <th style="width:110px;">Unit</th>
+                                <th style="width:130px;">Unit price</th>
+                                <th style="width:150px;">Delivery date</th>
+                                <th style="width:120px; text-align:right;">
+                                    Line total
+                                </th>
+                                <th style="width:75px; text-align:center;">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="item-rows">
+                            {% for item_form in formset.forms %}
+                                <tr class="item-row">
+                                    {% for hidden in item_form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+
+                                    <td>
+                                        {{ item_form.procurement_item }}
+                                        {{ item_form.procurement_item.errors }}
+                                    </td>
+
+                                    <td>
+                                        {{ item_form.description }}
+                                        {{ item_form.description.errors }}
+                                    </td>
+
+                                    <td>
+                                        {{ item_form.qty }}
+                                        {{ item_form.qty.errors }}
+                                    </td>
+
+                                    <td>
+                                        {{ item_form.unit_measure }}
+                                        {{ item_form.unit_measure.errors }}
+                                    </td>
+
+                                    <td>
+                                        {{ item_form.unit_price }}
+                                        {{ item_form.unit_price.errors }}
+                                    </td>
+
+                                    <td>
+                                        {{ item_form.delivery_date }}
+                                        {{ item_form.delivery_date.errors }}
+                                    </td>
+
+                                    <td class="line-total">0.00</td>
+
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="req-btn req-btn-danger remove-item"
+                                            title="Remove item"
+                                            aria-label="Remove item"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+
+                                        {% if item_form.DELETE %}
+                                            <span class="row-delete">
+                                                {{ item_form.DELETE }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr class="req-initial-empty">
+                                    <td colspan="8">
+                                        <div class="req-empty-state">
+                                            <i class="bi bi-inbox"></i>
+                                            <strong>No items added yet</strong>
+                                            <div class="mt-1">
+                                                Select a procurement plan, then
+                                                add the items required.
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Financial summary -->
+                <div class="req-totals">
+                    <span class="req-total-label">
+                        <i class="bi bi-calculator me-1"></i>
+                        Grand total
+                    </span>
+
+                    <strong id="grand-total" class="req-total-value">
+                        0.00
+                    </strong>
+                </div>
+
+                <div
+                    id="budget-note"
+                    class="req-budget-note"
+                    aria-live="polite"
+                >
+                    Select a procurement plan to view its remaining budget.
+                </div>
+            </div>
+
+            <!-- Form actions -->
+            <div class="req-form-footer">
+                <div class="req-footer-note">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Review all details before submitting. Required fields
+                    and approval rules are validated by the server.
+                </div>
+
+                <div class="req-footer-actions">
+                    <button
+                        type="submit"
+                        class="req-btn req-btn-primary"
+                        id="submit-requisition"
+                    >
+                        <i class="bi bi-check2-circle"></i>
+                        Submit requisition
+                    </button>
+
+                    <a
+                        class="req-btn req-btn-secondary"
+                        href="{% if requisition %}{% url 'procurement:req_detail' requisition.slug %}{% else %}{% url 'procurement:req_list' %}{% endif %}"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </section>
+    </form>
+</div>
+
+<!-- Empty formset row template -->
+<template id="empty-item-row">
+    <tr class="item-row">
+        {% for hidden in formset.empty_form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+
+        <td>{{ formset.empty_form.procurement_item }}</td>
+        <td>{{ formset.empty_form.description }}</td>
+        <td>{{ formset.empty_form.qty }}</td>
+        <td>{{ formset.empty_form.unit_measure }}</td>
+        <td>{{ formset.empty_form.unit_price }}</td>
+        <td>{{ formset.empty_form.delivery_date }}</td>
+
+        <td class="line-total">0.00</td>
+
+        <td>
+            <button
+                type="button"
+                class="req-btn req-btn-danger remove-item"
+                title="Remove item"
+                aria-label="Remove item"
+            >
+                <i class="bi bi-trash3"></i>
+            </button>
+
+            {% if formset.empty_form.DELETE %}
+                <span class="row-delete">
+                    {{ formset.empty_form.DELETE }}
+                </span>
+            {% endif %}
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
+
+    const root = document.getElementById('requisition-form');
+
+    if (!root) return;
+
+    const form = document.getElementById('requisition-entry-form');
+    const planSelect = document.getElementById('id_procurement');
+    const rows = document.getElementById('item-rows');
+    const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+    const template = document.getElementById('empty-item-row');
+    const addButton = document.getElementById('add-item');
+    const note = document.getElementById('budget-note');
+    const grandTotal = document.getElementById('grand-total');
+    const submitButton = document.getElementById('submit-requisition');
+
+    let planItems = [];
+    let requestSequence = 0;
+    let loading = false;
+
+    const number = value => {
+        const parsed = parseFloat(String(value ?? '').replace(/,/g, ''));
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const money = value => 'UGX ' + number(value).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    function setNote(message, state = '') {
+        note.textContent = message;
+        note.className = 'req-budget-note';
+
+        if (state === 'error' || state === 'over') {
+            note.classList.add('is-over');
+        } else if (state === 'loading') {
+            note.classList.add('is-loading');
+        }
+    }
+
+    function getDeleteField(row) {
+        return row.querySelector('[name$="-DELETE"]');
+    }
+
+    function isDeleted(row) {
+        const field = getDeleteField(row);
+        return Boolean(field && field.checked);
+    }
+
+    function activeRows() {
+        return Array.from(rows.querySelectorAll('.item-row'))
+            .filter(row => !isDeleted(row));
+    }
+
+    function calculate() {
+        let total = 0;
+
+        rows.querySelectorAll('.item-row').forEach(row => {
+            const output = row.querySelector('.line-total');
+
+            if (isDeleted(row)) {
+                if (output) output.textContent = money(0);
+                return;
+            }
+
+            const qty = row.querySelector('[name$="-qty"]');
+            const price = row.querySelector('[name$="-unit_price"]');
+
+            const lineTotal =
+                Math.max(0, number(qty && qty.value)) *
+                Math.max(0, number(price && price.value));
+
+            if (output) output.textContent = money(lineTotal);
+
+            total += lineTotal;
+        });
+
+        grandTotal.textContent = money(total);
+
+        const budgetValue = root.dataset.budget;
+        const committedValue = root.dataset.committed;
+
+        if (budgetValue !== '' && budgetValue !== undefined) {
+            const budget = number(budgetValue);
+            const committed = number(committedValue);
+            const remaining = budget - committed - total;
+
+            setNote(
+                `Remaining after this requisition: ${money(remaining)} ` +
+                `of ${money(budget)} approved plan budget.`,
+                remaining < 0 ? 'over' : ''
+            );
+        }
+
+        return total;
+    }
+
+    function findPlanItem(id) {
+        return planItems.find(item => String(item.id) === String(id));
+    }
+
+    function fillRow(row, item) {
+        if (!item) return;
+
+        const fields = {
+            description: item.description ?? '',
+            qty: item.qty ?? '',
+            unit_measure: item.unit_measure ?? '',
+            unit_price: item.unit_price ?? '',
+            delivery_date: item.delivery_date ?? ''
+        };
+
+        Object.entries(fields).forEach(([name, value]) => {
+            const field = row.querySelector(`[name$="-${name}"]`);
+
+            if (field) field.value = value;
+        });
+
+        calculate();
+    }
+
+    function configurePlanOptions(row, preserveValues = true) {
+        const select = row.querySelector(
+            '[name$="-procurement_item"]'
+        );
+
+        if (!select) return;
+
+        const selectedId = preserveValues ? select.value : '';
+
+        select.replaceChildren(new Option('Select a plan item', ''));
+
+        planItems.forEach(item => {
+            const label = item.product
+                ? `${item.product} ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ${item.description || ''}`
+                : (item.description || 'Plan item');
+
+            const option = new Option(label, item.id);
+            select.add(option);
+        });
+
+        if (
+            selectedId &&
+            planItems.some(item => String(item.id) === String(selectedId))
+        ) {
+            select.value = selectedId;
+        } else {
+            select.value = '';
+        }
+    }
+
+    function clearInitialEmptyState() {
+        const emptyState = rows.querySelector('.req-initial-empty');
+
+        if (emptyState) emptyState.remove();
+    }
+
+    function addRow() {
+        clearInitialEmptyState();
+
+        const index = parseInt(totalForms.value, 10);
+        const html = template.innerHTML.replaceAll('__prefix__', index);
+
+        rows.insertAdjacentHTML('beforeend', html);
+
+        totalForms.value = index + 1;
+
+        const row = rows.lastElementChild;
+
+        configurePlanOptions(row, false);
+
+        return row;
+    }
+
+    function renumberRows() {
+        const allRows = Array.from(rows.querySelectorAll('.item-row'));
+
+        allRows.forEach((row, index) => {
+            row.querySelectorAll('[name], [id], [for]').forEach(element => {
+                ['name', 'id', 'for'].forEach(attribute => {
+                    const value = element.getAttribute(attribute);
+
+                    if (!value) return;
+
+                    element.setAttribute(
+                        attribute,
+                        value.replace(/items-\d+-/g, `items-${index}-`)
+                    );
+                });
+            });
+        });
+
+        totalForms.value = allRows.length;
+    }
+
+    function populateRows(reset = false) {
+        if (reset) {
+            rows.innerHTML = '';
+            totalForms.value = 0;
+
+            planItems.forEach(item => {
+                const row = addRow();
+                const select = row.querySelector(
+                    '[name$="-procurement_item"]'
+                );
+
+                if (select) {
+                    select.value = String(item.id);
+                }
+
+                fillRow(row, item);
+            });
+
+            if (!planItems.length) {
+                addRow();
+            }
+        } else {
+            activeRows().forEach(row => {
+                const select = row.querySelector(
+                    '[name$="-procurement_item"]'
+                );
+
+                const selectedId = select ? select.value : '';
+
+                configurePlanOptions(row, true);
+
+                if (selectedId) {
+                    const item = findPlanItem(selectedId);
+
+                    // Preserve entered values when reloading plan options.
+                    if (!item && select) select.value = '';
+                }
+            });
+        }
+
+        calculate();
+    }
+
+    async function loadPlan(reset = false) {
+        const requestId = ++requestSequence;
+
+        if (!planSelect || !planSelect.value) {
+            planItems = [];
+            root.dataset.budget = '';
+            root.dataset.committed = '';
+
+            if (reset) {
+                rows.innerHTML = '';
+                totalForms.value = 0;
+                addRow();
+            }
+
+            setNote('Select a procurement plan to view its remaining budget.');
+            calculate();
+            return;
+        }
+
+        loading = true;
+        root.classList.add('req-loading');
+        setNote('Loading approved plan itemsÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦', 'loading');
+
+        try {
+            const url = root.dataset.itemsUrl.replace(
+                'PLAN_SLUG',
+                encodeURIComponent(planSelect.value)
+            );
+
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    'Unable to load items for the selected procurement plan.'
+                );
+            }
+
+            const data = await response.json();
+
+            if (requestId !== requestSequence) return;
+
+            if (!Array.isArray(data.items)) {
+                throw new Error('The server returned an invalid plan item list.');
+            }
+
+            planItems = data.items;
+
+            root.dataset.budget = data.budget ?? '';
+            root.dataset.committed = data.committed ?? 0;
+
+            const hasSelectedRows = activeRows().some(row => {
+                const select = row.querySelector('[name$="-procurement_item"]');
+                return Boolean(select && select.value);
+            });
+            const shouldPopulateAll = reset || (
+                root.dataset.editing !== 'true' && !hasSelectedRows
+            );
+            populateRows(shouldPopulateAll);
+
+            if (planItems.length === 0) {
+                setNote('No selectable items were returned for this plan.');
+            } else {
+                calculate();
+            }
+        } catch (error) {
+            if (requestId !== requestSequence) return;
+
+            planItems = [];
+            root.dataset.budget = '';
+            root.dataset.committed = '';
+
+            setNote(
+                error.message || 'Could not load procurement plan items.',
+                'error'
+            );
+        } finally {
+            if (requestId === requestSequence) {
+                loading = false;
+                root.classList.remove('req-loading');
+            }
+        }
+    }
+
+    if (planSelect) {
+        planSelect.addEventListener('change', function () {
+            loadPlan(true);
+        });
+    }
+
+    addButton.addEventListener('click', function () {
+        const row = addRow();
+
+        configurePlanOptions(row, false);
+        calculate();
+
+        const firstField = row.querySelector(
+            '[name$="-procurement_item"]'
+        );
+
+        if (firstField) firstField.focus();
+    });
+
+    rows.addEventListener('change', function (event) {
+        const target = event.target;
+
+        if (target.matches('[name$="-procurement_item"]')) {
+            const row = target.closest('.item-row');
+            const item = findPlanItem(target.value);
+
+            if (item) {
+                fillRow(row, item);
+            }
+
+            calculate();
+        }
+    });
+
+    rows.addEventListener('input', function (event) {
+        if (
+            event.target.matches('[name$="-qty"]') ||
+            event.target.matches('[name$="-unit_price"]')
+        ) {
+            calculate();
+        }
+    });
+
+    rows.addEventListener('click', function (event) {
+        const button = event.target.closest('.remove-item');
+
+        if (!button) return;
+
+        const row = button.closest('.item-row');
+        if (!row) return;
+
+        const deleteField = getDeleteField(row);
+
+        if (deleteField) {
+            // Preserve the indexed form so Django can process DELETE.
+            deleteField.checked = true;
+            row.style.display = 'none';
+        } else {
+            // Reindex unsaved forms when the formset has no DELETE field.
+            row.remove();
+            renumberRows();
+        }
+
+        if (!activeRows().length) {
+            const hasVisibleRow = rows.querySelector('.item-row:not([style*="display: none"])');
+
+            if (!hasVisibleRow) {
+                const newRow = addRow();
+                configurePlanOptions(newRow, false);
+            }
+        }
+
+        calculate();
+    });
+
+    form.addEventListener('submit', function (event) {
+        if (loading) {
+            event.preventDefault();
+            setNote(
+                'Please wait for the selected procurement plan to finish loading.',
+                'loading'
+            );
+            return;
+        }
+
+        const currentPlan = planSelect && planSelect.value;
+
+        if (currentPlan && planItems.length === 0) {
+            event.preventDefault();
+            setNote(
+                'No approved plan items are available. Verify the selected plan before submitting.',
+                'error'
+            );
+
+            if (planSelect) planSelect.focus();
+            return;
+        }
+
+        const selectedRows = activeRows();
+
+        const validRows = selectedRows.filter(row => {
+            const select = row.querySelector(
+                '[name$="-procurement_item"]'
+            );
+
+            const qty = row.querySelector('[name$="-qty"]');
+            const price = row.querySelector('[name$="-unit_price"]');
+
+            return Boolean(
+                select &&
+                select.value &&
+                number(qty && qty.value) > 0 &&
+                number(price && price.value) >= 0
+            );
+        });
+
+        if (!validRows.length) {
+            event.preventDefault();
+            setNote(
+                'Add at least one valid item with a plan item and a positive quantity.',
+                'error'
+            );
+            return;
+        }
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+                '<i class="bi bi-hourglass-split"></i> SubmittingÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦';
+        }
+    });
+
+    // Initialize totals and load plan data without replacing existing entries.
+    calculate();
+
+    if (planSelect && planSelect.value) {
+        loadPlan(false);
+    } else if (planSelect) {
+        setNote('Select a procurement plan to view its remaining budget.');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,969 @@
+<div
+    class="profile-card formset-card"
+    data-formset="{{ formset.prefix }}"
+>
+
+    <!-- =====================================================
+         FORMSET HEADER
+         ===================================================== -->
+
+    <div class="formset-heading">
+
+        <div class="formset-title">
+
+            <span class="formset-icon">
+                <i
+                    class="bi {{ icon }}"
+                    aria-hidden="true"
+                ></i>
+            </span>
+
+            <div>
+                <h3>{{ title }}</h3>
+
+                <p>
+                    Add, update or remove records as required.
+                </p>
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-primary add-formset"
+        >
+            <i
+                class="bi bi-plus-lg me-1"
+                aria-hidden="true"
+            ></i>
+
+            Add
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         DJANGO MANAGEMENT FORM
+         ===================================================== -->
+
+    {{ formset.management_form }}
+
+
+    <!-- =====================================================
+         EXISTING RECORDS
+         ===================================================== -->
+
+    <div class="formset-rows">
+
+        {% for form in formset %}
+
+            <div class="repeat-row">
+
+                <!-- Hidden fields -->
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+
+
+                <div class="repeat-row-header">
+
+                    <span class="repeat-row-number">
+                        Record {{ forloop.counter }}
+                    </span>
+
+                </div>
+
+
+                <div class="profile-grid">
+
+                    {% for field in form.visible_fields %}
+
+                        {% if field.name != "DELETE" %}
+
+                            {% if field.field.widget.input_type == "checkbox" %}
+
+                                <!-- =================================
+                                     BOOLEAN FIELD
+                                     ================================= -->
+
+                                <div class="profile-field is-boolean">
+
+                                    <label
+                                        class="profile-boolean"
+                                        for="{{ field.id_for_label }}"
+                                    >
+
+                                        {{ field }}
+
+                                        <span class="boolean-check">
+                                            <i class="bi bi-check2"></i>
+                                        </span>
+
+                                        <span class="boolean-copy">
+
+                                            <span class="boolean-label">
+
+                                                {{ field.label }}
+
+                                                {% if field.field.required %}
+                                                    <span class="boolean-required">
+                                                        *
+                                                    </span>
+                                                {% endif %}
+
+                                            </span>
+
+
+                                            {% if field.help_text %}
+
+                                                <span class="boolean-description">
+                                                    {{ field.help_text }}
+                                                </span>
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </label>
+
+                                    {% for error in field.errors %}
+
+                                        <small class="field-error">
+                                            <i
+                                                class="bi bi-exclamation-circle-fill"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% else %}
+
+                                <!-- =================================
+                                     NORMAL FIELD
+                                     ================================= -->
+
+                                <div class="profile-field">
+
+                                    <label
+                                        for="{{ field.id_for_label }}"
+                                    >
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="required-mark">
+                                                *
+                                            </span>
+                                        {% endif %}
+                                    </label>
+
+
+                                    {{ field }}
+
+
+                                    {% if field.help_text %}
+
+                                        <small class="field-help">
+                                            <i
+                                                class="bi bi-info-circle"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                            {{ field.help_text }}
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% for error in field.errors %}
+
+                                        <small class="field-error">
+                                            <i
+                                                class="bi bi-exclamation-circle-fill"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- =================================================
+                     REMOVE RECORD
+                     ================================================= -->
+
+                {% if form.DELETE %}
+
+                    <div class="repeat-row-footer">
+
+                        <label
+                            class="remove-row"
+                            for="{{ form.DELETE.id_for_label }}"
+                        >
+
+                            {{ form.DELETE }}
+
+                            <span>
+                                <i
+                                    class="bi bi-trash3 me-1"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Remove this entry
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- =====================================================
+         EMPTY STATE
+         ===================================================== -->
+
+    <div class="formset-empty">
+
+        <i
+            class="bi bi-inbox"
+            aria-hidden="true"
+        ></i>
+
+        <span>
+            {{ empty_text }}
+        </span>
+
+        <small>
+            Use the <strong>Add</strong> button to create a record.
+        </small>
+
+    </div>
+
+
+    <!-- =====================================================
+         EMPTY FORM TEMPLATE
+         ===================================================== -->
+
+    <template class="empty-form-template">
+
+        <div class="repeat-row">
+
+            {% with form=formset.empty_form %}
+
+                <!-- Hidden fields -->
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+
+
+                <div class="repeat-row-header">
+
+                    <span class="repeat-row-number">
+                        New record
+                    </span>
+
+                </div>
+
+
+                <div class="profile-grid">
+
+                    {% for field in form.visible_fields %}
+
+                        {% if field.name != "DELETE" %}
+
+                            {% if field.field.widget.input_type == "checkbox" %}
+
+                                <!-- Boolean -->
+
+                                <div class="profile-field is-boolean">
+
+                                    <label
+                                        class="profile-boolean"
+                                        for="{{ field.id_for_label }}"
+                                    >
+
+                                        {{ field }}
+
+                                        <span class="boolean-check">
+                                            <i class="bi bi-check2"></i>
+                                        </span>
+
+                                        <span class="boolean-copy">
+
+                                            <span class="boolean-label">
+                                                {{ field.label }}
+
+                                                {% if field.field.required %}
+                                                    <span class="boolean-required">
+                                                        *
+                                                    </span>
+                                                {% endif %}
+                                            </span>
+
+                                            {% if field.help_text %}
+                                                <span class="boolean-description">
+                                                    {{ field.help_text }}
+                                                </span>
+                                            {% endif %}
+
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            {% else %}
+
+                                <!-- Normal field -->
+
+                                <div class="profile-field">
+
+                                    <label
+                                        for="{{ field.id_for_label }}"
+                                    >
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="required-mark">
+                                                *
+                                            </span>
+                                        {% endif %}
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small class="field-help">
+                                            <i
+                                                class="bi bi-info-circle"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                            {{ field.help_text }}
+                                        </small>
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="repeat-row-footer">
+
+                    <span class="new-record-note">
+                        <i
+                            class="bi bi-plus-circle"
+                            aria-hidden="true"
+                        ></i>
+
+                        New record
+                    </span>
+
+                </div>
+
+            {% endwith %}
+
+        </div>
+
+    </template>
+
+</div>
+
+
+<style>
+/* =========================================================
+   FORMSET CARD
+   ========================================================= */
+
+.formset-card {
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   FORMSET HEADER
+   ========================================================= */
+
+.formset-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eaecf0;
+}
+
+.formset-title {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+}
+
+.formset-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(111, 66, 193, .08);
+    color: #6f42c1;
+    font-size: 1rem;
+}
+
+.formset-title h3 {
+    margin: 0 0 .15rem;
+    color: #172033;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.formset-title p {
+    margin: 0;
+    color: #667085;
+    font-size: .76rem;
+}
+
+.add-formset {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   REPEAT ROW
+   ========================================================= */
+
+.repeat-row {
+    position: relative;
+    margin-bottom: 1rem;
+    padding: 1.15rem;
+    border: 1px solid #eaecf0;
+    border-radius: 13px;
+    background: #fff;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.repeat-row:hover {
+    border-color: #d8dee8;
+    box-shadow: 0 4px 16px rgba(16, 24, 40, .035);
+}
+
+.repeat-row:last-child {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   RECORD HEADER
+   ========================================================= */
+
+.repeat-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.repeat-row-number {
+    display: inline-flex;
+    align-items: center;
+    padding: .3rem .6rem;
+    border-radius: 20px;
+    background: #f2f4f7;
+    color: #667085;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.repeat-row .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+}
+
+.repeat-row .profile-field {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   NORMAL FIELDS
+   ========================================================= */
+
+.repeat-row .profile-field > label {
+    display: block;
+    margin-bottom: .4rem;
+    color: #344054;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.required-mark,
+.boolean-required {
+    margin-left: 2px;
+    color: #dc3545;
+}
+
+
+.repeat-row .profile-field input:not([type="checkbox"]):not([type="radio"]),
+.repeat-row .profile-field select,
+.repeat-row .profile-field textarea {
+    display: block;
+    width: 100%;
+    padding: .68rem .8rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: #fff;
+    color: #172033;
+    font-size: .85rem;
+    line-height: 1.4;
+}
+
+.repeat-row .profile-field textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.repeat-row .profile-field input:focus,
+.repeat-row .profile-field select:focus,
+.repeat-row .profile-field textarea:focus {
+    border-color: #6f42c1;
+    outline: 0;
+    box-shadow: 0 0 0 .18rem rgba(111, 66, 193, .1);
+}
+
+
+/* =========================================================
+   BOOLEAN FIELDS
+   ========================================================= */
+
+.repeat-row .profile-field.is-boolean {
+    display: flex;
+    align-items: stretch;
+}
+
+.profile-boolean {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 64px;
+    padding: .7rem .85rem;
+    border: 1px solid #e4e7ec;
+    border-radius: 11px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition:
+        border-color .18s ease,
+        background-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.profile-boolean:hover {
+    border-color: #c7b5e8;
+    background: #faf9fd;
+}
+
+.profile-boolean:has(input:checked) {
+    border-color: rgba(111, 66, 193, .35);
+    background: rgba(111, 66, 193, .055);
+}
+
+.profile-boolean input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.boolean-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 21px;
+    width: 21px;
+    height: 21px;
+    margin-right: .75rem;
+    border: 2px solid #b8c0cc;
+    border-radius: 6px;
+    background: #fff;
+    color: #fff;
+}
+
+.boolean-check i {
+    font-size: .72rem;
+    opacity: 0;
+    transform: scale(.5);
+    transition:
+        opacity .15s ease,
+        transform .15s ease;
+}
+
+.profile-boolean input:checked + .boolean-check {
+    border-color: #6f42c1;
+    background: #6f42c1;
+}
+
+.profile-boolean input:checked + .boolean-check i {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.boolean-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: .1rem;
+}
+
+.boolean-label {
+    color: #344054;
+    font-size: .8rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.boolean-description {
+    color: #667085;
+    font-size: .7rem;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   HELP & ERRORS
+   ========================================================= */
+
+.field-help {
+    display: flex;
+    align-items: flex-start;
+    gap: .3rem;
+    margin-top: .35rem;
+    color: #667085;
+    font-size: .7rem;
+    line-height: 1.4;
+}
+
+.field-error {
+    display: flex;
+    align-items: flex-start;
+    gap: .3rem;
+    margin-top: .35rem;
+    color: #b42318;
+    font-size: .72rem;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   ROW FOOTER / REMOVE
+   ========================================================= */
+
+.repeat-row-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding-top: .75rem;
+    border-top: 1px solid #f0f2f5;
+}
+
+.remove-row {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    color: #b42318;
+    font-size: .76rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.remove-row:hover {
+    color: #912018;
+}
+
+.remove-row input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: #dc3545;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.formset-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 130px;
+    margin-top: 1rem;
+    padding: 1.5rem;
+    border: 1px dashed #d0d5dd;
+    border-radius: 12px;
+    background: #fafbfc;
+    color: #667085;
+    text-align: center;
+}
+
+.formset-empty i {
+    margin-bottom: .45rem;
+    color: #98a2b3;
+    font-size: 1.4rem;
+}
+
+.formset-empty span {
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.formset-empty small {
+    margin-top: .2rem;
+    font-size: .7rem;
+}
+
+
+/* =========================================================
+   NEW RECORD
+   ========================================================= */
+
+.new-record-note {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    color: #667085;
+    font-size: .72rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .formset-heading {
+        align-items: flex-start;
+    }
+
+    .formset-title {
+        align-items: flex-start;
+    }
+
+    .formset-title p {
+        display: none;
+    }
+
+    .repeat-row {
+        padding: 1rem;
+    }
+
+    .repeat-row .profile-grid {
+        grid-template-columns: 1fr;
+        gap: .9rem;
+    }
+
+    .repeat-row-footer {
+        justify-content: flex-start;
+    }
+
+    .add-formset {
+        flex-shrink: 0;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+
+    .repeat-row,
+    .profile-boolean,
+    .boolean-check i {
+        transition: none;
+        }
+    }
+
+    .repeat-row .profile-field textarea[rows="2"] {
+        min-height: 4.5rem;
+    }
+</style>
+
+
+<script>
+(() => {
+
+    /*
+     * Initialize every formset independently.
+     * This allows the same _formset.html to be included
+     * multiple times on the page.
+     */
+
+    document
+        .querySelectorAll(".formset-card")
+        .forEach((card) => {
+
+            const addButton =
+                card.querySelector(".add-formset");
+
+            const totalForms =
+                card.querySelector(
+                    '[name$="-TOTAL_FORMS"]'
+                );
+
+            const rows =
+                card.querySelector(".formset-rows");
+
+            const emptyState =
+                card.querySelector(".formset-empty");
+
+            const template =
+                card.querySelector(
+                    ".empty-form-template"
+                );
+
+
+            if (
+                !addButton ||
+                !totalForms ||
+                !rows ||
+                !template
+            ) {
+                return;
+            }
+
+
+            /*
+             * Add new form
+             */
+            addButton.addEventListener(
+                "click",
+                () => {
+
+                    const index =
+                        Number(totalForms.value);
+
+                    const html =
+                        template.innerHTML.replaceAll(
+                            "__prefix__",
+                            index
+                        );
+
+
+                    rows.insertAdjacentHTML(
+                        "beforeend",
+                        html
+                    );
+
+
+                    totalForms.value =
+                        index + 1;
+
+
+                    if (emptyState) {
+                        emptyState.style.display = "none";
+                    }
+
+
+                    /*
+                     * Focus the first usable field
+                     * in the newly created record.
+                     */
+                    const newRow =
+                        rows.lastElementChild;
+
+                    const firstField =
+                        newRow.querySelector(
+                            "input:not([type='hidden']):not([type='checkbox']), select, textarea"
+                        );
+
+                    if (firstField) {
+                        firstField.focus();
+                    }
+
+                }
+            );
+
+
+            /*
+             * Keep empty-state visibility sensible.
+             */
+            function updateEmptyState() {
+
+                const visibleRows =
+                    rows.querySelectorAll(
+                        ".repeat-row"
+                    );
+
+                if (!emptyState) {
+                    return;
+                }
+
+                emptyState.style.display =
+                    visibleRows.length
+                        ? "none"
+                        : "flex";
+            }
+
+
+            updateEmptyState();
+
+        });
+
+})();
+</script>

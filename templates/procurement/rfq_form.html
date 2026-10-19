@@ -1,0 +1,21 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+{% block title %}Generate RFQ | DDS-NK Procurement{% endblock %}
+{% block nav %}{% include 'procurement/_sidebar.html' %}{% endblock %}
+{% block crumb %}<span class="module-label procurement-text">PROCUREMENT</span><h1>Generate request for quotation</h1>{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="panel form-panel">
+            <div class="panel-head"><div><h4>RFQ issue details</h4><small>Select the suppliers and response deadline.</small></div><span class="status status-approved">Approved requisition</span></div>
+            <div class="alert alert-light border"><strong>{{ requisition.number }}</strong> - {{ requisition.project.name }}<br><small>{{ requisition.activity_name|default:'Procurement request' }} | Requested value: UGX {{ requisition.total|floatformat:2|intcomma }}</small></div>
+            <form method="post" novalidate>{% csrf_token %}{{ form.non_field_errors }}
+                <div class="mb-3"><label class="form-label">Suppliers</label>{{ form.supplier }}<div class="form-text">Hold Ctrl or Command to select multiple approved active suppliers.</div>{% for e in form.supplier.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+                <div class="mb-3"><label class="form-label">Expected quotation return date</label>{{ form.deadline }}{% for e in form.deadline.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+                <div class="d-flex gap-2 justify-content-end"><a class="btn btn-light border" href="{% url 'procurement:req_detail' requisition.slug %}">Cancel</a><button class="btn btn-primary"><i class="bi bi-file-earmark-plus me-1"></i>Generate RFQ</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="col-xl-5"><div class="panel"><div class="panel-head"><div><h4>Items included</h4><small>These approved requisition items will be attached as PDF.</small></div></div><div class="table-responsive"><table class="table smart-table"><thead><tr><th>Description</th><th>Qty</th><th class="text-end">Value</th></tr></thead><tbody>{% for item in items %}<tr><td><strong>{{ item.description }}</strong><small>{{ item.unit_measure }}</small></td><td>{{ item.qty }}</td><td class="text-end">UGX {{ item.line_total|floatformat:2|intcomma }}</td></tr>{% endfor %}</tbody><tfoot><tr><th colspan="2">Total</th><th class="text-end">UGX {{ requisition.total|floatformat:2|intcomma }}</th></tr></tfoot></table></div></div></div>
+</div>
+{% endblock %}

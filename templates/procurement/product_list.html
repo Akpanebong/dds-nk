@@ -1,0 +1,564 @@
+{% extends 'module_base.html' %}
+
+{% load humanize %}{% block title %}Product Catalogue | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-cart-check me-1"></i>
+        PROCUREMENT
+    </span>
+    <h1>Product Catalogue</h1>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid px-0 procurement-catalogue">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-lg-row
+                justify-content-between align-items-lg-center
+                gap-3 mb-4">
+
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-box-seam me-1"></i>
+                    Catalogue Management
+                </span>
+
+                <span class="badge rounded-pill bg-success-subtle
+                             text-success border border-success-subtle">
+                    {{ items|length }} item{{ items|length|pluralize }}
+                </span>
+            </div>
+
+            <h2 class="fw-bold mb-1">Product Catalogue</h2>
+
+            <p class="text-muted mb-0">
+                Standardise goods, services, units and estimated costs
+                for DDS-NK procurement.
+            </p>
+        </div>
+
+        {% if manage_access.procurement %}
+            <a class="btn btn-primary d-inline-flex align-items-center
+                      justify-content-center gap-2"
+               href="{% url 'procurement:product_create' %}">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Product</span>
+            </a>
+        {% endif %}
+    </div>
+
+
+    <!-- Search and Filters -->
+    <section class="panel catalogue-filter-panel mb-4">
+
+        <form method="get" role="search">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-12 col-lg-9">
+                    <label for="productSearch"
+                           class="form-label fw-semibold">
+                        Search Catalogue
+                    </label>
+
+                    <div class="input-group catalogue-search">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input
+                            type="search"
+                            id="productSearch"
+                            name="q"
+                            value="{{ query|default:'' }}"
+                            class="form-control"
+                            placeholder="Search by product name, code or category..."
+                            aria-label="Search products, codes or categories"
+                        >
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit"
+                                class="btn btn-primary flex-grow-1
+                                       d-inline-flex align-items-center
+                                       justify-content-center gap-2">
+                            <i class="bi bi-search"></i>
+                            Search
+                        </button>
+
+                        {% if query %}
+                            <a href="{% url 'procurement:products' %}"
+                               class="btn btn-light border
+                                      d-inline-flex align-items-center
+                                      justify-content-center gap-2"
+                               title="Clear search"
+                               aria-label="Clear search">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            {% if query %}
+                <div class="mt-3 small text-muted">
+                    <i class="bi bi-funnel me-1"></i>
+                    Showing results for
+                    <strong class="text-dark">{{ query }}</strong>
+                </div>
+            {% endif %}
+        </form>
+
+    </section>
+
+
+    <!-- Catalogue Table -->
+    <section class="panel catalogue-table-panel">
+
+        <div class="d-flex flex-column flex-sm-row
+                    justify-content-between align-items-sm-center
+                    gap-2 mb-3">
+
+            <div>
+                <h5 class="fw-bold mb-1">Registered Products</h5>
+                <p class="text-muted small mb-0">
+                    Product specifications, estimated unit costs and suppliers.
+                </p>
+            </div>
+
+            <span class="small text-muted">
+                <i class="bi bi-database me-1"></i>
+                Catalogue register
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle smart-table catalogue-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Product Code</th>
+                        <th scope="col">Product Details</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Estimated Unit Cost</th>
+                        <th scope="col">Supplier</th>
+                        <th scope="col">Status</th>
+
+                        {% if manage_access.procurement %}
+                            <th scope="col" class="text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+
+                            <!-- Code -->
+                            <td>
+                                <span class="catalogue-code">
+                                    {{ item.code|default:"ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" }}
+                                </span>
+                            </td>
+
+                            <!-- Product -->
+                            <td class="catalogue-product-cell">
+                                <div class="d-flex align-items-start gap-3">
+
+                                    <div class="catalogue-product-icon">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <div class="fw-bold text-dark">
+                                            {{ item.name }}
+                                        </div>
+
+                                        {% if item.description %}
+                                            <div class="small text-muted
+                                                        catalogue-description">
+                                                {{ item.description|truncatechars:100 }}
+                                            </div>
+                                        {% else %}
+                                            <div class="small text-muted">
+                                                No description provided
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </td>
+
+                            <!-- Category -->
+                            <td>
+                                {% if item.get_category_display %}
+                                    <span class="catalogue-category">
+                                        {{ item.get_category_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Unit Cost -->
+                            <td>
+                                <div class="fw-bold text-dark
+                                            text-nowrap">
+                                    UGX {{ item.est_unit_cost|floatformat:2|intcomma }}
+                                </div>
+                                <div class="small text-muted">
+                                    Per {{ item.get_unit_display|default:"unit" }}
+                                </div>
+                            </td>
+
+                            <!-- Supplier -->
+                            <td>
+                                {% if item.supplier %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="catalogue-supplier-icon">
+                                            <i class="bi bi-building"></i>
+                                        </span>
+                                        <span>{{ item.supplier }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if item.active %}
+                                    <span class="catalogue-status status-active">
+                                        <span class="status-dot"></span>
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="catalogue-status status-inactive">
+                                        <span class="status-dot"></span>
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
+                            {% if manage_access.procurement %}
+                                <td class="text-end">
+                                    <div class="d-inline-flex
+                                                align-items-center gap-2">
+
+                                        <a class="btn btn-sm btn-light
+                                                  border catalogue-action"
+                                           href="{% url 'procurement:product_update' item.code %}"
+                                           title="Edit {{ item.name }}"
+                                           aria-label="Edit {{ item.name }}">
+                                            <i class="bi bi-pencil-square"></i>
+                                            <span>Edit</span>
+                                        </a>
+
+                                        <a class="btn btn-sm btn-outline-danger
+                                                  catalogue-action"
+                                           href="{% url 'procurement:product_delete' item.code %}"
+                                           title="Delete {{ item.name }}"
+                                           aria-label="Delete {{ item.name }}">
+                                            <i class="bi bi-trash3"></i>
+                                            <span>Delete</span>
+                                        </a>
+
+                                    </div>
+                                </td>
+                            {% endif %}
+
+                        </tr>
+
+                    {% empty %}
+                        <tr>
+                            <td colspan="{% if manage_access.procurement %}7{% else %}6{% endif %}"
+                                class="p-0">
+
+                                <div class="catalogue-empty-state">
+                                    <div class="catalogue-empty-icon">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+
+                                    <h5 class="fw-bold mb-2">
+                                        {% if query %}
+                                            No matching products
+                                        {% else %}
+                                            Your product catalogue is empty
+                                        {% endif %}
+                                    </h5>
+
+                                    <p class="text-muted mb-3">
+                                        {% if query %}
+                                            Try another search term or clear
+                                            your current search.
+                                        {% else %}
+                                            Registered goods and services
+                                            will appear here.
+                                        {% endif %}
+                                    </p>
+
+                                    {% if query %}
+                                        <a href="{% url 'procurement:products' %}"
+                                           class="btn btn-light border">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                            Clear Search
+                                        </a>
+                                    {% elif manage_access.procurement %}
+                                        <a href="{% url 'procurement:product_create' %}"
+                                           class="btn btn-primary">
+                                            <i class="bi bi-plus-lg me-1"></i>
+                                            Register First Product
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if items %}
+            <div class="catalogue-table-footer">
+                <span class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Use the product code and unit cost when preparing procurement requests.
+                </span>
+            </div>
+        {% endif %}
+
+    </section>
+
+</div>
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .procurement-catalogue {
+        --catalogue-primary: #087f7b;
+        --catalogue-border: #e2e8f0;
+        --catalogue-muted: #64748b;
+    }
+
+    .procurement-catalogue .panel {
+        padding: clamp(1rem, 2vw, 1.5rem);
+        background: #fff;
+        border: 1px solid var(--catalogue-border);
+        border-radius: 15px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, .035);
+    }
+
+    .procurement-catalogue .btn {
+        border-radius: 9px;
+        font-weight: 600;
+    }
+
+    .catalogue-search .input-group-text {
+        color: #64748b;
+        background: #f8fafc;
+        border-color: #dbe2ea;
+        border-radius: 9px 0 0 9px;
+    }
+
+    .catalogue-search .form-control {
+        min-height: 45px;
+        border-color: #dbe2ea;
+        border-radius: 0 9px 9px 0;
+        box-shadow: none;
+    }
+
+    .catalogue-search .form-control:focus {
+        border-color: #0d9488;
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .1);
+    }
+
+    .catalogue-table-panel {
+        overflow: hidden;
+    }
+
+    .catalogue-table {
+        min-width: 920px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .catalogue-table thead th {
+        padding: .9rem .85rem;
+        background: #f8fafc;
+        color: #475569;
+        border-top: 1px solid #edf0f4;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: .72rem;
+        font-weight: 750;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .catalogue-table tbody td {
+        padding: 1rem .85rem;
+        border-bottom: 1px solid #edf0f4;
+        vertical-align: middle;
+    }
+
+    .catalogue-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .catalogue-table tbody tr {
+        transition: background-color .15s ease;
+    }
+
+    .catalogue-table tbody tr:hover {
+        background-color: #f8fbfc;
+    }
+
+    .catalogue-code {
+        display: inline-block;
+        padding: .35rem .5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        background: #f8fafc;
+        color: #334155;
+        font-size: .8rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .catalogue-product-icon,
+    .catalogue-supplier-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: 10px;
+    }
+
+    .catalogue-product-icon {
+        width: 40px;
+        height: 40px;
+        background: #e8f5f3;
+        color: var(--catalogue-primary);
+        font-size: 1.15rem;
+    }
+
+    .catalogue-supplier-icon {
+        width: 30px;
+        height: 30px;
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    .catalogue-description {
+        max-width: 300px;
+        margin-top: .25rem;
+        line-height: 1.5;
+    }
+
+    .catalogue-category {
+        display: inline-block;
+        padding: .35rem .6rem;
+        border-radius: 7px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+
+    .catalogue-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .4rem .65rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .catalogue-status .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    .status-active {
+        color: #166534;
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+
+    .status-active .status-dot {
+        background: #16a34a;
+    }
+
+    .status-inactive {
+        color: #64748b;
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .status-inactive .status-dot {
+        background: #94a3b8;
+    }
+
+    .catalogue-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        white-space: nowrap;
+    }
+
+    .catalogue-empty-state {
+        padding: clamp(2.5rem, 6vw, 4rem) 1.25rem;
+        text-align: center;
+    }
+
+    .catalogue-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1.25rem;
+        border-radius: 20px;
+        background: #e8f5f3;
+        color: var(--catalogue-primary);
+        font-size: 2rem;
+    }
+
+    .catalogue-empty-state p {
+        max-width: 420px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .catalogue-table-footer {
+        margin-top: .5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #edf0f4;
+    }
+
+    @media (max-width: 575.98px) {
+        .catalogue-action {
+            padding: .4rem .5rem;
+        }
+
+        .catalogue-action span {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+

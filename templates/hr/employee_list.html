@@ -1,0 +1,719 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Employee Directory | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --dds-primary: #e50078;
+        --dds-primary-dark: #bd0063;
+        --dds-charcoal: #3b2938;
+        --dds-muted: #756875;
+        --dds-border: #eee5ec;
+        --dds-surface: #ffffff;
+        --dds-background: #f8f5f8;
+        --dds-soft: #fff0f7;
+        --dds-success: #16845b;
+        --dds-radius: 16px;
+        --dds-shadow: 0 5px 22px rgba(59, 41, 56, 0.055);
+    }
+
+    .employee-directory {
+        color: var(--dds-charcoal);
+        padding: 1.25rem 0 2rem;
+    }
+
+    .employee-directory * {
+        box-sizing: border-box;
+    }
+
+    .directory-hero {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        background: var(--dds-surface);
+        border: 1px solid var(--dds-border);
+        border-left: 5px solid var(--dds-primary);
+        border-radius: var(--dds-radius);
+        box-shadow: var(--dds-shadow);
+    }
+
+    .directory-hero::after {
+        content: "";
+        position: absolute;
+        right: -35px;
+        top: -65px;
+        width: 170px;
+        height: 170px;
+        border: 25px solid rgba(229, 0, 120, 0.055);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .directory-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.65rem;
+        color: var(--dds-primary);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .directory-hero h1 {
+        margin: 0 0 0.55rem;
+        color: var(--dds-charcoal);
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+    }
+
+    .directory-hero p {
+        max-width: 600px;
+        margin: 0;
+        color: var(--dds-muted);
+        font-size: 0.94rem;
+        line-height: 1.65;
+    }
+
+    .directory-hero-action {
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+    }
+
+    .btn-dds {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.1rem;
+        border: 1px solid var(--dds-primary);
+        border-radius: 10px;
+        background: var(--dds-primary);
+        color: #fff !important;
+        font-size: 0.88rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-dds:hover {
+        background: var(--dds-primary-dark);
+        border-color: var(--dds-primary-dark);
+        transform: translateY(-1px);
+    }
+
+    .btn-dds-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.75rem;
+        border: 1px solid rgba(229, 0, 120, 0.35);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--dds-primary) !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-dds-outline:hover {
+        background: var(--dds-soft);
+        border-color: var(--dds-primary);
+    }
+
+    .employee-actions {
+        position: relative;
+    }
+
+    .employee-action-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 1px solid var(--dds-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--dds-charcoal);
+        font-size: 1.2rem;
+        line-height: 1;
+        transition: all 0.2s ease;
+    }
+
+    .employee-action-toggle:hover,
+    .employee-action-toggle:focus-visible,
+    .employee-action-toggle.show {
+        border-color: var(--dds-primary);
+        background: var(--dds-soft);
+        color: var(--dds-primary-dark);
+        box-shadow: none;
+    }
+
+    .employee-actions .dropdown-menu {
+        min-width: 12rem;
+        padding: 0.4rem;
+        border: 1px solid var(--dds-border);
+        border-radius: 10px;
+        box-shadow: 0 10px 28px rgba(59, 41, 56, 0.14);
+    }
+
+    .employee-actions .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 7px;
+        color: var(--dds-charcoal);
+        font-size: 0.8rem;
+    }
+
+    .employee-actions .dropdown-item i {
+        width: 1rem;
+        color: var(--dds-primary);
+    }
+
+    .employee-actions .dropdown-item:hover,
+    .employee-actions .dropdown-item:focus {
+        background: var(--dds-soft);
+        color: var(--dds-primary-dark);
+    }
+
+    .directory-panel {
+        overflow: hidden;
+        border: 1px solid var(--dds-border);
+        border-radius: var(--dds-radius);
+        background: var(--dds-surface);
+        box-shadow: var(--dds-shadow);
+    }
+
+    .directory-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1.2rem 1.4rem;
+        border-bottom: 1px solid var(--dds-border);
+    }
+
+    .directory-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin: 0;
+        color: var(--dds-charcoal);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .directory-panel-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: var(--dds-soft);
+        color: var(--dds-primary);
+        font-size: 1.1rem;
+    }
+
+    .directory-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 999px;
+        background: var(--dds-soft);
+        color: var(--dds-primary-dark);
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+    .directory-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .directory-table thead th {
+        padding: 0.95rem 1.2rem;
+        border-bottom: 1px solid var(--dds-border);
+        background: #fbf8fb;
+        color: var(--dds-muted);
+        font-size: 0.69rem;
+        font-weight: 800;
+        letter-spacing: 0.065em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .directory-table tbody td {
+        padding: 1rem 1.2rem;
+        border-bottom: 1px solid #f2edf1;
+        color: var(--dds-charcoal);
+        font-size: 0.86rem;
+        vertical-align: middle;
+    }
+
+    .directory-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .directory-table tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .directory-table tbody tr:hover {
+        background: #fffafd;
+    }
+
+    .staff-id {
+        display: inline-block;
+        padding: 0.35rem 0.55rem;
+        border: 1px solid var(--dds-border);
+        border-radius: 7px;
+        background: #fcfafc;
+        color: var(--dds-charcoal);
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .employee-name {
+        display: block;
+        color: var(--dds-charcoal);
+        font-weight: 750;
+        line-height: 1.45;
+    }
+
+    .employee-department {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #665663;
+        font-weight: 600;
+    }
+
+    .employee-department i {
+        color: var(--dds-primary);
+    }
+
+    .employee-date {
+        color: var(--dds-muted);
+        white-space: nowrap;
+    }
+
+    .directory-empty {
+        padding: 3.5rem 1.25rem !important;
+        text-align: center;
+    }
+
+    .directory-empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 1rem;
+        border-radius: 18px;
+        background: var(--dds-soft);
+        color: var(--dds-primary);
+        font-size: 1.6rem;
+    }
+
+    .directory-empty h3 {
+        margin-bottom: 0.45rem;
+        color: var(--dds-charcoal);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .directory-empty p {
+        margin: 0;
+        color: var(--dds-muted);
+        font-size: 0.85rem;
+    }
+
+    .directory-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1rem 1.4rem;
+        border-top: 1px solid var(--dds-border);
+        background: #fdfbfd;
+    }
+
+    .pagination-summary {
+        color: var(--dds-muted);
+        font-size: 0.82rem;
+    }
+
+    .directory-pagination {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .page-link-dds {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        min-height: 36px;
+        padding: 0.45rem 0.7rem;
+        border: 1px solid var(--dds-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--dds-charcoal);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .page-link-dds:hover {
+        border-color: var(--dds-primary);
+        background: var(--dds-soft);
+        color: var(--dds-primary-dark);
+    }
+
+    .page-link-dds.current {
+        border-color: var(--dds-primary);
+        background: var(--dds-primary);
+        color: #fff;
+        cursor: default;
+    }
+
+    @media (max-width: 767.98px) {
+        .employee-directory {
+            padding-top: 0.75rem;
+        }
+
+        .directory-hero {
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 1.25rem;
+        }
+
+        .directory-hero-action,
+        .directory-hero-action .btn-dds {
+            width: 100%;
+        }
+
+        .directory-panel-header {
+            padding: 1rem;
+        }
+
+        .directory-table thead th,
+        .directory-table tbody td {
+            padding: 0.85rem;
+        }
+
+        .directory-footer {
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .directory-pagination {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="employee-directory">
+
+    <!-- Page heading -->
+    <section class="directory-hero">
+        <div>
+            <div class="directory-eyebrow">
+                <i class="bi bi-people-fill"></i>
+                DDS-NK THRIVE · HUMAN RESOURCES
+            </div>
+
+            <h1>Employee Directory</h1>
+
+            <p>
+                Manage the organization's consolidated employee records,
+                review staff details, and maintain an organized workforce directory.
+            </p>
+        </div>
+
+        {% if can_manage %}
+        <div class="directory-hero-action">
+            <a class="btn-dds" href="{% url 'hr:add_employee' %}">
+                <i class="bi bi-person-plus-fill"></i>
+                Add Employee
+            </a>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Employee records -->
+    <section class="directory-panel">
+
+        <div class="directory-panel-header">
+            <h2 class="directory-panel-title">
+                <span class="directory-panel-icon">
+                    <i class="bi bi-person-lines-fill"></i>
+                </span>
+                Employee Records
+            </h2>
+
+            {% if employees %}
+            <span class="directory-count">
+                <i class="bi bi-people"></i>
+                {{ employee_count }}
+                {% if employee_count == 1 %}
+                    employee
+                {% else %}
+                    employees
+                {% endif %}
+            </span>
+            {% endif %}
+        </div>
+
+        <form method="get" class="px-3 pt-3" role="search" id="employee-search-form">
+            <label for="employee-search" class="visually-hidden">Search employees</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input
+                    type="search"
+                    class="form-control"
+                    id="employee-search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Search by name, staff ID, department or job title..."
+                    autocomplete="off"
+                >
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table directory-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Staff ID</th>
+                        <th scope="col">Employee</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Job Title</th>
+                        <th scope="col">Date Joined</th>
+                        <th scope="col">Employment status</th>
+                        <th scope="col">Probation period</th>
+                        {% if can_manage %}
+                        <th scope="col" class="text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>
+                            <span class="staff-id">
+                                {{ employee.user.staff_reg_no|default:"—" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="employee-name">
+                                {{ employee.user.get_full_name|default:employee.user.username }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="employee-department">
+                                <i class="bi bi-diagram-3"></i>
+                                {{ employee.user.department|default:"—" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ employee.user.job_title|default:"—" }}
+                        </td>
+
+                        <td>
+                            <span class="employee-date">
+                                {{ employee.date_joined|date:"Y-m-d"|default:"—" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge {% if employee.status == 'Probation' %}text-bg-warning{% elif employee.status == 'Active' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+                                {{ employee.get_status_display|default:employee.status }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if employee.status == 'Probation' %}
+                                <small class="d-block">{{ employee.probation_start_date|date:"Y-m-d"|default:"—" }} to</small>
+                                <small class="d-block">{{ employee.probation_end_date|date:"Y-m-d"|default:"—" }}</small>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        {% if can_manage %}
+                        <td class="text-end employee-actions">
+                            <div class="dropdown">
+                                <button
+                                    class="employee-action-toggle dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    aria-label="Actions for {{ employee.user.get_full_name|default:employee.user.username }}"
+                                >
+                                    <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if employee.supervised_by_id == request.user.id %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_appraisal' employee.slug %}">
+                                            <i class="bi bi-send"></i>
+                                            <span>Send appraisal</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if is_hr and employee.status == 'Probation' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% if employee.orientation_plan %}{% url 'hr:orientation_hr_detail' employee.orientation_plan.id %}{% else %}{% url 'hr:orientation_hr_create' employee.slug %}{% endif %}">
+                                            <i class="bi bi-compass"></i>
+                                            <span>Probation workflow</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'hr:edit_employee' employee.pk employee.slug %}">
+                                            <i class="bi bi-pencil-square"></i>
+                                            <span>Edit</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td
+                            colspan="{% if can_manage %}8{% else %}7{% endif %}"
+                            class="directory-empty"
+                        >
+                            <div class="directory-empty-icon">
+                                <i class="bi bi-person-exclamation"></i>
+                            </div>
+
+                            <h3>No employees found</h3>
+
+                            <p>
+                                Employee records will appear here when they are available.
+                            </p>
+
+                            {% if can_manage %}
+                            <div class="mt-3">
+                                <a
+                                    class="btn-dds"
+                                    href="{% url 'hr:add_employee' %}"
+                                >
+                                    <i class="bi bi-person-plus"></i>
+                                    Add First Employee
+                                </a>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if employees.has_other_pages %}
+        <div class="directory-footer">
+            <div class="pagination-summary">
+                Page <strong>{{ employees.number }}</strong>
+                of <strong>{{ employees.paginator.num_pages }}</strong>
+            </div>
+
+            <nav class="directory-pagination" aria-label="Employee directory pagination">
+                {% if employees.has_previous %}
+                <a
+                    class="page-link-dds"
+                    href="?page=1{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}"
+                    aria-label="First page"
+                >
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+
+                <a
+                    class="page-link-dds"
+                    href="?page={{ employees.previous_page_number }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}"
+                >
+                    <i class="bi bi-chevron-left me-1"></i>
+                    Previous
+                </a>
+                {% endif %}
+
+                <span class="page-link-dds current" aria-current="page">
+                    {{ employees.number }}
+                </span>
+
+                {% if employees.has_next %}
+                <a
+                    class="page-link-dds"
+                    href="?page={{ employees.next_page_number }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}"
+                >
+                    Next
+                    <i class="bi bi-chevron-right ms-1"></i>
+                </a>
+
+                <a
+                    class="page-link-dds"
+                    href="?page={{ employees.paginator.num_pages }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}"
+                    aria-label="Last page"
+                >
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('employee-search-form');
+    const input = document.getElementById('employee-search');
+    if (!form || !input) return;
+
+    let timer;
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            form.submit();
+        }, 350);
+    });
+});
+</script>
+{% endblock %}

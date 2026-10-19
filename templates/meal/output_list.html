@@ -1,0 +1,386 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}MEAL Outputs | DDS-NK{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Data Records</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+
+{% endblock %}
+
+{% block crumb %}
+
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>
+        MEAL
+    </span>
+
+    <h1>Outputs</h1>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+        <div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-diagram-3 me-1"></i>
+                    MEAL Framework
+                </span>
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-layers me-1"></i>
+                    Outputs
+                </span>
+
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Programme Outputs
+            </h2>
+
+            <p class="text-muted mb-0">
+                Review DDS-NK outputs and their relationship to strategic objectives
+                and associated indicators and activities.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- FRAMEWORK SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+
+            <div class="panel h-100">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="rounded-3 bg-light p-3">
+                        <i class="bi bi-layers-fill text-primary fs-4"></i>
+                    </div>
+
+                    <div>
+
+                        <div class="small text-uppercase text-muted fw-semibold">
+                            Framework Level
+                        </div>
+
+                        <div class="fw-bold fs-5">
+                            Outputs
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-4">
+
+            <div class="panel h-100">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="rounded-3 bg-light p-3">
+                        <i class="bi bi-bullseye text-primary fs-4"></i>
+                    </div>
+
+                    <div>
+
+                        <div class="small text-uppercase text-muted fw-semibold">
+                            Linked Level
+                        </div>
+
+                        <div class="fw-bold fs-5">
+                            Strategic Objectives
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-4">
+
+            <div class="panel h-100">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="rounded-3 bg-light p-3">
+                        <i class="bi bi-list-check text-primary fs-4"></i>
+                    </div>
+
+                    <div>
+
+                        <div class="small text-uppercase text-muted fw-semibold">
+                            Measurement
+                        </div>
+
+                        <div class="fw-bold fs-5">
+                            Indicators & Activities
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- OUTPUT REGISTER -->
+    <div class="panel p-0 overflow-hidden">
+
+        <div class="px-4 py-3 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+            <div>
+
+                <h5 class="fw-semibold mb-1">
+                    <i class="bi bi-layers me-2"></i>
+                    Output Register
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Outputs defined within the DDS-NK MEAL framework.
+                </p>
+
+            </div>
+
+            <a href="{% url 'meal:framework_create' 'output' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Add output
+            </a>
+
+            {% if outputs %}
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-collection me-1"></i>
+                    {{ outputs|length }} output{{ outputs|length|pluralize }}
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table smart-table align-middle mb-0">
+
+                <thead>
+
+                    <tr>
+
+                        <th class="ps-4">
+                            Output Code
+                        </th>
+
+                        <th>
+                            Output
+                        </th>
+
+                        <th>
+                            Strategic Objective
+                        </th>
+
+                        <th class="text-center">
+                            Activities
+                        </th>
+
+                        <th class="text-end pe-4">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in outputs %}
+
+                        <tr>
+
+                            <!-- CODE -->
+                            <td class="ps-4">
+
+                                <span class="badge rounded-pill text-bg-light border fw-semibold">
+                                    <i class="bi bi-hash me-1"></i>
+                                    {{ item.code }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- OUTPUT -->
+                            <td>
+
+                                <div class="d-flex align-items-start gap-3">
+
+                                    <div class="rounded-3 bg-light p-2 flex-shrink-0">
+                                        <i class="bi bi-layers text-primary"></i>
+                                    </div>
+
+                                    <div>
+
+                                        <div class="fw-semibold">
+                                            {{ item.title }}
+                                        </div>
+
+                                        {% if item.objective %}
+
+                                            <div class="small text-muted mt-1">
+                                                Linked to {{ item.objective.code }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- STRATEGIC OBJECTIVE -->
+                            <td>
+
+                                {% if item.objective %}
+
+                                    <span class="badge rounded-pill text-bg-primary">
+                                        <i class="bi bi-bullseye me-1"></i>
+                                        {{ item.objective.code }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Not linked
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ACTIVITIES -->
+                            <td class="text-center">
+
+                                <span class="badge rounded-pill text-bg-light border px-3 py-2">
+
+                                    <i class="bi bi-list-check me-1"></i>
+
+                                    {{ item.indicators.count }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- ACTION -->
+                            <td class="text-end pe-4">
+
+                                <a href="{% url 'meal:framework_detail' 'output' item.code %}"
+                                   class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+
+                                    <i class="bi bi-eye"></i>
+                                    <span>View</span>
+
+                                </a>
+                                <a href="{% url 'meal:framework_update' 'output' item.code %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'meal:framework_delete' 'output' item.code %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="5" class="py-5">
+
+                                <div class="text-center px-3">
+
+                                    <div class="mb-3">
+
+                                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light"
+                                             style="width:64px;height:64px;">
+
+                                            <i class="bi bi-layers text-muted fs-3"></i>
+
+                                        </div>
+
+                                    </div>
+
+                                    <h5 class="fw-semibold mb-2">
+                                        No outputs configured
+                                    </h5>
+
+                                    <p class="text-muted mb-0">
+                                        No programme outputs have been defined
+                                        within the DDS-NK MEAL framework.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

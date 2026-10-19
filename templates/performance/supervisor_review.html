@@ -1,0 +1,399 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Supervisor Review | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .supervisor-review {
+        --sr-primary: #e50078;
+        --sr-plum: #3b2938;
+        --sr-muted: #77818d;
+        --sr-border: #e6eaf0;
+        --sr-soft: #fff4f9;
+        color: var(--sr-plum);
+    }
+
+    .supervisor-review .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .supervisor-review .eyebrow {
+        margin-bottom: .5rem;
+        color: var(--sr-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .supervisor-review .page-heading h1 {
+        margin: 0 0 .45rem;
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .supervisor-review .page-heading p {
+        margin: 0;
+        color: var(--sr-muted);
+        font-size: .92rem;
+        line-height: 1.6;
+    }
+
+    .supervisor-review .review-card {
+        overflow: hidden;
+        border: 1px solid var(--sr-border);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 6px 24px rgba(59, 41, 56, .045);
+    }
+
+    .supervisor-review .card-header-custom {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--sr-border);
+        background: linear-gradient(120deg, #fff 0%, #fff8fb 100%);
+    }
+
+    .supervisor-review .header-icon {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        place-items: center;
+        border-radius: 13px;
+        background: #ffe6f2;
+        color: var(--sr-primary);
+        font-size: 1.3rem;
+    }
+
+    .supervisor-review .card-header-custom h2 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .supervisor-review .card-header-custom p {
+        margin: 0;
+        color: var(--sr-muted);
+        font-size: .82rem;
+    }
+
+    .supervisor-review .card-body-custom {
+        padding: 1.5rem;
+    }
+
+    .supervisor-review .guidance {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #f3d5e4;
+        border-radius: 12px;
+        background: var(--sr-soft);
+        color: #655766;
+        font-size: .84rem;
+        line-height: 1.65;
+    }
+
+    .supervisor-review .guidance i {
+        margin-top: .1rem;
+        color: var(--sr-primary);
+        font-size: 1.1rem;
+    }
+
+    .supervisor-review .form-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .supervisor-review .form-fields p {
+        margin-bottom: 1.25rem;
+    }
+
+    .supervisor-review .form-fields p:last-child,
+    .supervisor-review .form-fields p:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .supervisor-review .form-fields label {
+        display: block;
+        margin-bottom: .45rem;
+        color: var(--sr-plum);
+        font-size: .85rem;
+        font-weight: 750;
+    }
+
+    .supervisor-review .form-fields input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .supervisor-review .form-fields select,
+    .supervisor-review .form-fields textarea {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--sr-plum);
+        font: inherit;
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .supervisor-review .form-fields textarea {
+        min-height: 125px;
+        resize: vertical;
+    }
+
+    .supervisor-review .form-fields input:focus,
+    .supervisor-review .form-fields select:focus,
+    .supervisor-review .form-fields textarea:focus {
+        outline: none;
+        border-color: var(--sr-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .supervisor-review .form-fields input[type="checkbox"],
+    .supervisor-review .form-fields input[type="radio"] {
+        accent-color: var(--sr-primary);
+    }
+
+    .supervisor-review .form-fields input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: .7rem;
+        border: 1px dashed #cbd2dc;
+        border-radius: 10px;
+        background: #f9fafb;
+        font-size: .85rem;
+    }
+
+    .supervisor-review .form-fields .helptext,
+    .supervisor-review .form-fields .form-text {
+        display: block;
+        margin-top: .4rem;
+        color: var(--sr-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .supervisor-review .form-fields ul.errorlist {
+        margin: .4rem 0;
+        padding: 0;
+        list-style: none;
+        color: #b42318;
+        font-size: .82rem;
+    }
+
+    .supervisor-review .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--sr-border);
+    }
+
+    .supervisor-review .btn-save-review {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 44px;
+        padding: .7rem 1.25rem;
+        border: 1px solid var(--sr-primary);
+        border-radius: 10px;
+        background: var(--sr-primary);
+        color: #fff;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .supervisor-review .btn-save-review:hover {
+        transform: translateY(-1px);
+        border-color: #c90069;
+        background: #c90069;
+        color: #fff;
+    }
+
+    @media (max-width: 575.98px) {
+        .supervisor-review .form-fields {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .supervisor-review .card-header-custom,
+        .supervisor-review .card-body-custom {
+            padding: 1rem;
+        }
+
+        .supervisor-review .form-actions,
+        .supervisor-review .btn-save-review {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="supervisor-review">
+
+    <header class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-person-check me-1"></i>
+            Human Resources / Performance Management
+        </div>
+
+        <h1>Supervisor Review</h1>
+
+        <p>
+            Assess employee performance, document your observations,
+            and provide the supervisor's review outcome.
+        </p>
+    </header>
+
+    <section class="review-card">
+
+        <div class="card-header-custom">
+            <div class="header-icon">
+                <i class="bi bi-clipboard2-check"></i>
+            </div>
+
+            <div>
+                <h2>Performance Review</h2>
+                <p>Complete all required fields before saving your review.</p>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+
+            <div class="guidance">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Supervisor guidance</strong><br>
+                    Base your assessment on documented performance, agreed
+                    objectives, and relevant evidence. Provide constructive
+                    feedback and ensure the review follows the organisation's
+                    appraisal procedures.
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please review the following errors:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-fields">
+    <div class="row g-3">
+
+        {% for field in form %}
+            {% if field.name == "job_description_score" %}
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% elif field.name == "job_description_interpretation" %}
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% elif field.name == "service_score" %}
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% elif field.name == "service_interpretation" %}
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="col-12">
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+</div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-save-review">
+                        <i class="bi bi-check2-circle"></i>
+                        Save Supervisor Review
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

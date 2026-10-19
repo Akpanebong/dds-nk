@@ -1,0 +1,71 @@
+<div class="sidebar-section-label"><span>HUMAN RESOURCES</span></div>
+<a href="{% url 'hr:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+<a href="{% url 'hr:employee_list' %}" class="{% if request.resolver_match.url_name in 'employee_list staff add_employee edit_employee' %}active{% endif %}"><i class="bi bi-people"></i><span>Employees</span></a>
+<a href="{% url 'hr:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="bi bi-person-vcard"></i><span>My Profile</span></a>
+
+<div class="sidebar-section-label"><span>PEOPLE OPERATIONS</span></div>
+<details class="sidebar-dropdown" {% if 'leave' in request.resolver_match.url_name %}open{% endif %}>
+    <summary><i class="bi bi-calendar2-week"></i><span>Leave</span><i class="bi bi-chevron-down ms-auto"></i></summary>
+    <a href="{% url 'hr:leave_list' %}">Leave register</a>
+    <a href="{% url 'hr:apply_leave' %}">Apply for leave</a>
+    <a href="{% url 'hr:supervisor_leave_list' %}">Leave approvals</a>
+    <a href="{% url 'hr:leave_report' %}">Leave reports</a>
+</details>
+<details class="sidebar-dropdown" {% if 'attendance' in request.resolver_match.url_name %}open{% endif %}>
+    <summary><i class="bi bi-calendar-check"></i><span>Attendance</span><i class="bi bi-chevron-down ms-auto"></i></summary>
+    <a href="{% url 'hr:attendance_list' %}">Attendance Register</a>
+    <a href="{% url 'hr:staff_mark_attendance' %}">Self Attendance</a>
+    <a href="{% url 'hr:mark_attendance' %}">Record Staff Attendance</a>
+</details>
+<details class="sidebar-dropdown" {% if 'training' in request.resolver_match.url_name %}open{% endif %}>
+    <summary><i class="bi bi-mortarboard"></i><span>Training</span><i class="bi bi-chevron-down ms-auto"></i></summary>
+    <a href="{% url 'hr:training_list' %}">Training register</a>
+    <a href="{% url 'hr:add_training' %}">Add training</a>
+</details>
+<details class="sidebar-dropdown" {% if 'appraisal' in request.resolver_match.url_name or request.resolver_match.url_name == 'reviews' %}open{% endif %}>
+    <summary><i class="bi bi-clipboard2-check"></i><span>Appraisals</span><i class="bi bi-chevron-down ms-auto"></i></summary>
+    <a href="{% url 'appraisal_list' %}">Appraisal register</a>
+    <a href="{% url 'appraisal_dashboard' %}">Appraisal dashboard</a>
+    <a href="{% url 'hr:employee_list' %}">Create / send appraisal</a>
+</details>
+
+<div class="sidebar-section-label"><span>COLLABORATION</span></div>
+<a href="{% url 'hr:sitrep_list' %}" class="{% if 'sitrep' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-exclamation-diamond"></i><span>Situation Reports</span></a>
+<details class="sidebar-dropdown" {% if 'orientation' in request.resolver_match.url_name %}open{% endif %}>
+    <summary><i class="bi bi-compass"></i><span>Probation &amp; orientation</span><i class="bi bi-chevron-down ms-auto"></i></summary>
+    <a href="{% url 'hr:orientation_my' %}">My probation plan</a>
+
+    {% if can_view_probation_register %}
+    <a href="{% url 'hr:orientation_hr_list' %}">Probation register</a>
+    {% endif %}
+    {% if can_view_ed_probation_review %}
+    <a href="{% url 'hr:orientation_cmt_list' %}">ED probation review</a>
+    {% endif %}
+    {% if can_view_department_sessions %}
+    <a href="{% url 'hr:orientation_head_list' %}">Department sessions</a>
+    {% endif %}
+</details>
+
+<style>
+    .sidebar-dropdown { margin: 2px 0; }
+    .sidebar-dropdown summary {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        color: inherit;
+        cursor: pointer;
+        list-style: none;
+        border-radius: 8px;
+    }
+    .sidebar-dropdown summary::-webkit-details-marker { display: none; }
+    .sidebar-dropdown summary:hover,
+    .sidebar-dropdown[open] summary { background: rgba(229, 0, 120, .08); }
+    .sidebar-dropdown > a {
+        display: block;
+        margin-left: 28px;
+        padding: 7px 12px;
+        font-size: .88em;
+    }
+</style>
+{% load group_tags %}

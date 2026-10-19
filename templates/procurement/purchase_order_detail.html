@@ -1,0 +1,719 @@
+{% extends 'module_base.html' %}
+{% load humanize %}
+
+{% block title %}{{ po.po_number }} | DDS-NK Procurement{% endblock %}
+
+{% block nav %}
+    {% include 'procurement/_sidebar.html' %}
+{% endblock %}
+
+{% block crumb %}
+    <span class="module-label procurement-text">
+        <i class="bi bi-cart-check me-1"></i> PROCUREMENT
+    </span>
+    <h1 class="mb-0">{{ po.po_number }}</h1>
+{% endblock %}
+
+{% block content %}
+<style>
+    .po-page {
+        --po-primary: #e50078;
+        --po-primary-dark: #b80060;
+        --po-ink: #302632;
+        --po-muted: #786d79;
+        --po-border: #eee7ed;
+        --po-surface: #ffffff;
+        --po-soft: #fff5fa;
+        color: var(--po-ink);
+        padding-bottom: 2rem;
+    }
+
+    .po-page .po-hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(125deg, #382635 0%, #563147 65%, #7b2855 100%);
+        color: #fff;
+        border-radius: 18px;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .po-page .po-hero::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border: 35px solid rgba(255,255,255,.055);
+        border-radius: 50%;
+        right: -65px;
+        top: -100px;
+        pointer-events: none;
+    }
+
+    .po-page .po-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .po-page .eyebrow {
+        color: #f5bfdc;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .po-page .po-number {
+        font-size: clamp(1.45rem, 3vw, 2.15rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        overflow-wrap: anywhere;
+    }
+
+    .po-page .hero-description {
+        color: rgba(255,255,255,.76);
+        max-width: 680px;
+        margin-bottom: 0;
+        line-height: 1.7;
+    }
+
+    .po-page .po-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .48rem .85rem;
+        border-radius: 30px;
+        background: rgba(255,255,255,.13);
+        border: 1px solid rgba(255,255,255,.23);
+        color: #fff;
+        font-size: .76rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .po-page .po-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        border-radius: 9px;
+        padding: .7rem 1rem;
+        font-size: .85rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .po-page .po-action-light {
+        background: #fff;
+        color: var(--po-ink);
+        border: 1px solid rgba(255,255,255,.7);
+    }
+
+    .po-page .po-action-light:hover {
+        background: #fff0f7;
+        color: var(--po-primary-dark);
+    }
+
+    .po-page .po-action-primary {
+        background: var(--po-primary);
+        border: 1px solid var(--po-primary);
+        color: #fff;
+    }
+
+    .po-page .po-action-primary:hover {
+        background: var(--po-primary-dark);
+        border-color: var(--po-primary-dark);
+        color: #fff;
+    }
+
+    .po-page .po-panel {
+        height: 100%;
+        min-width: 0;
+        background: var(--po-surface);
+        border: 1px solid var(--po-border);
+        border-radius: 15px;
+        box-shadow: 0 4px 18px rgba(48,38,50,.035);
+        overflow: hidden;
+    }
+
+    .po-page .po-panel-header {
+        padding: 1.25rem 1.4rem;
+        border-bottom: 1px solid var(--po-border);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .po-page .po-panel-title {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0;
+        color: var(--po-ink);
+    }
+
+    .po-page .po-panel-subtitle {
+        display: block;
+        color: var(--po-muted);
+        font-size: .8rem;
+        margin-top: .4rem;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .po-page .po-section-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: var(--po-soft);
+        color: var(--po-primary);
+        font-size: 1.15rem;
+    }
+
+    .po-page .po-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .po-page .po-table {
+        width: 100%;
+        min-width: 550px;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .po-page .po-table thead th {
+        padding: .9rem 1.15rem;
+        background: #faf7f9;
+        border-bottom: 1px solid var(--po-border);
+        color: var(--po-muted);
+        font-size: .69rem;
+        font-weight: 800;
+        letter-spacing: .065em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .po-page .po-table tbody td {
+        padding: 1rem 1.15rem;
+        border-bottom: 1px solid #f1edf0;
+        vertical-align: middle;
+        font-size: .84rem;
+    }
+
+    .po-page .po-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .po-page .po-table tbody tr:hover {
+        background: #fffbfd;
+    }
+
+    .po-page .item-description {
+        min-width: 180px;
+        font-weight: 650;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .po-page .item-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #f7f2f6;
+        color: var(--po-muted);
+        font-size: .75rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .po-page .unit-label {
+        display: inline-block;
+        padding: .3rem .55rem;
+        border-radius: 6px;
+        background: #f7f4f6;
+        color: #625562;
+        font-size: .76rem;
+        white-space: nowrap;
+    }
+
+    .po-page .po-summary-body {
+        padding: 1.4rem;
+    }
+
+    .po-page .supplier-box {
+        padding: 1rem;
+        margin-bottom: 1.35rem;
+        border: 1px solid #f1dce8;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #fff6fb, #fff);
+    }
+
+    .po-page .supplier-name {
+        font-size: .95rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+        margin: .65rem 0 .2rem;
+    }
+
+    .po-page .summary-label {
+        color: var(--po-muted);
+        font-size: .8rem;
+    }
+
+    .po-page .summary-value {
+        color: var(--po-ink);
+        font-size: .81rem;
+        font-weight: 750;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .po-page .summary-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        gap: .75rem;
+        align-items: start;
+        padding: .85rem 0;
+        border-bottom: 1px solid #f0ebef;
+    }
+
+    .po-page .summary-row:last-of-type {
+        border-bottom: 0;
+    }
+
+    .po-page .amount-box {
+        margin: 1.25rem 0;
+        padding: 1.15rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #fff1f8, #fff8fb);
+        border: 1px solid #f5d5e7;
+    }
+
+    .po-page .amount-label {
+        color: #80576e;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+    }
+
+    .po-page .amount-value {
+        color: var(--po-primary-dark);
+        font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+        font-weight: 850;
+        letter-spacing: -.035em;
+        overflow-wrap: anywhere;
+        margin-top: .4rem;
+    }
+
+    .po-page .po-note {
+        display: flex;
+        gap: .7rem;
+        padding: .9rem;
+        background: #f8f6f8;
+        border-radius: 10px;
+        color: var(--po-muted);
+        font-size: .77rem;
+        line-height: 1.65;
+    }
+
+    .po-page .po-note i {
+        color: var(--po-primary);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .po-page .empty-state {
+        padding: 2.5rem 1rem;
+        text-align: center;
+        color: var(--po-muted);
+    }
+
+    .po-page .empty-state i {
+        display: block;
+        font-size: 2rem;
+        color: #c6b8c2;
+        margin-bottom: .75rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .po-page .po-hero {
+            padding: 1.25rem;
+            border-radius: 14px;
+        }
+
+        .po-page .po-panel-header {
+            padding: 1rem;
+        }
+
+        .po-page .po-summary-body {
+            padding: 1rem;
+        }
+
+        .po-page .po-hero-actions {
+            width: 100%;
+        }
+
+        .po-page .po-hero-actions .po-action {
+            flex: 1;
+        }
+    }
+
+    @media print {
+        .po-page .po-hero-actions,
+        .po-page .po-action,
+        .po-page .po-note {
+            display: none !important;
+        }
+
+        .po-page .po-panel,
+        .po-page .po-hero {
+            box-shadow: none;
+            break-inside: avoid;
+        }
+    }
+</style>
+
+<div class="po-page">
+
+    <!-- Purchase order hero -->
+    <section class="po-hero">
+        <div class="po-hero-content">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="eyebrow mb-2">
+                        <i class="bi bi-file-earmark-check me-1"></i>
+                        DDS-NK THRIVE · PROCUREMENT
+                    </div>
+
+                    <h2 class="po-number mb-2">{{ po.po_number }}</h2>
+
+                    <p class="hero-description">
+                        Purchase order issued to
+                        <strong>{{ po.supplier.name }}</strong>
+                        {% if po.rfq %}
+                            through RFQ {{ po.rfq.reference_no }}.
+                        {% else %}
+                            through direct purchase.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <span class="po-status">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Issued
+                </span>
+            </div>
+
+            <div class="po-hero-actions d-flex flex-wrap gap-2 mt-4">
+                <a href="{% url 'procurement:purchase_order_list' %}"
+                   class="po-action po-action-light">
+                    <i class="bi bi-arrow-left"></i>
+                    All purchase orders
+                </a>
+
+                {% if po.pdf %}
+                    <a href="{{ po.pdf.url }}"
+                       class="po-action po-action-primary"
+                       target="_blank"
+                       rel="noopener">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                        View / download PDF
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4 align-items-start">
+
+        <!-- Purchase order line items -->
+        <div class="col-12 col-xl-8">
+            <section class="po-panel">
+                <div class="po-panel-header">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="po-section-icon">
+                            <i class="bi bi-list-check"></i>
+                        </span>
+
+                        <div>
+                            <h3 class="po-panel-title">Purchase order items</h3>
+                            <span class="po-panel-subtitle">
+                                Requisition:
+                                <strong>{{ po.requisition.number }}</strong>
+                                <span class="mx-1">·</span>
+                                Project:
+                                <strong>{{ po.requisition.project.name }}</strong>
+                            </span>
+                        </div>
+                    </div>
+
+                    <span class="badge rounded-pill text-bg-light border">
+                        {{ items|length }} item{{ items|length|pluralize }}
+                    </span>
+                </div>
+
+                <div class="po-table-wrap">
+                    <table class="table po-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 65px;">#</th>
+                                <th>Description</th>
+                                <th>Unit</th>
+                                <th class="text-end">Quantity</th>
+                                <th class="text-end">Line total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <span class="item-index">
+                                            {{ forloop.counter }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <div class="item-description">
+                                            {{ item.description|default:"—" }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="unit-label">
+                                            {{ item.unit_measure|default:"—" }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end fw-semibold">
+                                        {{ item.qty|intcomma }}
+                                    </td>
+
+                                    <td class="text-end fw-bold text-nowrap">
+                                        UGX {{ item.line_total|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="bi bi-inbox"></i>
+                                            <div class="fw-bold mb-1">
+                                                No line items found
+                                            </div>
+                                            <div class="small">
+                                                There are currently no items associated
+                                                with this purchase order.
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                        {% if items %}
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4"
+                                        class="text-end py-3 px-3 fw-bold">
+                                        Purchase order total
+                                    </td>
+                                    <td class="text-end py-3 px-3 fw-bold text-nowrap">
+                                        UGX {{ po.final_amount|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </section>
+
+            <!-- Procurement reference -->
+            <section class="po-panel mt-4">
+                <div class="po-panel-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="po-section-icon">
+                            <i class="bi bi-diagram-3"></i>
+                        </span>
+                        <div>
+                            <h3 class="po-panel-title">Procurement references</h3>
+                            <span class="po-panel-subtitle">
+                                Source records linked to this order
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 p-md-4">
+                    <div class="summary-row">
+                        <span class="summary-label">Purchase order</span>
+                        <span class="summary-value">{{ po.po_number }}</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Requisition number</span>
+                        <span class="summary-value">
+                            {{ po.requisition.number|default:"—" }}
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Project</span>
+                        <span class="summary-value">
+                            {{ po.requisition.project.name|default:"—" }}
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Sourcing method</span>
+                        <span class="summary-value">
+                            {% if po.rfq %}
+                                Request for quotation
+                            {% else %}
+                                Direct purchase
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if po.rfq %}
+                        <div class="summary-row">
+                            <span class="summary-label">RFQ reference</span>
+                            <span class="summary-value">
+                                {{ po.rfq.reference_no }}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Order summary -->
+        <div class="col-12 col-xl-4">
+            <aside class="po-panel">
+                <div class="po-panel-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="po-section-icon">
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </span>
+                        <div>
+                            <h3 class="po-panel-title">Order summary</h3>
+                            <span class="po-panel-subtitle">
+                                Financial and supplier details
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-summary-body">
+
+                    <div class="supplier-box">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="po-section-icon">
+                                <i class="bi bi-building"></i>
+                            </span>
+                            <span class="summary-label fw-bold">
+                                SUPPLIER
+                            </span>
+                        </div>
+
+                        <div class="supplier-name">
+                            {{ po.supplier.name }}
+                        </div>
+
+                        <div class="small text-secondary">
+                            <i class="bi bi-patch-check me-1"></i>
+                            Purchase order recipient
+                        </div>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">PO number</span>
+                        <span class="summary-value">{{ po.po_number }}</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Requisition</span>
+                        <span class="summary-value">
+                            {{ po.requisition.number|default:"—" }}
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Due date</span>
+                        <span class="summary-value">
+                            {% if po.due_date %}
+                                {{ po.due_date|date:"d M Y" }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="summary-label">Sourcing method</span>
+                        <span class="summary-value">
+                            {% if po.rfq %}Competitive RFQ{% else %}Direct purchase{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="amount-box">
+                        <div class="amount-label">
+                            <i class="bi bi-cash-stack me-1"></i>
+                            Award amount
+                        </div>
+
+                        <div class="amount-value">
+                            UGX {{ po.final_amount|floatformat:2|intcomma }}
+                        </div>
+
+                        <div class="small text-secondary mt-2">
+                            Final purchase order value
+                        </div>
+                    </div>
+
+                    {% if po.pdf %}
+                        <a href="{{ po.pdf.url }}"
+                           class="po-action po-action-primary w-100 mb-3"
+                           target="_blank"
+                           rel="noopener">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            Download purchase order
+                        </a>
+                    {% else %}
+                        <div class="po-note mb-3">
+                            <i class="bi bi-info-circle"></i>
+                            <span>
+                                A PDF document is not currently attached to this
+                                purchase order.
+                            </span>
+                        </div>
+                    {% endif %}
+
+                    <div class="po-note">
+                        <i class="bi bi-shield-check"></i>
+                        <span>
+                            This page displays the purchase order details recorded
+                            in the DDS-NK Procurement module. Refer to the approved
+                            procurement documentation for the governing terms and
+                            authorization records.
+                        </span>
+                    </div>
+
+                </div>
+            </aside>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

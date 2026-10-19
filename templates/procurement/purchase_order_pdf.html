@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4 portrait; margin: 1.2cm; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 9px; color: #352735; }
+        table { width: 100%; border-collapse: collapse; }
+        .header { border-bottom: 2px solid #a65a7a; margin-bottom: 12px; }
+        .header td { padding: 0 0 8px; vertical-align: middle; }
+        .logo { width: 42px; height: 42px; }
+        .brand { font-size: 15px; font-weight: bold; }
+        .muted { color: #806b7a; font-size: 7px; }
+        .right { text-align: right; }
+        .title { color: #3b2938; font-size: 16px; font-weight: bold; }
+        .section { margin-top: 12px; padding: 6px 8px; background: #3b2938; color: #fff; font-size: 8px; font-weight: bold; text-transform: uppercase; }
+        .meta td { padding: 7px; border: 1px solid #ead8e2; }
+        .label { display: block; color: #806b7a; font-size: 7px; text-transform: uppercase; }
+        .value { font-weight: bold; }
+        .items { margin-top: 5px; }
+        .items th { padding: 6px; background: #f5edf1; border-bottom: 2px solid #a65a7a; text-align: left; }
+        .items td { padding: 6px; border-bottom: 1px solid #ead8e2; }
+        .num { text-align: right; }
+        .footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #ead8e2; color: #806b7a; font-size: 7px; }
+    </style>
+</head>
+<body>
+    <table class="header">
+        <tr>
+            <td style="width:52px"><img class="logo" src="{{ logo_path }}"></td>
+            <td><div class="brand">DDS-NK THRIVE</div><div class="muted">Official purchase order</div></td>
+            <td class="right"><div class="title">{{ po.po_number }}</div><div class="muted">Issued {{ po.issue_date|date:'d M Y' }}</div></td>
+        </tr>
+    </table>
+
+    <div class="section">Order information</div>
+    <table class="meta">
+        <tr>
+            <td><span class="label">Supplier</span><span class="value">{{ po.supplier.name }}</span></td>
+            <td><span class="label">Supplier code</span><span class="value">{{ po.supplier.supplier_code }}</span></td>
+            <td><span class="label">Delivery due date</span><span class="value">{{ po.due_date|date:'d M Y' }}</span></td>
+        </tr>
+        <tr>
+            <td><span class="label">Purchase order reference</span><span class="value">{{ po.po_number }}</span></td>
+            <td><span class="label">Purchase method</span><span class="value">{% if po.rfq %}RFQ quotation{% else %}Direct purchase{% endif %}</span></td>
+            <td><span class="label">Delivery terms</span><span class="value">As agreed with DDS-NK THRIVE</span></td>
+        </tr>
+    </table>
+
+    <div class="section">Items to supply</div>
+    <table class="items">
+        <thead><tr><th style="width:8%">#</th><th style="width:50%">Description</th><th style="width:20%">Unit</th><th style="width:22%" class="num">Quantity</th></tr></thead>
+        <tbody>
+            {% for item in items %}
+                <tr><td>{{ forloop.counter }}</td><td>{{ item.description }}</td><td>{{ item.unit_measure }}</td><td class="num">{{ item.qty|floatformat:2 }}</td></tr>
+            {% empty %}
+                <tr><td colspan="4">No items listed.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if po.remarks %}
+        <div class="section">Special instructions</div>
+        <table class="meta"><tr><td>{{ po.remarks }}</td></tr></table>
+    {% endif %}
+
+    <div class="footer">Please acknowledge receipt of this purchase order and confirm the delivery schedule with DDS-NK THRIVE.</div>
+</body>
+</html>

@@ -1,0 +1,625 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Add Training | DDS-NK Human Resources{% endblock %}
+
+{% block content %}
+<div class="hr-add-training">
+
+    <!-- Page heading -->
+    <div class="add-training-header">
+        <div class="add-training-heading">
+            <div class="add-training-heading-icon">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div>
+                <span class="add-training-eyebrow">HUMAN RESOURCES</span>
+                <h1>Add Training</h1>
+                <p>Create a training activity and maintain staff development records.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="add-training-layout">
+
+        <!-- Training form -->
+        <main class="add-training-main">
+            <section class="add-training-card">
+
+                <div class="add-training-card-header">
+                    <div class="add-training-card-icon">
+                        <i class="bi bi-journal-plus"></i>
+                    </div>
+                    <div>
+                        <h2>Training Information</h2>
+                        <p>Complete the relevant details to register a training activity.</p>
+                    </div>
+                </div>
+
+                <form method="post" class="add-training-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="add-training-error-summary" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>Please correct the following errors</strong>
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    <div class="add-training-field">
+                        <label for="{{ field.id_for_label }}" class="add-training-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="add-training-required">*</span>
+                            {% endif %}
+                        </label>
+
+                        {% if field.help_text %}
+                        <div class="add-training-help">
+                            {{ field.help_text|safe }}
+                        </div>
+                        {% endif %}
+
+                        <div class="add-training-control">
+                            {{ field }}
+                        </div>
+
+                        {% if field.errors %}
+                        <div class="add-training-field-errors" role="alert">
+                            {% for error in field.errors %}
+                            <span>
+                                <i class="bi bi-exclamation-circle"></i>
+                                {{ error }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="add-training-form-footer">
+                        <button type="reset" class="add-training-reset">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Reset
+                        </button>
+
+                        <button type="submit" class="add-training-submit">
+                            <i class="bi bi-check2-circle"></i>
+                            Create Training
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <!-- Planning guidance -->
+        <aside class="add-training-sidebar">
+
+            <section class="add-training-guidance">
+                <div class="add-guidance-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+
+                <h3>Training Planning Guide</h3>
+                <p>Use these guidelines when creating a training record.</p>
+
+                <div class="add-guidance-list">
+                    <div class="add-guidance-item">
+                        <span class="add-guidance-number">01</span>
+                        <div>
+                            <strong>Define the training</strong>
+                            <p>Choose a descriptive title that clearly identifies the activity.</p>
+                        </div>
+                    </div>
+
+                    <div class="add-guidance-item">
+                        <span class="add-guidance-number">02</span>
+                        <div>
+                            <strong>Set the schedule</strong>
+                            <p>Enter accurate start and end dates for the planned activity.</p>
+                        </div>
+                    </div>
+
+                    <div class="add-guidance-item">
+                        <span class="add-guidance-number">03</span>
+                        <div>
+                            <strong>Provide context</strong>
+                            <p>Describe the purpose, objectives, and relevant details.</p>
+                        </div>
+                    </div>
+
+                    <div class="add-guidance-item">
+                        <span class="add-guidance-number">04</span>
+                        <div>
+                            <strong>Review before saving</strong>
+                            <p>Check the information for completeness and accuracy.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="add-training-note">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                    <strong>Organizational Records</strong>
+                    <p>Keep training information accurate and consistent with HR development plans.</p>
+                </div>
+            </section>
+
+        </aside>
+    </div>
+</div>
+
+<style>
+    .hr-add-training {
+        --at-primary: #e50078;
+        --at-primary-dark: #b80060;
+        --at-plum: #3b2938;
+        --at-muted: #77717a;
+        --at-border: #e9e4e9;
+        --at-soft-pink: #fff0f7;
+        --at-surface: #fcfafc;
+
+        padding: 8px 0 30px;
+        color: var(--at-plum);
+    }
+
+    .hr-add-training,
+    .hr-add-training * {
+        box-sizing: border-box;
+    }
+
+    .add-training-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .add-training-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .add-training-heading-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        background: var(--at-soft-pink);
+        color: var(--at-primary);
+        font-size: 25px;
+    }
+
+    .add-training-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--at-primary);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .add-training-heading h1 {
+        margin: 0;
+        color: var(--at-plum);
+        font-size: clamp(23px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -.7px;
+    }
+
+    .add-training-heading p {
+        margin: 6px 0 0;
+        color: var(--at-muted);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .add-training-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: start;
+        gap: 22px;
+    }
+
+    .add-training-card,
+    .add-training-guidance,
+    .add-training-note {
+        border: 1px solid var(--at-border);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(59, 41, 56, .035);
+    }
+
+    .add-training-card {
+        overflow: hidden;
+    }
+
+    .add-training-card-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 22px 25px;
+        border-bottom: 1px solid var(--at-border);
+        background: linear-gradient(120deg, #fff 0%, #fff8fc 100%);
+    }
+
+    .add-training-card-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--at-soft-pink);
+        color: var(--at-primary);
+        font-size: 19px;
+    }
+
+    .add-training-card-header h2 {
+        margin: 0 0 5px;
+        color: var(--at-plum);
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .add-training-card-header p {
+        margin: 0;
+        color: var(--at-muted);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .add-training-form {
+        padding: 25px;
+    }
+
+    .add-training-field {
+        min-width: 0;
+        margin-bottom: 21px;
+    }
+
+    .add-training-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--at-plum);
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .add-training-required {
+        color: var(--at-primary);
+        font-weight: 800;
+    }
+
+    .add-training-help {
+        margin: -2px 0 8px;
+        color: var(--at-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .add-training-help ul,
+    .add-training-help ol {
+        padding-left: 20px;
+        margin: 5px 0;
+    }
+
+    .add-training-control input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .add-training-control select,
+    .add-training-control textarea {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #ded6df;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--at-plum);
+        font-family: inherit;
+        font-size: 13px;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .add-training-control textarea {
+        min-height: 125px;
+        resize: vertical;
+    }
+
+    .add-training-control input[type="file"] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        border: 1px dashed #d8cbd7;
+        border-radius: 9px;
+        background: var(--at-surface);
+        color: var(--at-muted);
+        font-size: 12px;
+    }
+
+    .add-training-control input[type="checkbox"],
+    .add-training-control input[type="radio"] {
+        accent-color: var(--at-primary);
+    }
+
+    .add-training-control input:focus,
+    .add-training-control select:focus,
+    .add-training-control textarea:focus {
+        outline: none;
+        border-color: var(--at-primary);
+        box-shadow: 0 0 0 3px rgba(229, 0, 120, .10);
+    }
+
+    .add-training-field-errors {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 7px;
+        color: #b4234b;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .add-training-error-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 14px 15px;
+        margin-bottom: 21px;
+        border: 1px solid #f3c8d4;
+        border-radius: 9px;
+        background: #fff2f5;
+        color: #a51e43;
+        font-size: 12px;
+    }
+
+    .add-training-error-summary > i {
+        margin-top: 2px;
+        font-size: 16px;
+    }
+
+    .add-training-error-summary strong {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .add-training-error-summary p {
+        margin: 0 0 4px;
+    }
+
+    .add-training-error-summary p:last-child {
+        margin-bottom: 0;
+    }
+
+    .add-training-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 20px;
+        margin-top: 5px;
+        border-top: 1px solid var(--at-border);
+    }
+
+    .add-training-reset,
+    .add-training-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 43px;
+        padding: 11px 18px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .add-training-reset {
+        border: 1px solid var(--at-border);
+        background: #fff;
+        color: var(--at-plum);
+    }
+
+    .add-training-reset:hover {
+        border-color: var(--at-primary);
+        background: var(--at-soft-pink);
+        color: var(--at-primary);
+    }
+
+    .add-training-submit {
+        border: 1px solid var(--at-primary);
+        background: var(--at-primary);
+        color: #fff;
+    }
+
+    .add-training-submit:hover {
+        border-color: var(--at-primary-dark);
+        background: var(--at-primary-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .add-training-reset:focus-visible,
+    .add-training-submit:focus-visible {
+        outline: 3px solid rgba(229, 0, 120, .25);
+        outline-offset: 2px;
+    }
+
+    .add-training-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .add-training-guidance {
+        padding: 22px 20px;
+    }
+
+    .add-guidance-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        background: var(--at-soft-pink);
+        color: var(--at-primary);
+        font-size: 20px;
+    }
+
+    .add-training-guidance h3 {
+        margin: 0 0 8px;
+        color: var(--at-plum);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .add-training-guidance > p {
+        margin: 0 0 20px;
+        color: var(--at-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .add-guidance-list {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+    }
+
+    .add-guidance-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+    }
+
+    .add-guidance-number {
+        display: grid;
+        place-items: center;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        border-radius: 9px;
+        background: #f7f1f6;
+        color: var(--at-primary);
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .add-guidance-item strong {
+        display: block;
+        margin: 1px 0 4px;
+        color: var(--at-plum);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .add-guidance-item p {
+        margin: 0;
+        color: var(--at-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .add-training-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px;
+        background: #fff9fc;
+    }
+
+    .add-training-note > i {
+        color: var(--at-primary);
+        font-size: 21px;
+    }
+
+    .add-training-note strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--at-plum);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .add-training-note p {
+        margin: 0;
+        color: var(--at-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 1000px) {
+        .add-training-layout {
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 16px;
+        }
+
+        .add-training-form {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .add-training-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .add-training-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .add-training-heading {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .add-training-heading-icon {
+            flex-basis: 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            font-size: 22px;
+        }
+
+        .add-training-card-header,
+        .add-training-form {
+            padding: 17px;
+        }
+
+        .add-training-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .add-training-form-footer {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .add-training-reset,
+        .add-training-submit {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

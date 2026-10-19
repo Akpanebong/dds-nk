@@ -1,0 +1,27 @@
+<div class="sidebar-section-label"><span>PROCUREMENT</span></div>
+<a href="{% url 'procurement:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+<div class="sidebar-section-label mt-3"><span>MANAGEMENT</span></div>
+<div class="nav-group">
+    <button type="button" class="nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#procurementRegisters" aria-expanded="true" aria-controls="procurementRegisters"><span class="nav-group-icon"><i class="bi bi-database"></i></span><span>Registers</span><i class="bi bi-chevron-down nav-group-chevron ms-auto"></i></button>
+    <div id="procurementRegisters" class="collapse show">
+        <a href="{% url 'procurement:suppliers' %}" class="nav-sub {% if 'supplier' in request.resolver_match.url_name or request.resolver_match.url_name == 'vendors' %}active{% endif %}"><i class="bi bi-building"></i><span>Suppliers</span></a>
+        <a href="{% url 'procurement:products' %}" class="nav-sub {% if 'product' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-box-seam"></i><span>Products</span></a>
+        <a href="{% url 'procurement:projects' %}" class="nav-sub {% if 'project' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-kanban"></i><span>Projects</span></a>
+    </div>
+</div>
+<div class="sidebar-section-label mt-3"><span>WORKFLOW</span></div>
+<div class="nav-group">
+    <button type="button" class="nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#procurementWorkflow" aria-expanded="true" aria-controls="procurementWorkflow"><span class="nav-group-icon"><i class="bi bi-diagram-3"></i></span><span>Workflow</span><i class="bi bi-chevron-down nav-group-chevron ms-auto"></i></button>
+    <div id="procurementWorkflow" class="collapse show">
+        <a href="{% url 'procurement:plans' %}" class="nav-sub {% if 'plan' in request.resolver_match.url_name or request.resolver_match.url_name == 'requests' %}active{% endif %}"><i class="bi bi-file-earmark-check"></i><span>Procurement plans</span></a>
+        <a href="{% url 'procurement:req_list' %}" class="nav-sub {% if 'req_' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-file-earmark-text"></i><span>Requisitions</span></a>
+        {% if manage_access.procurement %}
+        <a href="{% url 'procurement:rfq_list' %}" class="nav-sub {% if 'rfq' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-send"></i><span>RFQs</span></a>
+        <a href="{% url 'procurement:purchase_order_list' %}" class="nav-sub {% if 'purchase_order' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-receipt"></i><span>Purchase orders</span></a>
+        <a href="{% url 'procurement:supplier_spend_report' %}" class="nav-sub {% if request.resolver_match.url_name == 'supplier_spend_report' %}active{% endif %}"><i class="bi bi-bar-chart-line"></i><span>Supplier spend report</span></a>
+        {% endif %}
+    </div>
+</div>
+{% if manage_access.procurement %}
+<div class="sidebar-action-wrap px-3 mt-3"><a href="{% url 'procurement:supplier_create' %}" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg me-1"></i><span class="sidebar-action-label">Manage records</span></a></div>
+{% endif %}

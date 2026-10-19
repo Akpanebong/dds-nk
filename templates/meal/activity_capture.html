@@ -1,0 +1,448 @@
+
+{% extends 'module_base.html' %}
+
+{% block title %}
+    {% if editing %}Edit{% else %}Capture{% endif %} {{ activity.code }} | DDS-NK
+{% endblock %}
+
+{% block module_brand %}
+    <i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+
+    <a href="{% url 'meal:dashboard' %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a class="active" href="{% url 'meal:activities' %}">
+        <i class="bi bi-list-check"></i>
+        <span>Activities</span>
+    </a>
+
+    <a href="{% url 'meal:records' %}">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Data Records</span>
+    </a>
+
+    <a href="{% url 'meal:hierarchy' %}">
+        <i class="bi bi-diagram-3"></i>
+        <span>MEAL Framework</span>
+    </a>
+
+{% endblock %}
+
+{% block crumb %}
+
+    <span class="module-label meal-text">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>
+        MEAL
+    </span>
+
+    <h1>
+        {% if editing %}Edit{% else %}Capture{% endif %}
+        {{ activity.code }}
+    </h1>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
+
+        <div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-bar-chart-line me-1"></i>
+                    MEAL
+                </span>
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    DDS-NK
+                </span>
+
+                <span class="badge rounded-pill text-bg-light border">
+                    {{ activity.get_activity_type_display }}
+                </span>
+
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {% if editing %}
+                    Edit Activity Record
+                {% else %}
+                    Capture Activity Data
+                {% endif %}
+            </h2>
+
+            <p class="text-muted mb-0">
+                {% if editing %}
+                    Review and update the captured MEAL data for this activity.
+                {% else %}
+                    Enter the required monitoring data and submit it for MEAL review.
+                {% endif %}
+            </p>
+
+        </div>
+
+        <div class="text-xl-end">
+
+            <div class="small text-muted mb-1">
+                Activity Code
+            </div>
+
+            <div class="fw-bold fs-5">
+                {{ activity.code }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTIVITY INFORMATION -->
+    <div class="panel mb-4">
+
+        <div class="row g-4 align-items-center">
+
+            <!-- ACTIVITY -->
+            <div class="col-12 col-lg-5">
+
+                <div class="d-flex align-items-start gap-3">
+
+                    <div class="rounded-3 bg-light p-3 flex-shrink-0">
+
+                        <i class="bi bi-clipboard2-check text-primary fs-3"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="small text-uppercase text-muted fw-semibold mb-1">
+                            Activity
+                        </div>
+
+                        <h4 class="fw-bold mb-1">
+                            {{ activity.title }}
+                        </h4>
+
+                        <div class="small text-muted">
+                            Code: {{ activity.code }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- INDICATOR -->
+            <div class="col-12 col-lg-4">
+
+                <div class="small text-uppercase text-muted fw-semibold mb-1">
+                    Indicator
+                </div>
+
+                <div class="fw-semibold">
+                    {{ activity.indicator_text|default:"No indicator description provided." }}
+                </div>
+
+            </div>
+
+
+            <!-- CAPTURE TYPE -->
+            <div class="col-12 col-lg-3">
+
+                <div class="small text-uppercase text-muted fw-semibold mb-2">
+                    Capture Template
+                </div>
+
+                {% if is_people %}
+
+                    <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                        <i class="bi bi-people-fill me-1"></i>
+                        People Activity
+                    </span>
+
+                    <div class="small text-muted mt-2">
+                        Sex, age and PWD disaggregation
+                    </div>
+
+                {% else %}
+
+                    <span class="badge rounded-pill text-bg-secondary px-3 py-2">
+                        <i class="bi bi-box-seam me-1"></i>
+                        Non-People Activity
+                    </span>
+
+                    <div class="small text-muted mt-2">
+                        Value, status and progress
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FORM -->
+    <div class="panel form-panel">
+
+        <!-- FORM HEADER -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+            <div>
+
+                <div class="d-flex align-items-center gap-2 mb-1">
+
+                    <div class="rounded-3 bg-light p-2">
+                        <i class="bi bi-pencil-square text-primary"></i>
+                    </div>
+
+                    <h5 class="fw-bold mb-0">
+                        {% if editing %}
+                            Activity Record
+                        {% else %}
+                            Data Capture
+                        {% endif %}
+                    </h5>
+
+                </div>
+
+                <p class="text-muted small mb-0">
+                    Complete all required fields before submitting the record.
+                </p>
+
+            </div>
+
+            {% if not editing %}
+
+                <span class="badge rounded-pill text-bg-warning">
+                    <i class="bi bi-clock me-1"></i>
+                    Pending Review
+                </span>
+
+            {% else %}
+
+                <span class="badge rounded-pill text-bg-light border">
+                    <i class="bi bi-pencil me-1"></i>
+                    Editing Record
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- NON-FIELD ERRORS -->
+        {% if form.non_field_errors %}
+
+            <div class="alert alert-danger d-flex align-items-start gap-2 mb-4">
+
+                <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+
+                <div>
+
+                    <strong>Please review the submitted data.</strong>
+
+                    <div class="mt-1">
+
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- DATA FIELDS -->
+            <div class="row g-4">
+
+                {% for field in form %}
+
+                    <div class="
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            col-12
+                        {% elif field.name == 'comment' or field.name == 'comments' or field.name == 'description' or field.name == 'notes' %}
+                            col-12
+                        {% else %}
+                            col-12 col-md-6
+                        {% endif %}
+                    ">
+
+                        {% if field.field.widget.input_type == 'checkbox' %}
+
+                            <div class="form-check form-switch p-0">
+
+                                <div class="form-check form-switch">
+
+                                    {{ field }}
+
+                                    <label class="form-check-label fw-semibold"
+                                           for="{{ field.id_for_label }}">
+
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <label for="{{ field.id_for_label }}"
+                                   class="form-label fw-semibold">
+
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ field }}
+
+                        {% endif %}
+
+
+                        {% if field.help_text %}
+
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                {{ field.help_text }}
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if field.errors %}
+
+                            <div class="invalid-feedback d-block">
+
+                                {% for error in field.errors %}
+                                    <div>
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="col-12">
+
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No capture fields have been configured for this activity.
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- SUBMISSION GUIDANCE -->
+            <div class="alert alert-light border d-flex align-items-start gap-3 mt-4 mb-0">
+
+                <i class="bi bi-shield-check text-primary fs-5 mt-1"></i>
+
+                <div>
+
+                    <div class="fw-semibold mb-1">
+                        MEAL Data Quality
+                    </div>
+
+                    <div class="small text-muted">
+                        Ensure the information entered is accurate, complete and
+                        supported by the relevant source documentation before submission.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+            <div class="form-actions border-top pt-4 mt-4 d-flex flex-column flex-sm-row justify-content-between gap-3">
+
+                <a href="{% url 'meal:activities' %}"
+                   class="btn btn-light border d-inline-flex align-items-center justify-content-center gap-2">
+
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Activities</span>
+
+                </a>
+
+
+                <div class="d-flex flex-column flex-sm-row gap-2">
+
+                    <a href="{% url 'meal:activities' %}"
+                       class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center gap-2">
+
+                        <i class="bi bi-x-lg"></i>
+                        <span>Cancel</span>
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary px-4 d-inline-flex align-items-center justify-content-center gap-2">
+
+                        {% if editing %}
+
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Save Changes</span>
+
+                        {% else %}
+
+                            <i class="bi bi-send-check"></i>
+                            <span>Submit for Review</span>
+
+                        {% endif %}
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

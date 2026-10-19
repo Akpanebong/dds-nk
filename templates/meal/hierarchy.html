@@ -1,0 +1,2736 @@
+{% extends 'module_base.html' %}
+
+{% block title %}MEAL Framework | DDS-NK{% endblock %}
+
+{% block module_brand %}
+<i class="bi bi-bar-chart-line-fill"></i> MEAL
+{% endblock %}
+
+{% block nav %}
+<a href="{% url 'meal:dashboard' %}">
+    <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+</a>
+<a class="active" href="{% url 'meal:hierarchy' %}">
+    <i class="bi bi-diagram-3-fill me-1"></i> Framework
+</a>
+<a href="{% url 'meal:records' %}">
+    <i class="bi bi-database-fill me-1"></i> Data records
+</a>
+{% endblock %}
+
+{% block crumb %}
+<span class="module-label meal-text">MEAL</span>
+<h1>Strategic framework</h1>
+{% endblock %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   DDS-NK MEAL FRAMEWORK
+   ========================================================= */
+
+.meal-framework {
+    --meal-primary: #087f7b;
+    --meal-primary-dark: #075c63;
+    --meal-primary-soft: rgba(8, 127, 123, .08);
+    --meal-primary-border: rgba(8, 127, 123, .20);
+    --meal-border: #e5ebee;
+    --meal-border-dark: #d7e0e3;
+    --meal-muted: #718096;
+    --meal-heading: #18323a;
+    --meal-text: #344952;
+    --meal-bg: #f6f9fa;
+    --meal-success: #198754;
+    --meal-warning: #c77c00;
+    --meal-danger: #c0392b;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.framework-header {
+    margin-bottom: 1.35rem;
+}
+
+.framework-header .page-intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.3rem 1.4rem;
+    border: 1px solid var(--meal-border);
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbfb 100%);
+    box-shadow: 0 5px 18px rgba(15, 23, 42, .035);
+}
+
+.framework-title {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+}
+
+.framework-title-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: var(--meal-primary-soft);
+    color: var(--meal-primary);
+    font-size: 1.2rem;
+}
+
+.framework-title h2 {
+    margin: 0 0 .25rem;
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: var(--meal-heading);
+}
+
+.framework-title p {
+    margin: 0;
+    max-width: 760px;
+    color: var(--meal-muted);
+    font-size: .84rem;
+    line-height: 1.55;
+}
+
+.framework-actions {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.framework-actions .btn {
+    min-height: 38px;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   FRAMEWORK BROWSER
+   ========================================================= */
+
+.framework-column {
+    min-height: 570px;
+}
+
+.framework-panel {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--meal-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, .035);
+}
+
+.framework-panel-head {
+    padding: 1rem 1.05rem;
+    border-bottom: 1px solid var(--meal-border);
+    background: linear-gradient(180deg, #fff 0%, #fbfcfc 100%);
+}
+
+.framework-panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .8rem;
+}
+
+.framework-panel-title h3 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+    color: var(--meal-heading);
+    font-size: .92rem;
+    font-weight: 750;
+}
+
+.framework-panel-title h3 i {
+    color: var(--meal-primary);
+}
+
+.framework-search {
+    position: relative;
+}
+
+.framework-search i {
+    position: absolute;
+    left: .75rem;
+    top: 50%;
+    z-index: 2;
+    transform: translateY(-50%);
+    color: #9aa6ad;
+    pointer-events: none;
+}
+
+.framework-search input {
+    min-height: 38px;
+    padding-left: 2.15rem;
+    border-color: #e1e7ea;
+    border-radius: 10px;
+    font-size: .82rem;
+}
+
+.framework-search input:focus {
+    border-color: rgba(8, 127, 123, .45);
+    box-shadow: 0 0 0 .2rem rgba(8, 127, 123, .08);
+}
+
+
+/* =========================================================
+   FRAMEWORK LISTS
+   ========================================================= */
+
+.framework-list {
+    height: calc(100% - 132px);
+    min-height: 425px;
+    overflow-y: auto;
+    padding: .55rem;
+    scrollbar-width: thin;
+}
+
+.framework-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.framework-list::-webkit-scrollbar-thumb {
+    background: #d9e1e4;
+    border-radius: 10px;
+}
+
+.framework-item {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .32rem;
+    margin-bottom: .35rem;
+    padding: .85rem .95rem;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background .16s ease,
+        border-color .16s ease,
+        transform .16s ease,
+        box-shadow .16s ease;
+}
+
+.framework-item:hover {
+    background: #f8fbfb;
+    border-color: #e2ecec;
+    transform: translateY(-1px);
+}
+
+.framework-item:focus-visible {
+    outline: 0;
+    border-color: rgba(8, 127, 123, .45);
+    box-shadow: 0 0 0 .2rem rgba(8, 127, 123, .10);
+}
+
+.framework-item.active {
+    background: var(--meal-primary-soft);
+    border-color: var(--meal-primary-border);
+    box-shadow: inset 3px 0 0 var(--meal-primary);
+}
+
+.framework-item-code {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    color: var(--meal-primary);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .025em;
+}
+
+.framework-item-title {
+    display: block;
+    width: 100%;
+    padding-right: 1.25rem;
+    color: #263a42;
+    font-size: .84rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.framework-item-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .3rem;
+    margin-top: .15rem;
+}
+
+.framework-item-meta .badge {
+    font-size: .65rem;
+    font-weight: 650;
+    padding: .34rem .5rem;
+}
+
+.framework-item-arrow {
+    position: absolute;
+    top: 50%;
+    right: .8rem;
+    transform: translateY(-50%);
+    color: #a5b0b5;
+    opacity: 0;
+    transition: opacity .16s ease;
+}
+
+.framework-item:hover .framework-item-arrow,
+.framework-item.active .framework-item-arrow {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   EMPTY / LOADING / ERROR
+   ========================================================= */
+
+.framework-empty {
+    min-height: 360px;
+    padding: 2rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.framework-empty-inner {
+    max-width: 270px;
+}
+
+.framework-empty-icon {
+    width: 54px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: .8rem;
+    border-radius: 50%;
+    background: #f1f5f6;
+    color: #89979e;
+    font-size: 1.25rem;
+}
+
+.framework-empty h5 {
+    margin-bottom: .35rem;
+    color: #354850;
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.framework-empty p {
+    margin: 0;
+    color: var(--meal-muted);
+    font-size: .78rem;
+    line-height: 1.55;
+}
+
+.framework-loading {
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.loading-inner {
+    color: var(--meal-muted);
+    font-size: .82rem;
+}
+
+.loading-inner .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-bottom: .65rem;
+    color: var(--meal-primary);
+}
+
+
+/* =========================================================
+   STATUS BAR
+   ========================================================= */
+
+.framework-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-top: 1rem;
+    padding: .8rem 1rem;
+    border: 1px solid var(--meal-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--meal-muted);
+    font-size: .78rem;
+}
+
+.framework-status strong {
+    color: var(--meal-text);
+}
+
+.framework-status-left {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--meal-primary);
+    box-shadow: 0 0 0 4px var(--meal-primary-soft);
+}
+
+
+/* =========================================================
+   CAPTURE MODAL
+   ========================================================= */
+
+#captureModal {
+    --bs-modal-width: 940px;
+}
+
+#captureModal .modal-dialog {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+#captureModal .modal-content {
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 30px 90px rgba(15, 23, 42, .24);
+}
+
+#captureModal .modal-header {
+    position: relative;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--meal-border);
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f5faf9 100%
+        );
+}
+
+.capture-heading {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.capture-heading-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(8, 127, 123, .13);
+    border-radius: 11px;
+    background: var(--meal-primary-soft);
+    color: var(--meal-primary);
+    font-size: 1.05rem;
+}
+
+.capture-heading-copy {
+    min-width: 0;
+}
+
+#captureTitle {
+    margin: 0;
+    overflow: hidden;
+    color: var(--meal-heading);
+    font-size: .98rem;
+    font-weight: 750;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+}
+
+.capture-subtitle {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-top: .2rem;
+    color: var(--meal-muted);
+    font-size: .7rem;
+}
+
+.capture-subtitle .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #b4bec3;
+}
+
+#captureModal .btn-close {
+    margin-left: auto;
+    padding: .7rem;
+}
+
+
+/* =========================================================
+   DYNAMIC CAPTURE FORM
+   These styles apply to the HTML returned by
+   meal:activity_capture
+   ========================================================= */
+
+#captureBody {
+    background: #f7f9fa;
+}
+
+#captureBody > form,
+#captureBody .meal-capture-form,
+#captureBody #modal-capture-form {
+    margin: 0;
+}
+
+#captureBody #modal-capture-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+    padding: 1.15rem 1.25rem;
+}
+
+#captureBody #modal-capture-form > p {
+    min-width: 0;
+    margin: 0;
+}
+
+#captureBody #modal-capture-form > p.text-muted,
+#captureBody #modal-capture-form > p.capture-field-full,
+#captureBody #modal-capture-form > button {
+    grid-column: 1 / -1;
+}
+
+
+/* Form header/context */
+
+#captureBody .capture-form-header,
+#captureBody .form-context {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--meal-border);
+    background: #fff;
+}
+
+#captureBody .capture-form-header h5,
+#captureBody .form-context h5 {
+    margin: 0;
+    color: var(--meal-heading);
+    font-size: .92rem;
+    font-weight: 750;
+}
+
+#captureBody .capture-form-header p,
+#captureBody .form-context p {
+    margin: .25rem 0 0;
+    color: var(--meal-muted);
+    font-size: .75rem;
+}
+
+
+/* Form body */
+
+#captureBody .capture-form-body {
+    padding: 1.15rem 1.25rem;
+}
+
+#captureBody .form-section {
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--meal-border);
+    border-radius: 13px;
+    background: #fff;
+}
+
+#captureBody .form-section:last-child {
+    margin-bottom: 0;
+}
+
+#captureBody .form-section-header {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .8rem .95rem;
+    border-bottom: 1px solid var(--meal-border);
+    background: #fbfcfc;
+}
+
+#captureBody .form-section-icon {
+    width: 31px;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--meal-primary-soft);
+    color: var(--meal-primary);
+    font-size: .82rem;
+}
+
+#captureBody .form-section-header h6 {
+    margin: 0;
+    color: var(--meal-heading);
+    font-size: .78rem;
+    font-weight: 750;
+}
+
+#captureBody .form-section-header small {
+    display: block;
+    margin-top: .1rem;
+    color: var(--meal-muted);
+    font-size: .67rem;
+}
+
+#captureBody .form-section-body {
+    padding: .95rem;
+}
+
+
+/* Labels */
+
+#captureBody label,
+#captureBody .form-label {
+    display: block;
+    margin-bottom: .35rem;
+    color: #344952;
+    font-size: .73rem;
+    font-weight: 700;
+}
+
+#captureBody label .required,
+#captureBody .form-label .required {
+    color: var(--meal-danger);
+}
+
+
+/* Inputs */
+
+#captureBody .form-control,
+#captureBody .form-select {
+    min-height: 40px;
+    border-color: #dfe6e9;
+    border-radius: 9px;
+    color: #263a42;
+    font-size: .78rem;
+    background-color: #fff;
+}
+
+#captureBody textarea.form-control {
+    min-height: 95px;
+    resize: vertical;
+}
+
+#captureBody .form-control::placeholder {
+    color: #a6b0b5;
+}
+
+#captureBody .form-control:focus,
+#captureBody .form-select:focus {
+    border-color: rgba(8, 127, 123, .48);
+    box-shadow: 0 0 0 .2rem rgba(8, 127, 123, .08);
+}
+
+
+/* Help text */
+
+#captureBody .form-text,
+#captureBody .helptext,
+#captureBody small.form-text {
+    margin-top: .3rem;
+    color: #89979e;
+    font-size: .67rem;
+    line-height: 1.45;
+}
+
+
+/* Errors */
+
+#captureBody .invalid-feedback,
+#captureBody .errorlist {
+    margin-top: .3rem;
+    color: var(--meal-danger);
+    font-size: .68rem;
+}
+
+#captureBody .errorlist {
+    margin-bottom: .5rem;
+    padding-left: 1rem;
+}
+
+#captureBody .is-invalid {
+    border-color: rgba(192, 57, 43, .5);
+}
+
+#captureBody .alert {
+    border-radius: 10px;
+    font-size: .76rem;
+}
+
+
+/* Number fields */
+
+#captureBody input[type="number"] {
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* Radio / checkbox groups */
+
+#captureBody .form-check {
+    padding: .55rem .7rem .55rem 2rem;
+    margin-bottom: .35rem;
+    border: 1px solid var(--meal-border);
+    border-radius: 9px;
+    background: #fff;
+}
+
+#captureBody .form-check:hover {
+    background: #f9fbfb;
+    border-color: #d7e4e4;
+}
+
+#captureBody .form-check-label {
+    margin: 0;
+    font-size: .74rem;
+    font-weight: 600;
+}
+
+
+/* Capture footer */
+
+#captureBody .capture-form-footer,
+#captureBody .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .85rem 1.25rem;
+    border-top: 1px solid var(--meal-border);
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 -5px 20px rgba(15, 23, 42, .04);
+    backdrop-filter: blur(8px);
+}
+
+#captureBody .capture-form-footer .btn,
+#captureBody .form-actions .btn {
+    min-height: 38px;
+    border-radius: 9px;
+    font-size: .76rem;
+    font-weight: 700;
+}
+
+
+/* Submit button */
+
+#captureBody button[type="submit"],
+#captureBody input[type="submit"] {
+    border-color: var(--meal-primary);
+    background: var(--meal-primary);
+    color: #fff;
+}
+
+#captureBody button[type="submit"]:hover,
+#captureBody input[type="submit"]:hover {
+    border-color: var(--meal-primary-dark);
+    background: var(--meal-primary-dark);
+}
+
+
+/* Tables inside capture form */
+
+#captureBody .table {
+    margin-bottom: 0;
+    font-size: .73rem;
+}
+
+#captureBody .table thead th {
+    color: #53656d;
+    background: #f7f9fa;
+    font-size: .67rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .025em;
+}
+
+#captureBody .table td,
+#captureBody .table th {
+    padding: .6rem .65rem;
+    vertical-align: middle;
+    border-color: var(--meal-border);
+}
+
+
+/* Progress / calculated fields */
+
+#captureBody .capture-kpi {
+    padding: .8rem;
+    border: 1px solid var(--meal-border);
+    border-radius: 10px;
+    background: #fbfcfc;
+}
+
+#captureBody .capture-kpi-label {
+    color: var(--meal-muted);
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+#captureBody .capture-kpi-value {
+    margin-top: .2rem;
+    color: var(--meal-heading);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+
+/* Modal scrollbar */
+
+#captureModal .modal-dialog-scrollable .modal-content {
+    max-height: calc(100vh - 2rem);
+}
+
+#captureModal .modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+#captureModal .modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+    width: 7px;
+}
+
+#captureModal .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+    background: #cfd9dc;
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .framework-column {
+        min-height: auto;
+    }
+
+    .framework-panel {
+        min-height: 420px;
+    }
+
+    .framework-list {
+        height: auto;
+        min-height: 280px;
+        max-height: 420px;
+    }
+
+    .framework-header .page-intro {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .framework-actions {
+        justify-content: flex-start;
+    }
+
+    #captureModal {
+        --bs-modal-width: 96%;
+    }
+}
+
+
+@media (max-width: 575.98px) {
+
+    .framework-title {
+        gap: .65rem;
+    }
+
+    .framework-title-icon {
+        width: 39px;
+        height: 39px;
+        flex-basis: 39px;
+    }
+
+    .framework-status {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .framework-actions,
+    .framework-actions .btn {
+        width: 100%;
+    }
+
+    #captureModal .modal-dialog {
+        margin: .5rem;
+    }
+
+    #captureModal .modal-content {
+        border-radius: 14px;
+    }
+
+    #captureModal .modal-header {
+        padding: .85rem 1rem;
+    }
+
+    #captureBody .capture-form-body {
+        padding: .85rem;
+    }
+
+    #captureBody #modal-capture-form {
+        grid-template-columns: 1fr;
+        gap: .85rem;
+        padding: .85rem;
+    }
+
+    #captureBody .capture-form-footer,
+    #captureBody .form-actions {
+        padding: .75rem .85rem;
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    #captureBody .capture-form-footer .btn,
+    #captureBody .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+
+
+<div class="meal-framework">
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="framework-header">
+
+        <div class="page-intro">
+
+            <div class="framework-title">
+
+                <div class="framework-title-icon">
+                    <i class="bi bi-diagram-3-fill"></i>
+                </div>
+
+                <div>
+                    <h2>DDS-NK Strategic Framework</h2>
+
+                    <p>
+                        Navigate from strategic objectives to outputs and activities.
+                        Select an activity to capture its monitoring and evaluation data.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="framework-actions">
+
+                <a href="{% url 'meal:dashboard' %}"
+                   class="btn btn-light border">
+
+                    <i class="bi bi-speedometer2 me-1"></i>
+                    Dashboard
+
+                </a>
+
+
+                {% if manage_access.meal %}
+
+                <a href="{% url 'meal:framework_create' 'objective' %}"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-plus-lg me-1"></i>
+                    New strategic objective
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FRAMEWORK BROWSER
+         ===================================================== -->
+
+    <div class="row g-3" id="framework-browser">
+
+
+        <!-- Strategic Objectives -->
+
+        <div class="col-lg-4 framework-column">
+
+            <div class="framework-panel">
+
+                <div class="framework-panel-head">
+
+                    <div class="framework-panel-title">
+
+                        <h3>
+                            <i class="bi bi-bullseye"></i>
+                            Strategic objectives
+                        </h3>
+
+                        <span class="badge rounded-pill text-bg-light border">
+                            {{ outcomes|length }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="framework-search">
+
+                        <i class="bi bi-search"></i>
+
+                        <input
+                            type="search"
+                            class="form-control"
+                            id="objective-search"
+                            placeholder="Search objectives..."
+                            autocomplete="off"
+                            aria-label="Search strategic objectives">
+
+                    </div>
+
+                </div>
+
+
+                <div class="framework-list" id="so-list">
+
+                    {% for so in outcomes %}
+
+                    <button
+                        type="button"
+                        class="framework-item so-item"
+                        data-id="{{ so.pk }}"
+                        data-search="{{ so.code }} {{ so.title|lower }}"
+                        aria-label="Select {{ so.code }} {{ so.title }}">
+
+                        <span class="framework-item-code">
+                            <i class="bi bi-bullseye"></i>
+                            {{ so.code }}
+                        </span>
+
+                        <span class="framework-item-title">
+                            {{ so.title }}
+                        </span>
+
+                        <span class="framework-item-meta">
+
+                            <span class="badge rounded-pill text-bg-primary">
+
+                                {{ so.outputs.count }}
+                                output{{ so.outputs.count|pluralize }}
+
+                            </span>
+
+                        </span>
+
+                        <i class="bi bi-chevron-right framework-item-arrow"></i>
+
+                    </button>
+
+                    {% empty %}
+
+                    <div class="framework-empty">
+
+                        <div class="framework-empty-inner">
+
+                            <div class="framework-empty-icon">
+                                <i class="bi bi-bullseye"></i>
+                            </div>
+
+                            <h5>No strategic objectives</h5>
+
+                            <p>
+                                No strategic objectives have been configured yet.
+                            </p>
+
+                            {% if manage_access.meal %}
+
+                            <a href="{% url 'meal:framework_create' 'objective' %}"
+                               class="btn btn-sm btn-primary mt-3">
+
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Create objective
+
+                            </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Outputs -->
+
+        <div class="col-lg-4 framework-column">
+
+            <div class="framework-panel">
+
+                <div class="framework-panel-head">
+
+                    <div class="framework-panel-title">
+
+                        <h3>
+                            <i class="bi bi-diagram-2-fill"></i>
+                            Outputs
+                        </h3>
+
+                        <span id="output-count"
+                              class="badge rounded-pill text-bg-light border">
+                            Select an SO
+                        </span>
+
+                    </div>
+
+
+                    <div class="framework-search">
+
+                        <i class="bi bi-search"></i>
+
+                        <input
+                            type="search"
+                            class="form-control"
+                            id="output-search"
+                            placeholder="Search outputs..."
+                            autocomplete="off"
+                            disabled
+                            aria-label="Search outputs">
+
+                    </div>
+
+                </div>
+
+
+                <div class="framework-list" id="output-list">
+
+                    <div class="framework-empty">
+
+                        <div class="framework-empty-inner">
+
+                            <div class="framework-empty-icon">
+                                <i class="bi bi-arrow-left-circle"></i>
+                            </div>
+
+                            <h5>Select a strategic objective</h5>
+
+                            <p>
+                                Choose an objective from the first column
+                                to load its outputs.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Activities -->
+
+        <div class="col-lg-4 framework-column">
+
+            <div class="framework-panel">
+
+                <div class="framework-panel-head">
+
+                    <div class="framework-panel-title">
+
+                        <h3>
+                            <i class="bi bi-list-check"></i>
+                            Activities
+                        </h3>
+
+                        <span id="activity-count"
+                              class="badge rounded-pill text-bg-light border">
+                            Select an output
+                        </span>
+
+                    </div>
+
+
+                    <div class="framework-search">
+
+                        <i class="bi bi-search"></i>
+
+                        <input
+                            type="search"
+                            class="form-control"
+                            id="activity-search"
+                            placeholder="Search activities..."
+                            autocomplete="off"
+                            disabled
+                            aria-label="Search activities">
+
+                    </div>
+
+                </div>
+
+
+                <div class="framework-list" id="activity-list">
+
+                    <div class="framework-empty">
+
+                        <div class="framework-empty-inner">
+
+                            <div class="framework-empty-icon">
+                                <i class="bi bi-list-check"></i>
+                            </div>
+
+                            <h5>Select an output</h5>
+
+                            <p>
+                                Choose an output to view its
+                                registered activities.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATUS
+         ===================================================== -->
+
+    <div class="framework-status">
+
+        <div class="framework-status-left">
+
+            <span class="status-dot"></span>
+
+            <span>
+                Current selection:
+                <strong id="framework-selection">
+                    No objective selected
+                </strong>
+            </span>
+
+        </div>
+
+        <span id="framework-help">
+            Select an objective to begin
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         ACTIVITY CAPTURE MODAL
+         ===================================================== -->
+
+    <div class="modal fade"
+         id="captureModal"
+         tabindex="-1"
+         aria-labelledby="captureTitle"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <div class="capture-heading">
+
+                        <div class="capture-heading-icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+
+                        <div class="capture-heading-copy">
+
+                            <h5 id="captureTitle">
+                                Activity data collection
+                            </h5>
+
+                            <div class="capture-subtitle">
+
+                                <span>
+                                    <i class="bi bi-bar-chart-line me-1"></i>
+                                    MEAL reporting workspace
+                                </span>
+
+                                <span class="dot"></span>
+
+                                <span>
+                                    DDS-NK
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body p-0"
+                     id="captureBody">
+
+                    <div class="framework-loading">
+
+                        <div class="loading-inner">
+
+                            <div class="spinner-border"
+                                 role="status">
+
+                                <span class="visually-hidden">
+                                    Loading...
+                                </span>
+
+                            </div>
+
+                            <div>
+                                Preparing data collection form...
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    'use strict';
+
+
+    /* =====================================================
+       ELEMENTS
+       ===================================================== */
+
+    const outputList =
+        document.getElementById('output-list');
+
+    const activityList =
+        document.getElementById('activity-list');
+
+    const outputCount =
+        document.getElementById('output-count');
+
+    const activityCount =
+        document.getElementById('activity-count');
+
+    const objectiveSearch =
+        document.getElementById('objective-search');
+
+    const outputSearch =
+        document.getElementById('output-search');
+
+    const activitySearch =
+        document.getElementById('activity-search');
+
+    const selectionLabel =
+        document.getElementById('framework-selection');
+
+    const helpLabel =
+        document.getElementById('framework-help');
+
+    const captureModalElement =
+        document.getElementById('captureModal');
+
+    const captureModal =
+        new bootstrap.Modal(captureModalElement);
+
+    const captureBody =
+        document.getElementById('captureBody');
+
+    const captureTitle =
+        document.getElementById('captureTitle');
+
+
+    /* =====================================================
+       URLS
+       ===================================================== */
+
+    const outputUrlTemplate =
+        '{% url "meal:ajax_outputs" 0 %}';
+
+    const activityUrlTemplate =
+        '{% url "meal:ajax_indicators" 0 %}';
+
+    const captureUrlTemplate =
+        '{% url "meal:activity_capture" 0 %}';
+
+
+    /* =====================================================
+       STATE
+       ===================================================== */
+
+    let selectedObjective = null;
+    let selectedOutput = null;
+
+
+    /* =====================================================
+       HELPERS
+       ===================================================== */
+
+    function buildUrl(template, id) {
+
+        return template.replace(
+            '/0/',
+            '/' + encodeURIComponent(id) + '/'
+        );
+
+    }
+
+
+    function escapeHtml(value) {
+
+        const div =
+            document.createElement('div');
+
+        div.textContent =
+            value ?? '';
+
+        return div.innerHTML;
+
+    }
+
+
+    function showLoading(container, message = 'Loading...') {
+
+        container.innerHTML = `
+            <div class="framework-loading">
+                <div class="loading-inner">
+
+                    <div class="spinner-border"
+                         role="status">
+
+                        <span class="visually-hidden">
+                            Loading...
+                        </span>
+
+                    </div>
+
+                    <div>
+                        ${escapeHtml(message)}
+                    </div>
+
+                </div>
+            </div>
+        `;
+
+    }
+
+
+    function showEmpty(
+        container,
+        icon,
+        title,
+        message
+    ) {
+
+        container.innerHTML = `
+            <div class="framework-empty">
+
+                <div class="framework-empty-inner">
+
+                    <div class="framework-empty-icon">
+                        <i class="bi ${escapeHtml(icon)}"></i>
+                    </div>
+
+                    <h5>
+                        ${escapeHtml(title)}
+                    </h5>
+
+                    <p>
+                        ${escapeHtml(message)}
+                    </p>
+
+                </div>
+
+            </div>
+        `;
+
+    }
+
+
+    function showError(container, message) {
+
+        container.innerHTML = `
+            <div class="framework-empty">
+
+                <div class="framework-empty-inner">
+
+                    <div class="framework-empty-icon text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+
+                    <h5>
+                        Unable to load data
+                    </h5>
+
+                    <p>
+                        ${escapeHtml(message)}
+                    </p>
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary mt-3"
+                        onclick="window.location.reload()">
+
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Retry
+
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+    }
+
+
+    async function fetchJson(url) {
+
+        const response =
+            await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Request failed (${response.status})`
+            );
+
+        }
+
+        return response.json();
+
+    }
+
+
+    function resetOutputColumn() {
+
+        outputCount.textContent =
+            'Select an SO';
+
+        outputSearch.value =
+            '';
+
+        outputSearch.disabled =
+            true;
+
+        showEmpty(
+            outputList,
+            'bi-arrow-left-circle',
+            'Select a strategic objective',
+            'Choose an objective from the first column to load its outputs.'
+        );
+
+    }
+
+
+    function resetActivityColumn() {
+
+        activityCount.textContent =
+            'Select an output';
+
+        activitySearch.value =
+            '';
+
+        activitySearch.disabled =
+            true;
+
+        showEmpty(
+            activityList,
+            'bi-list-check',
+            'Select an output',
+            'Choose an output to view its registered activities.'
+        );
+
+    }
+
+
+    /* =====================================================
+       OUTPUT RENDERING
+       ===================================================== */
+
+    function renderOutputs(outputs) {
+
+        if (!outputs || !outputs.length) {
+
+            showEmpty(
+                outputList,
+                'bi-diagram-2',
+                'No outputs found',
+                'This strategic objective does not currently have any outputs.'
+            );
+
+            return;
+
+        }
+
+
+        outputList.innerHTML =
+            outputs.map(item => {
+
+                const activityTotal =
+                    Number(item.activity_count || 0);
+
+                return `
+                    <button
+                        type="button"
+                        class="framework-item output-item"
+                        data-id="${escapeHtml(item.id)}"
+                        data-search="${escapeHtml(
+                            `${item.code || ''} ${item.title || ''}`.toLowerCase()
+                        )}">
+
+                        <span class="framework-item-code">
+
+                            <i class="bi bi-diagram-2"></i>
+
+                            ${escapeHtml(item.code)}
+
+                        </span>
+
+
+                        <span class="framework-item-title">
+
+                            ${escapeHtml(item.title)}
+
+                        </span>
+
+
+                        <span class="framework-item-meta">
+
+                            <span class="badge rounded-pill text-bg-primary">
+
+                                ${activityTotal}
+
+                                ${activityTotal === 1
+                                    ? 'activity'
+                                    : 'activities'}
+
+                            </span>
+
+                        </span>
+
+
+                        <i class="bi bi-chevron-right framework-item-arrow"></i>
+
+                    </button>
+                `;
+
+            }).join('');
+
+
+        outputSearch.disabled =
+            false;
+
+
+        outputList
+            .querySelectorAll('.output-item')
+            .forEach(item => {
+
+                item.addEventListener(
+                    'click',
+                    loadActivities
+                );
+
+            });
+
+    }
+
+
+    /* =====================================================
+       ACTIVITY RENDERING
+       ===================================================== */
+
+    function renderActivities(activities) {
+
+        if (!activities || !activities.length) {
+
+            showEmpty(
+                activityList,
+                'bi-list-check',
+                'No activities found',
+                'This output does not currently have any registered activities.'
+            );
+
+            return;
+
+        }
+
+
+        activityList.innerHTML =
+            activities.map(item => {
+
+                const type =
+                    item.activity_type || 'activity';
+
+                const typeLabel =
+                    type === 'people'
+                        ? 'People'
+                        : type === 'non_people'
+                            ? 'Non-people'
+                            : type;
+
+
+                const target =
+                    item.target !== null &&
+                    item.target !== undefined &&
+                    item.target !== ''
+                        ? item.target
+                        : '—';
+
+
+                return `
+                    <button
+                        type="button"
+                        class="framework-item activity-item"
+                        data-id="${escapeHtml(item.id)}"
+                        data-search="${escapeHtml(
+                            `${item.code || ''} ${item.title || ''}`.toLowerCase()
+                        )}">
+
+                        <span class="framework-item-code">
+
+                            <i class="bi bi-activity"></i>
+
+                            ${escapeHtml(item.code)}
+
+                        </span>
+
+
+                        <span class="framework-item-title">
+
+                            ${escapeHtml(item.title)}
+
+                        </span>
+
+
+                        <span class="framework-item-meta">
+
+                            <span class="badge rounded-pill text-bg-secondary">
+
+                                ${escapeHtml(typeLabel)}
+
+                            </span>
+
+
+                            <span class="badge rounded-pill text-bg-light border">
+
+                                Target:
+                                ${escapeHtml(String(target))}
+
+                            </span>
+
+                        </span>
+
+
+                        <i class="bi bi-box-arrow-up-right framework-item-arrow"></i>
+
+                    </button>
+                `;
+
+            }).join('');
+
+
+        activitySearch.disabled =
+            false;
+
+
+        activityList
+            .querySelectorAll('.activity-item')
+            .forEach(item => {
+
+                item.addEventListener(
+                    'click',
+                    openCapture
+                );
+
+            });
+
+    }
+
+
+    /* =====================================================
+       LOAD OUTPUTS
+       ===================================================== */
+
+    async function loadOutputs(event) {
+
+        const button =
+            event.currentTarget;
+
+        const objectiveId =
+            button.dataset.id;
+
+
+        document
+            .querySelectorAll('.so-item')
+            .forEach(item =>
+                item.classList.remove('active')
+            );
+
+
+        button.classList.add('active');
+
+
+        selectedObjective =
+            button;
+
+        selectedOutput =
+            null;
+
+
+        const code =
+            button
+                .querySelector('.framework-item-code')
+                ?.textContent
+                .trim()
+            || '';
+
+
+        selectionLabel.textContent =
+            code;
+
+        helpLabel.textContent =
+            'Select an output to continue';
+
+
+        resetActivityColumn();
+
+
+        outputSearch.value =
+            '';
+
+
+        showLoading(
+            outputList,
+            'Loading strategic outputs...'
+        );
+
+
+        try {
+
+            const data =
+                await fetchJson(
+                    buildUrl(
+                        outputUrlTemplate,
+                        objectiveId
+                    )
+                );
+
+
+            const outputs =
+                Array.isArray(data.outputs)
+                    ? data.outputs
+                    : [];
+
+
+            outputCount.textContent =
+                `${outputs.length} ${
+                    outputs.length === 1
+                        ? 'output'
+                        : 'outputs'
+                }`;
+
+
+            renderOutputs(outputs);
+
+
+        } catch (error) {
+
+            console.error(
+                'MEAL output loading error:',
+                error
+            );
+
+
+            outputCount.textContent =
+                'Error';
+
+
+            showError(
+                outputList,
+                'The outputs could not be loaded. Please try again.'
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       LOAD ACTIVITIES
+       ===================================================== */
+
+    async function loadActivities(event) {
+
+        const button =
+            event.currentTarget;
+
+        const outputId =
+            button.dataset.id;
+
+
+        document
+            .querySelectorAll('.output-item')
+            .forEach(item =>
+                item.classList.remove('active')
+            );
+
+
+        button.classList.add('active');
+
+
+        selectedOutput =
+            button;
+
+
+        const objectiveCode =
+            selectedObjective
+                ?.querySelector('.framework-item-code')
+                ?.textContent
+                .trim()
+            || '';
+
+
+        const outputCode =
+            button
+                .querySelector('.framework-item-code')
+                ?.textContent
+                .trim()
+            || '';
+
+
+        selectionLabel.textContent =
+            `${objectiveCode} / ${outputCode}`;
+
+
+        helpLabel.textContent =
+            'Select an activity to capture data';
+
+
+        activitySearch.value =
+            '';
+
+
+        showLoading(
+            activityList,
+            'Loading activities...'
+        );
+
+
+        try {
+
+            const data =
+                await fetchJson(
+                    buildUrl(
+                        activityUrlTemplate,
+                        outputId
+                    )
+                );
+
+
+            const activities =
+                Array.isArray(data.activities)
+                    ? data.activities
+                    : [];
+
+
+            activityCount.textContent =
+                `${activities.length} ${
+                    activities.length === 1
+                        ? 'activity'
+                        : 'activities'
+                }`;
+
+
+            renderActivities(activities);
+
+
+        } catch (error) {
+
+            console.error(
+                'MEAL activity loading error:',
+                error
+            );
+
+
+            activityCount.textContent =
+                'Error';
+
+
+            showError(
+                activityList,
+                'The activities could not be loaded. Please try again.'
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       OPEN ACTIVITY CAPTURE
+       ===================================================== */
+
+    async function openCapture(event) {
+
+        const activity =
+            event.currentTarget;
+
+        const activityId =
+            activity.dataset.id;
+
+
+        const activityTitle =
+            activity
+                .querySelector('.framework-item-title')
+                ?.textContent
+                .trim()
+            || 'Activity data collection';
+
+
+        const activityCode =
+            activity
+                .querySelector('.framework-item-code')
+                ?.textContent
+                .trim()
+            || '';
+
+
+        captureTitle.textContent =
+            activityTitle;
+
+
+        captureBody.innerHTML = `
+            <div class="framework-loading">
+
+                <div class="loading-inner">
+
+                    <div class="spinner-border"
+                         role="status">
+
+                        <span class="visually-hidden">
+                            Loading...
+                        </span>
+
+                    </div>
+
+                    <div>
+                        Preparing
+                        ${escapeHtml(activityCode)}
+                        data collection form...
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+
+        captureModal.show();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `${buildUrl(
+                        captureUrlTemplate,
+                        activityId
+                    )}?modal=1`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+                            'Accept':
+                                'text/html'
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Request failed (${response.status})`
+                );
+
+            }
+
+
+            captureBody.innerHTML =
+                await response.text();
+
+
+            enhanceCaptureForm();
+
+            bindCaptureForm();
+
+
+        } catch (error) {
+
+            console.error(
+                'MEAL capture form error:',
+                error
+            );
+
+
+            captureBody.innerHTML = `
+
+                <div class="p-4">
+
+                    <div class="alert alert-danger mb-0">
+
+                        <div class="d-flex gap-3">
+
+                            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+
+                            <div>
+
+                                <strong>
+                                    Unable to load the data collection form.
+                                </strong>
+
+                                <div class="small mt-1">
+                                    The activity form could not be prepared.
+                                    Please close this window and try again.
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger mt-3"
+                                    data-bs-dismiss="modal">
+
+                                    Close
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       ENHANCE DYNAMIC FORM
+       ===================================================== */
+
+    function enhanceCaptureForm() {
+
+        const form =
+            document.getElementById(
+                'modal-capture-form'
+            );
+
+
+        if (!form) {
+            return;
+        }
+
+
+        form.classList.add(
+            'meal-capture-form'
+        );
+
+
+        form
+            .querySelectorAll(':scope > p')
+            .forEach(wrapper => {
+
+                if (
+                    wrapper.querySelector(
+                        '[name="comments"]'
+                    )
+                ) {
+
+                    wrapper.classList.add(
+                        'capture-field-full'
+                    );
+
+                }
+
+            });
+
+
+        /*
+         * Automatically improve standard Django form
+         * fields even if the returned template does
+         * not contain the optional MEAL CSS classes.
+         */
+
+        form
+            .querySelectorAll(
+                '.mb-3, .mb-4, .field-wrapper'
+            )
+            .forEach(wrapper => {
+
+                if (
+                    !wrapper.closest(
+                        '.capture-form-body'
+                    )
+                ) {
+
+                    wrapper.classList.add(
+                        'meal-form-field'
+                    );
+
+                }
+
+            });
+
+
+        /*
+         * Add Bootstrap styling to common Django
+         * widgets when the form does not already
+         * provide it.
+         */
+
+        form
+            .querySelectorAll(
+                'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), textarea, select'
+            )
+            .forEach(field => {
+
+                if (
+                    !field.classList.contains(
+                        'form-control'
+                    ) &&
+                    field.tagName !== 'SELECT'
+                ) {
+
+                    field.classList.add(
+                        'form-control'
+                    );
+
+                }
+
+
+                if (
+                    field.tagName === 'SELECT' &&
+                    !field.classList.contains(
+                        'form-select'
+                    )
+                ) {
+
+                    field.classList.add(
+                        'form-select'
+                    );
+
+                }
+
+            });
+
+
+        /*
+         * Convert plain Django submit button
+         * into the primary MEAL action.
+         */
+
+        form
+            .querySelectorAll(
+                'button[type="submit"], input[type="submit"]'
+            )
+            .forEach(button => {
+
+                button.classList.add(
+                    'btn',
+                    'btn-primary'
+                );
+
+            });
+
+    }
+
+
+    /* =====================================================
+       CAPTURE FORM SUBMISSION
+       ===================================================== */
+
+    function bindCaptureForm() {
+
+        const form =
+            document.getElementById(
+                'modal-capture-form'
+            );
+
+
+        if (!form) {
+
+            console.warn(
+                'MEAL capture form was not found.'
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Prevent duplicate bindings.
+         */
+
+        if (
+            form.dataset.bound === 'true'
+        ) {
+
+            return;
+
+        }
+
+
+        form.dataset.bound =
+            'true';
+
+
+        form.addEventListener(
+            'submit',
+            async function (event) {
+
+                event.preventDefault();
+
+
+                const submitButton =
+                    form.querySelector(
+                        '[type="submit"]'
+                    );
+
+
+                const originalButtonHtml =
+                    submitButton
+                        ? submitButton.innerHTML
+                        : '';
+
+
+                if (submitButton) {
+
+                    submitButton.disabled =
+                        true;
+
+                    submitButton.innerHTML = `
+                        <span
+                            class="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true">
+                        </span>
+                        Saving record...
+                    `;
+
+                }
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            form.action,
+                            {
+                                method: 'POST',
+
+                                body:
+                                    new FormData(form),
+
+                                headers: {
+                                    'X-Requested-With':
+                                        'XMLHttpRequest',
+
+                                    'Accept':
+                                        'text/html, application/json'
+                                }
+                            }
+                        );
+
+
+                    const contentType =
+                        response.headers.get(
+                            'content-type'
+                        ) || '';
+
+
+                    /*
+                     * Successful JSON response.
+                     */
+
+                    if (
+                        response.ok &&
+                        contentType.includes(
+                            'application/json'
+                        )
+                    ) {
+
+                        captureModal.hide();
+
+                        window.location.reload();
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Django redirect after successful
+                     * normal POST.
+                     */
+
+                    if (
+                        response.redirected &&
+                        response.ok
+                    ) {
+
+                        captureModal.hide();
+
+                        window.location.reload();
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Django returned the form again.
+                     * This normally means validation errors.
+                     */
+
+                    const html =
+                        await response.text();
+
+
+                    captureBody.innerHTML =
+                        html;
+
+
+                    enhanceCaptureForm();
+
+                    bindCaptureForm();
+
+
+                    /*
+                     * Scroll to first validation error.
+                     */
+
+                    const firstError =
+                        captureBody.querySelector(
+                            '.is-invalid, .errorlist, .alert-danger'
+                        );
+
+
+                    if (firstError) {
+
+                        firstError.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        'MEAL capture submission error:',
+                        error
+                    );
+
+
+                    const errorBox =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    errorBox.className =
+                        'alert alert-danger m-3';
+
+
+                    errorBox.innerHTML = `
+                        <div class="d-flex gap-2">
+
+                            <i class="bi bi-wifi-off"></i>
+
+                            <div>
+
+                                <strong>
+                                    Unable to save the record.
+                                </strong>
+
+                                <div class="small mt-1">
+                                    Please check your connection
+                                    and try again.
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+
+                    captureBody.prepend(
+                        errorBox
+                    );
+
+                } finally {
+
+                    if (
+                        submitButton &&
+                        document.body.contains(
+                            submitButton
+                        )
+                    ) {
+
+                        submitButton.disabled =
+                            false;
+
+                        submitButton.innerHTML =
+                            originalButtonHtml;
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       SEARCH
+       ===================================================== */
+
+    function setupSearch(
+        input,
+        container,
+        selector
+    ) {
+
+        if (!input) {
+            return;
+        }
+
+
+        input.addEventListener(
+            'input',
+            function () {
+
+                const query =
+                    input.value
+                        .trim()
+                        .toLowerCase();
+
+
+                container
+                    .querySelectorAll(selector)
+                    .forEach(item => {
+
+                        const searchText =
+                            (
+                                item.dataset.search ||
+                                item.textContent ||
+                                ''
+                            ).toLowerCase();
+
+
+                        item.style.display =
+                            !query ||
+                            searchText.includes(query)
+                                ? ''
+                                : 'none';
+
+                    });
+
+            }
+        );
+
+    }
+
+
+    setupSearch(
+        objectiveSearch,
+        document.getElementById('so-list'),
+        '.so-item'
+    );
+
+
+    setupSearch(
+        outputSearch,
+        outputList,
+        '.output-item'
+    );
+
+
+    setupSearch(
+        activitySearch,
+        activityList,
+        '.activity-item'
+    );
+
+
+    /* =====================================================
+       OBJECTIVE EVENTS
+       ===================================================== */
+
+    document
+        .querySelectorAll('.so-item')
+        .forEach(button => {
+
+            button.addEventListener(
+                'click',
+                loadOutputs
+            );
+
+        });
+
+
+    /* =====================================================
+       KEYBOARD ACCESSIBILITY
+       ===================================================== */
+
+    document
+        .querySelectorAll('.framework-item')
+        .forEach(item => {
+
+            item.addEventListener(
+                'keydown',
+                function (event) {
+
+                    if (
+                        event.key === 'Enter' ||
+                        event.key === ' '
+                    ) {
+
+                        event.preventDefault();
+
+                        item.click();
+
+                    }
+
+                }
+            );
+
+        });
+
+
+    /* =====================================================
+       MODAL CLEANUP
+       ===================================================== */
+
+    captureModalElement.addEventListener(
+        'hidden.bs.modal',
+        function () {
+
+            captureBody.innerHTML = `
+                <div class="framework-loading">
+
+                    <div class="loading-inner">
+
+                        <div class="spinner-border"
+                             role="status">
+
+                            <span class="visually-hidden">
+                                Loading...
+                            </span>
+
+                        </div>
+
+                        <div>
+                            Preparing data collection form...
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        }
+    );
+
+});
+</script>
+
+{% endblock %}

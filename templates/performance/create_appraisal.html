@@ -1,0 +1,382 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Assign Appraisal | DDS-NK{% endblock %}
+
+{% block content %}
+<style>
+    .assign-appraisal {
+        --aa-primary: var(--primary-color, #e50078);
+        --aa-plum: #3b2938;
+        --aa-muted: #77818d;
+        --aa-border: #e6eaf0;
+        --aa-bg: #f7f8fb;
+        color: var(--aa-plum);
+    }
+
+    .assign-appraisal .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .assign-appraisal .eyebrow {
+        color: var(--aa-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .5rem;
+    }
+
+    .assign-appraisal .page-heading h1 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        margin: 0 0 .4rem;
+    }
+
+    .assign-appraisal .page-heading p {
+        color: var(--aa-muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .assign-appraisal .assignment-card {
+        background: #fff;
+        border: 1px solid var(--aa-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 22px rgba(35, 25, 40, .035);
+    }
+
+    .assign-appraisal .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--aa-border);
+    }
+
+    .assign-appraisal .heading-icon {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: #fff0f7;
+        color: var(--aa-primary);
+        font-size: 1.25rem;
+    }
+
+    .assign-appraisal .card-heading h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0 0 .25rem;
+    }
+
+    .assign-appraisal .card-heading p {
+        color: var(--aa-muted);
+        font-size: .82rem;
+        margin: 0;
+    }
+
+    .assign-appraisal .card-body {
+        padding: 1.5rem;
+    }
+
+    .assign-appraisal .employee-summary {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--aa-border);
+        border-radius: 12px;
+        background: var(--aa-bg);
+    }
+
+    .assign-appraisal .employee-icon {
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: #f2edf2;
+        color: var(--aa-plum);
+        font-size: 1.25rem;
+    }
+
+    .assign-appraisal .employee-label {
+        display: block;
+        color: var(--aa-muted);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        margin-bottom: .25rem;
+    }
+
+    .assign-appraisal .employee-name {
+        font-size: .98rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .assign-appraisal .section-label {
+        font-size: .95rem;
+        font-weight: 800;
+        margin: 0 0 .35rem;
+    }
+
+    .assign-appraisal .section-description {
+        color: var(--aa-muted);
+        font-size: .82rem;
+        margin: 0 0 1.25rem;
+    }
+
+    .assign-appraisal .form-field {
+        margin-bottom: 1.35rem;
+    }
+
+    .assign-appraisal .form-field label {
+        display: block;
+        font-size: .85rem;
+        font-weight: 750;
+        margin-bottom: .5rem;
+        color: var(--aa-plum);
+    }
+
+    .assign-appraisal .required-mark {
+        color: var(--aa-primary);
+        margin-left: .15rem;
+    }
+
+    .assign-appraisal .form-control {
+        width: 100%;
+        min-height: 46px;
+        padding: .7rem .85rem;
+        border: 1px solid #dfe4eb;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--aa-plum);
+        font-size: .9rem;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .assign-appraisal .form-control:focus {
+        outline: none;
+        border-color: var(--aa-primary);
+        box-shadow: 0 0 0 .2rem rgba(229, 0, 120, .1);
+    }
+
+    .assign-appraisal input[type="file"].form-control {
+        height: auto;
+        padding: .65rem;
+        background: var(--aa-bg);
+        border-style: dashed;
+    }
+
+    .assign-appraisal .field-help {
+        display: block;
+        margin-top: .45rem;
+        color: var(--aa-muted);
+        font-size: .78rem;
+        line-height: 1.5;
+    }
+
+    .assign-appraisal .form-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: .7rem;
+        padding: .9rem 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f2d6e5;
+        border-radius: 11px;
+        background: #fff8fb;
+        color: var(--aa-muted);
+        font-size: .82rem;
+        line-height: 1.6;
+    }
+
+    .assign-appraisal .form-notice i {
+        color: var(--aa-primary);
+        font-size: 1rem;
+        margin-top: .1rem;
+    }
+
+    .assign-appraisal .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 1.25rem;
+        margin-top: .5rem;
+        border-top: 1px solid var(--aa-border);
+    }
+
+    .assign-appraisal .btn-assign {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        min-height: 45px;
+        padding: .75rem 1.2rem;
+        border: 1px solid var(--aa-primary);
+        border-radius: 10px;
+        background: var(--aa-primary);
+        color: #fff;
+        font-size: .88rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .assign-appraisal .btn-assign:hover {
+        background: #c90069;
+        border-color: #c90069;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 575.98px) {
+        .assign-appraisal .card-heading,
+        .assign-appraisal .card-body {
+            padding: 1rem;
+        }
+
+        .assign-appraisal .form-actions,
+        .assign-appraisal .btn-assign {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="assign-appraisal">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-person-workspace me-1"></i>
+            Human Resources / Performance
+        </div>
+
+        <h1>Assign Appraisal</h1>
+        <p>Schedule an employee appraisal and upload the appraisal template for completion.</p>
+    </div>
+
+    <section class="assignment-card">
+
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-clipboard2-plus"></i>
+            </div>
+
+            <div>
+                <h2>Appraisal Assignment</h2>
+                <p>Set the submission deadline and provide the appraisal document.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Employee information -->
+            <div class="employee-summary">
+                <div class="employee-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+
+                <div>
+                    <span class="employee-label">Selected Employee</span>
+                    <div class="employee-name">{{ employee }}</div>
+                </div>
+            </div>
+
+            <h3 class="section-label">Assignment Details</h3>
+            <p class="section-description">
+                Complete both required fields before sending the appraisal.
+            </p>
+
+            <div class="form-notice">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Before sending</strong><br>
+                    Confirm the submission date and ensure the uploaded file is the correct appraisal template.
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-field">
+                    <label for="id_appraisal_type">
+                        Appraisal Type
+                        <span class="required-mark">*</span>
+                    </label>
+
+                    <select
+                        id="id_appraisal_type"
+                        name="appraisal_type"
+                        class="form-select"
+                        required
+                    >
+                        <option value="" selected disabled>Select appraisal type</option>
+                        <option value="mid_year">Mid-year</option>
+                        <option value="annual">Annual</option>
+                    </select>
+
+                    <small class="field-help">
+                        Choose whether this is the mid-year or annual performance appraisal.
+                    </small>
+                </div>
+
+                <div class="form-field">
+                    <label for="id_date_of_submission">
+                        Submission Date
+                        <span class="required-mark">*</span>
+                    </label>
+
+                    <input
+                        type="date"
+                        id="id_date_of_submission"
+                        name="date_of_submission"
+                        class="form-control"
+                        required
+                    >
+
+                    <small class="field-help">
+                        Select the date by which the employee is expected to submit the completed appraisal.
+                    </small>
+                </div>
+
+                <div class="form-field">
+                    <label for="id_template_file">
+                        Appraisal Template
+                        <span class="required-mark">*</span>
+                    </label>
+
+                    <input
+                        type="file"
+                        id="id_template_file"
+                        name="template_file"
+                        class="form-control"
+                        accept=".pdf,.doc,.docx,.odt"
+                        required
+                    >
+
+                    <small class="field-help">
+                        Upload the appraisal document to be completed by the employee.
+                        Accepted file types shown: PDF, DOC, DOCX and ODT.
+                    </small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-assign">
+                        <i class="bi bi-send"></i>
+                        Send Appraisal
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

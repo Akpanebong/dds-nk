@@ -1,0 +1,451 @@
+﻿{% extends 'module_base.html' %}
+
+{% block title %}Orientation Plan | DDS-NK THRIVE{% endblock %}
+
+{% block content %}
+<style>
+    .orientation-detail {
+        --od-primary: #e50078;
+        --od-plum: #3b2938;
+        --od-muted: #75808d;
+        --od-border: #e6eaf0;
+        --od-soft: #fff4f9;
+        color: var(--od-plum);
+    }
+
+    .orientation-detail .page-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .orientation-detail .eyebrow {
+        margin-bottom: .45rem;
+        color: var(--od-primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .orientation-detail .page-heading h1 {
+        margin: 0 0 .45rem;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .orientation-detail .page-heading p {
+        margin: 0;
+        color: var(--od-muted);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .orientation-detail .detail-card {
+        overflow: hidden;
+        border: 1px solid var(--od-border);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 6px 24px rgba(59, 41, 56, .045);
+    }
+
+    .orientation-detail .card-heading {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--od-border);
+        background: linear-gradient(120deg, #fff, #fff8fb);
+    }
+
+    .orientation-detail .heading-icon {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        place-items: center;
+        border-radius: 13px;
+        background: #ffe6f2;
+        color: var(--od-primary);
+        font-size: 1.3rem;
+    }
+
+    .orientation-detail .card-heading h2 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .orientation-detail .card-heading p {
+        margin: 0;
+        color: var(--od-muted);
+        font-size: .82rem;
+    }
+
+    .orientation-detail .card-body-custom {
+        padding: 1.5rem;
+    }
+
+    .orientation-detail .staff-panel {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        border: 1px solid #f3d5e4;
+        border-radius: 13px;
+        background: var(--od-soft);
+    }
+
+    .orientation-detail .staff-avatar {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        flex: 0 0 58px;
+        place-items: center;
+        border: 1px solid #f1c6dc;
+        border-radius: 16px;
+        background: #fff;
+        color: var(--od-primary);
+        font-size: 1.65rem;
+    }
+
+    .orientation-detail .staff-label {
+        display: block;
+        margin-bottom: .35rem;
+        color: var(--od-muted);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .orientation-detail .staff-name {
+        margin: 0;
+        color: var(--od-plum);
+        font-size: 1.15rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .orientation-detail .info-note {
+        display: flex;
+        align-items: flex-start;
+        gap: .7rem;
+        margin-top: 1.25rem;
+        padding: 1rem;
+        border: 1px solid var(--od-border);
+        border-radius: 11px;
+        background: #fafbfc;
+        color: #596472;
+        font-size: .84rem;
+        line-height: 1.7;
+    }
+
+    .orientation-detail .info-note i {
+        margin-top: .1rem;
+        color: var(--od-primary);
+        font-size: 1.05rem;
+    }
+
+    .orientation-detail .detail-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+        margin-top: 1.25rem;
+    }
+
+    .orientation-detail .progress-panel {
+        margin-top: 1.5rem;
+    }
+
+    .orientation-detail .progress-bar-track {
+        height: 11px;
+        overflow: hidden;
+        background: #f1eaf0;
+        border-radius: 999px;
+    }
+
+    .orientation-detail .progress-bar-value {
+        height: 100%;
+        background: linear-gradient(90deg, #e50078, #a81f70);
+        border-radius: inherit;
+        transition: width .25s ease;
+    }
+
+    .orientation-detail .progress-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .75rem;
+        margin-top: 1.1rem;
+    }
+
+    .orientation-detail .progress-stat {
+        padding: .9rem;
+        background: #fafbfc;
+        border: 1px solid var(--od-border);
+        border-radius: 11px;
+    }
+
+    .orientation-detail .progress-stat-label {
+        display: block;
+        color: var(--od-muted);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+    .orientation-detail .progress-stat-value {
+        display: block;
+        margin-top: .2rem;
+        color: var(--od-plum);
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+    .orientation-detail .session-list {
+        display: grid;
+        gap: .8rem;
+    }
+
+    .orientation-detail .session-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--od-border);
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .orientation-detail .session-row h3 {
+        margin: 0 0 .35rem;
+        font-size: .95rem;
+        font-weight: 800;
+    }
+
+    .orientation-detail .session-meta {
+        color: var(--od-muted);
+        font-size: .8rem;
+        line-height: 1.65;
+    }
+
+    .orientation-detail .session-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .4rem .65rem;
+        color: #8c0750;
+        background: #fff0f7;
+        border: 1px solid #f7c6df;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .orientation-detail .session-status.is-complete {
+        color: #176b4d;
+        background: #edf9f3;
+        border-color: #bfe7d2;
+    }
+
+    .orientation-detail .session-status.is-canceled {
+        color: #6f6870;
+        background: #f3f2f4;
+        border-color: #dedbe0;
+    }
+
+    .orientation-detail .session-notes {
+        margin-top: .5rem;
+        padding: .55rem .7rem;
+        color: #596472;
+        background: #fafbfc;
+        border-left: 3px solid var(--od-primary);
+        font-size: .79rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .orientation-detail .card-heading,
+        .orientation-detail .card-body-custom {
+            padding: 1rem;
+        }
+
+        .orientation-detail .staff-panel {
+            align-items: flex-start;
+            padding: 1rem;
+        }
+
+        .orientation-detail .progress-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .orientation-detail .session-row {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="orientation-detail">
+
+    <header class="page-heading">
+        <div class="eyebrow">
+            <i class="bi bi-person-workspace me-1"></i>
+            DDS-NK THRIVE / Human Resources
+        </div>
+
+        <h1>Orientation Plan</h1>
+
+        <p>
+            Review the staff orientation record and access the relevant
+            orientation details.
+        </p>
+    </header>
+
+    <section class="detail-card">
+
+        <div class="card-heading">
+            <div class="heading-icon">
+                <i class="bi bi-clipboard2-check"></i>
+            </div>
+
+            <div>
+                <h2>Staff Orientation Details</h2>
+                <p>Staff member associated with this orientation plan</p>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+
+            <div class="staff-panel">
+                <div class="staff-avatar">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+
+                <div>
+                    <span class="staff-label">Staff Member</span>
+                    <h3 class="staff-name">
+                        {{ plan.staff|default:"Staff member not specified" }}
+                    </h3>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'hr:orientation_cmt_list' %}">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back to orientation review
+                </a>
+            </div>
+
+            <section class="detail-card progress-panel">
+                <div class="card-heading">
+                    <div class="heading-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div>
+                        <h2>Orientation progress</h2>
+                        <p>Current progress across all departmental sessions</p>
+                    </div>
+                </div>
+
+                <div class="card-body-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{{ progress.percent }}% complete</strong>
+                        <span class="text-muted small">
+                            {{ progress.completed }} of {{ progress.total }} sessions completed
+                        </span>
+                    </div>
+                    <div class="progress-bar-track" role="progressbar"
+                         aria-valuenow="{{ progress.percent }}" aria-valuemin="0" aria-valuemax="100"
+                         aria-label="Orientation completion progress">
+                        <div class="progress-bar-value" style="width: {{ progress.percent }}%;"></div>
+                    </div>
+
+                    <div class="progress-summary" aria-label="Orientation progress summary">
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Total sessions</span>
+                            <span class="progress-stat-value">{{ progress.total }}</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Completed</span>
+                            <span class="progress-stat-value">{{ progress.completed }}</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Scheduled</span>
+                            <span class="progress-stat-value">{{ progress.scheduled }}</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Awaiting schedule</span>
+                            <span class="progress-stat-value">{{ progress.awaiting }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="detail-card progress-panel">
+                <div class="card-heading">
+                    <div class="heading-icon">
+                        <i class="bi bi-calendar2-week"></i>
+                    </div>
+                    <div>
+                        <h2>Departmental session progress</h2>
+                        <p>Schedule and completion details for the selected staff member</p>
+                    </div>
+                </div>
+
+                <div class="card-body-custom">
+                    <div class="session-list">
+                        {% for session in plan.sessions.all %}
+                            <article class="session-row">
+                                <div>
+                                    <h3>{{ session.department|default:"Department not specified" }}</h3>
+                                    <div class="session-meta">
+                                        {% if session.status == 'scheduled' or session.status == 'completed' %}
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            {{ session.scheduled_start|date:"l, F j, Y" }}
+                                            · {{ session.scheduled_start|date:"g:i A" }} – {{ session.scheduled_end|date:"g:i A" }}
+                                            {% if session.scheduled_by %}
+                                                <br><i class="bi bi-person-check me-1"></i>
+                                                Scheduled by {{ session.scheduled_by.get_full_name|default:session.scheduled_by.username }}
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="bi bi-hourglass-split me-1"></i>
+                                            No orientation time has been scheduled yet.
+                                        {% endif %}
+                                    </div>
+                                    {% if session.status == 'completed' and session.completion_notes %}
+                                        <div class="session-notes">
+                                            <strong>Completion notes:</strong>
+                                            {{ session.completion_notes|linebreaksbr }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span class="session-status {% if session.status == 'completed' %}is-complete{% elif session.status == 'canceled' %}is-canceled{% endif %}">
+                                    <i class="bi {% if session.status == 'completed' %}bi-check2-circle{% elif session.status == 'scheduled' %}bi-calendar-check{% elif session.status == 'canceled' %}bi-x-circle{% else %}bi-clock{% endif %}"></i>
+                                    {{ session.get_status_display }}
+                                </span>
+                            </article>
+                        {% empty %}
+                            <div class="info-note mt-0">
+                                <i class="bi bi-calendar2-minus"></i>
+                                <div>No departmental orientation sessions have been assigned.</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <div class="info-note">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Orientation record</strong><br>
+                    This progress view is updated when department heads
+                    schedule or complete their assigned orientation sessions.
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}
