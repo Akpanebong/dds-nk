@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 
-# Procurement threshold from static/img/thresholds.png.
 DIRECT_PURCHASE_LIMIT = Decimal('200000.00')
 
 
