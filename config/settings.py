@@ -57,17 +57,32 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
-app_origin = urlparse(APP_BASE_URL)
+APP_BASE_URL = os.getenv(
+    "APP_BASE_URL",
+    "https://ddsnk.pythonanywhere.com",
+).strip().rstrip("/")
 
-default_hosts = "127.0.0.1,localhost,ddnsk.pythonanywhere.com"
-if not DEBUG and app_origin.hostname:
-    default_hosts = app_origin.hostname
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default_hosts)
+app_origin = urlparse(
+    APP_BASE_URL if "://" in APP_BASE_URL else f"https://{APP_BASE_URL}"
+)
+
+default_hosts = ["ddsnk.pythonanywhere.com"]
+
+if app_origin.hostname and app_origin.hostname not in default_hosts:
+    default_hosts.append(app_origin.hostname)
+
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    ",".join(default_hosts),
+)
+
 if not DEBUG and not ALLOWED_HOSTS:
-    raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must contain at least one host in production.")
+    raise ImproperlyConfigured(
+        "DJANGO_ALLOWED_HOSTS must contain at least one host in production."
+    )
 
 csrf_origins = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+
 if not DEBUG and app_origin.scheme and app_origin.hostname:
     configured_origin = f"{app_origin.scheme}://{app_origin.netloc}"
     if configured_origin not in csrf_origins:
@@ -179,8 +194,12 @@ STATIC_ROOT = Path(os.getenv("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles")
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {
+    "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+},
+    # "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+
 
 MEDIA_URL = os.getenv("DJANGO_MEDIA_URL", "/media/")
 MEDIA_ROOT = Path(os.getenv("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media")))
