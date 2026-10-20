@@ -23,31 +23,7 @@ class ProfileForm(forms.ModelForm):
 
 
 class StaffProfileCreateForm(ProfileForm):
-    """StaffProfile form used by HR when registering a new staff member."""
-
-    password = forms.CharField(
-        label='Initial password',
-        min_length=8,
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        help_text='The staff member can change this after signing in.',
-    )
-    password_confirm = forms.CharField(
-        label='Confirm password',
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-    )
-
-    def clean(self):
-        cleaned = super().clean()
-        if cleaned.get('password') != cleaned.get('password_confirm'):
-            self.add_error('password_confirm', 'Passwords do not match.')
-        return cleaned
-
-    def save(self, commit=True):
-        profile = super().save(commit=False)
-        profile.set_password(self.cleaned_data['password'])
-        if commit:
-            profile.save()
-        return profile
+    """Staff profile form; the initial password is generated server-side."""
 
 
 class EmployeeRecordForm(forms.ModelForm):

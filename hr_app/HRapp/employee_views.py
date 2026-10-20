@@ -1,7 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+import logging
+import secrets
+import string
 from core.utils import stamp_audit
 
 from .employee_forms import (
@@ -24,8 +30,49 @@ from .employee_models import (
 )
 from .views import is_hr
 from .orientation_models import OrientationPlanStatus
-from .orientation_models import OrientationPlanStatus
-from .orientation_models import OrientationPlanStatus
+
+
+logger = logging.getLogger(__name__)
+
+
+def _generate_staff_password(length=16):
+    alphabet = string.ascii_letters + string.digits + '!@#$%^&*_-+'
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+def _send_staff_welcome_email(*, request, profile, initial_password):
+    """Send the new staff member their first-login credentials."""
+    login_url = request.build_absolute_uri(reverse('login'))
+    full_name = profile.get_full_name() or profile.username
+    message = (
+        f"Dear {full_name},\n\n"
+        "Your DDS-NK THRIVE staff account has been created.\n\n"
+        f"Username: {profile.username}\n"
+        f"Staff registration number: {profile.staff_reg_no}\n"
+        f"Temporary password: {initial_password}\n\n"
+        f"Sign in here: {login_url}\n\n"
+        "Please sign in and change your username and password immediately. "
+        "Your staff registration number is permanent and cannot be changed.\n\n"
+        "If you did not expect this account, please contact HR."
+    )
+    try:
+        send_mail(
+            subject='Your DDS-NK THRIVE staff account',
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[profile.email],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        # Do not undo a successfully created account because an SMTP server
+        # is temporarily unavailable.  Keep the failure visible to HR and in
+        # the application logs so the credentials can be resent safely.
+        logger.exception('Unable to send welcome email to %s', profile.email)
+        messages.warning(
+            request,
+            'Staff account created, but the welcome email could not be sent. '
+            f'Email error: {exc}. Please verify the recipient address and email settings.',
+        )
 
 
 def _forms(user, data=None, files=None):
@@ -96,65 +143,121 @@ def profile_update(request):
 
 @login_required
 def staff_create(request):
-    """Create the StaffProfile first, then its supplemental employee record."""
+    """Create a staff profile and copy its supplemental HR fields."""
     if not is_hr(request.user):
-        messages.error(request, 'Access denied.')
-        return redirect('hr:profile')
+        messages.error(request, "Access denied.")
+        return redirect("hr:profile")
 
-    profile_form = StaffProfileCreateForm(request.POST or None, request.FILES or None)
+    profile_form = StaffProfileCreateForm(
+        request.POST or None,
+        request.FILES or None,
+    )
     employee_form = EmployeeRecordForm(request.POST or None)
-    if request.method == 'POST' and profile_form.is_valid() and employee_form.is_valid():
-        with transaction.atomic():
-            profile = profile_form.save()
-            employee = employee_form.save(commit=False)
-            # Employee is now an alias for StaffProfile.  Do not save the
-            # record form as a second profile; copy its HR fields onto the
-            # profile that was just created.
-            for field_name in employee_form.fields:
-                setattr(profile, field_name, getattr(employee, field_name))
-            profile.status = 'Probation'
-            profile.save()
-        messages.success(request, 'Staff profile created successfully.')
-        return redirect('hr:employee_list')
 
-    return render(request, 'hr/employee_profile.html', {
-        'profile_form': profile_form,
-        'employee_form': employee_form,
-        'profile_sections': [],
-        'title': 'Create staff profile',
-        'is_create': True,
-    })
+    if request.method == "POST":
+        profile_valid = profile_form.is_valid()
+        employee_valid = employee_form.is_valid()
 
+        if profile_valid and employee_valid:
+            with transaction.atomic():
+                initial_password = _generate_staff_password()
+                profile = profile_form.save(commit=False)
+                profile.set_password(initial_password)
+                profile.save()
+                employee_data = employee_form.save(commit=False)
+
+                # Copy supplemental HR fields to the new staff profile.
+                for field_name in employee_form.fields:
+                    if hasattr(profile, field_name):
+                        setattr(
+                            profile,
+                            field_name,
+                            getattr(employee_data, field_name),
+                        )
+
+                profile.status = "Probation"
+                profile.save()
+                transaction.on_commit(
+                    lambda: _send_staff_welcome_email(
+                        request=request,
+                        profile=profile,
+                        initial_password=initial_password,
+                    )
+                )
+
+            messages.success(
+                request,
+                "Staff profile created successfully.",
+            )
+            return redirect("hr:employee_list")
+
+    return render(
+        request,
+        "hr/employee_profile.html",
+        {
+            "profile_form": profile_form,
+            "employee_form": employee_form,
+            "profile_sections": [],
+            "title": "Create staff profile",
+            "is_create": True,
+        },
+    )
 
 
 @login_required
 def staff_update(request, pk, slug):
-    if not request.user.is_superuser and request.user.user_type == "VSLA":
-        messages.error(request, 'Access denied.')
-        return redirect('hr:employee_list')
+    """Update a staff profile and its supplemental HR information."""
+    if (
+        not request.user.is_superuser
+        and request.user.user_type == "VSLA"
+    ):
+        messages.error(request, "Access denied.")
+        return redirect("hr:employee_list")
 
-    employee = get_object_or_404(Employee.objects, pk=pk, slug=slug)
-    profile_form = ProfileForm(request.POST or None, request.FILES or None, instance=employee.user)
-    employee_form = EmployeeRecordForm(request.POST or None, instance=employee)
-    if request.method == 'POST' and profile_form.is_valid() and employee_form.is_valid():
-        with transaction.atomic():
-            profile_form.save()
-            employee_form.save()
-            if employee.staff_id != employee.user.staff_reg_no:
-                employee.staff_id = employee.user.staff_reg_no
-                employee.save(update_fields=['staff_reg_no'])
-        messages.success(request, 'Staff profile updated successfully.')
-        return redirect('hr:employee_list')
+    # Employee is a compatibility alias for StaffProfile.  There is no
+    # separate ``user`` relation after the custom-user migration.
+    employee = get_object_or_404(Employee.objects.select_related("department"), pk=pk, slug=slug)
 
-    return render(request, 'hr/employee_profile.html', {
-        'profile_form': profile_form,
-        'employee_form': employee_form,
-        'profile_sections': [],
-        'title': 'Update staff profile',
-        'is_update': True,
-        'employee': employee,
-    })
+    profile_form = ProfileForm(
+        request.POST or None,
+        request.FILES or None,
+        instance=employee,
+    )
+    employee_form = EmployeeRecordForm(
+        request.POST or None,
+        instance=employee,
+    )
 
+    if request.method == "POST":
+        profile_valid = profile_form.is_valid()
+        employee_valid = employee_form.is_valid()
+
+        if profile_valid and employee_valid:
+            with transaction.atomic():
+                profile = profile_form.save()
+                employee_record = employee_form.save(commit=False)
+
+                # Keep the employee record aligned with the profile.
+                employee_record.save()
+
+            messages.success(
+                request,
+                "Staff profile updated successfully.",
+            )
+            return redirect("hr:employee_list")
+
+    return render(
+        request,
+        "hr/employee_profile.html",
+        {
+            "profile_form": profile_form,
+            "employee_form": employee_form,
+            "profile_sections": [],
+            "title": "Update staff profile",
+            "is_update": True,
+            "employee": employee,
+        },
+    )
 
 @login_required(login_url='login')
 def probation_confirm(request, pk, slug):

@@ -22,7 +22,7 @@ class EmployeeForm(forms.ModelForm):
 
     class Meta:
         model = Employee
-        fields = ['job_title', 'staff_reg_no', 'supervised_by', 'date_joined',
+        fields = ['job_title', 'supervised_by', 'date_joined',
                   ]
         widgets = {
             'district': forms.TextInput(attrs={
@@ -45,10 +45,6 @@ class EmployeeForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Enter job title'
             }),
-            'staff_reg_no': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter Staff ID'
-            }),
             'phone': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter phone number'
@@ -65,7 +61,6 @@ class EmployeeUpdateForm(forms.ModelForm):
     class Meta:
         model = Employee
         fields = [
-            "staff_reg_no",
             "job_title",
             "supervised_by",
             "date_joined",
@@ -88,11 +83,9 @@ class EmployeeUpdateForm(forms.ModelForm):
                 })
 
         self.fields['job_title'].widget.attrs.update({'placeholder': 'e.g. Software Engineer'})
-        self.fields['staff_reg_no'].widget.attrs.update({'placeholder': 'e.g. EMP-001'})
-
     def get_groups(self):
         return {
-            "Employment": ["staff_reg_no", "job_title", "supervised_by", "date_joined"],
+            "Employment": ["job_title", "supervised_by", "date_joined"],
         }
 
 

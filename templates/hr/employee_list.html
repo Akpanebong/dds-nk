@@ -515,8 +515,8 @@
                         <th scope="col">Department</th>
                         <th scope="col">Job Title</th>
                         <th scope="col">Date Joined</th>
-                        <th scope="col">Employment status</th>
-                        <th scope="col">Probation period</th>
+                        <th scope="col">status</th>
+<!--                        <th scope="col">Probation period</th>-->
                         {% if can_manage %}
                         <th scope="col" class="text-end">Actions</th>
                         {% endif %}
@@ -528,25 +528,27 @@
                     <tr>
                         <td>
                             <span class="staff-id">
-                                {{ employee.user.staff_reg_no|default:"—" }}
+                                {{ employee.staff_reg_no|default:"—" }}
                             </span>
                         </td>
 
                         <td>
                             <span class="employee-name">
-                                {{ employee.user.get_full_name|default:employee.user.username }}
+                                {{ employee.get_full_name|default:employee.username }}
+
                             </span>
+                            <span class="text-muted">{{ employee.email}}</span>
                         </td>
 
                         <td>
                             <span class="employee-department">
                                 <i class="bi bi-diagram-3"></i>
-                                {{ employee.user.department|default:"—" }}
+                                {{ employee.department|default:"—" }}
                             </span>
                         </td>
 
                         <td>
-                            {{ employee.user.job_title|default:"—" }}
+                            {{ employee.job_title|default:"—" }}
                         </td>
 
                         <td>
@@ -561,14 +563,14 @@
                             </span>
                         </td>
 
-                        <td>
-                            {% if employee.status == 'Probation' %}
-                                <small class="d-block">{{ employee.probation_start_date|date:"Y-m-d"|default:"—" }} to</small>
-                                <small class="d-block">{{ employee.probation_end_date|date:"Y-m-d"|default:"—" }}</small>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
+<!--                        <td>-->
+<!--                            {% if employee.status == 'Probation' %}-->
+<!--                                <small class="d-block">{{ employee.probation_start_date|date:"Y-m-d"|default:"—" }} to</small>-->
+<!--                                <small class="d-block">{{ employee.probation_end_date|date:"Y-m-d"|default:"—" }}</small>-->
+<!--                            {% else %}-->
+<!--                                <span class="text-muted">—</span>-->
+<!--                            {% endif %}-->
+<!--                        </td>-->
 
                         {% if can_manage %}
                         <td class="text-end employee-actions">
@@ -578,7 +580,7 @@
                                     type="button"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
-                                    aria-label="Actions for {{ employee.user.get_full_name|default:employee.user.username }}"
+                                    aria-label="Actions for {{ employee.get_full_name|default:employee.username }}"
                                 >
                                     <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
                                 </button>

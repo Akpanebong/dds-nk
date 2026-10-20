@@ -494,7 +494,7 @@
                                 <td class="actions-cell">
                                     <a
                                         class="action-btn action-edit"
-                                        href="{% url 'procurement:project_update' item.pk item.slug %}"
+                                        href="{% url 'procurement:project_update' item.slug %}"
                                         aria-label="Edit {{ item.name }}"
                                     >
                                         <i class="bi bi-pencil-square"
@@ -504,7 +504,7 @@
 
                                     <a
                                         class="action-btn action-delete"
-                                        href="{% url 'procurement:project_delete' item.pk item.slug %}"
+                                        href="{% url 'procurement:project_delete' item.slug %}"
                                         aria-label="Delete {{ item.name }}"
                                     >
                                         <i class="bi bi-trash3"

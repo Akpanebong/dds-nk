@@ -120,6 +120,15 @@ class StaffProfile(AuditStampedModel, AbstractBaseUser, PermissionsMixin):
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
+        if not is_new and self.pk:
+            # Registration numbers are the permanent staff identifier.  Do
+            # not allow profile/account forms or crafted requests to change
+            # one after it has been assigned.
+            existing_reg_no = type(self).objects.filter(pk=self.pk).values_list(
+                'staff_reg_no', flat=True
+            ).first()
+            if existing_reg_no:
+                self.staff_reg_no = existing_reg_no
         pending_username = not self.username
         generated_staff_reg_no = is_new and not self.staff_reg_no
         if pending_username:
@@ -135,9 +144,9 @@ class StaffProfile(AuditStampedModel, AbstractBaseUser, PermissionsMixin):
         if is_new and (generated_staff_reg_no or pending_username):
             current_year = timezone.localdate().year % 100
             if generated_staff_reg_no:
-                self.staff_reg_no = f'DDS-{current_year:02d}-{self.pk:06d}'
+                self.staff_reg_no = f'DDS-{current_year:02d}-{self.pk:03d}'
             if pending_username:
-                self.username = f'staff-{self.pk:06d}'
+                self.username = f'staff-{self.pk:03d}'
             if self.slug.startswith('pending-'):
                 self.slug = unique_slug(self, self.username)
             super().save(using=kwargs.get('using'), update_fields=['staff_reg_no', 'username', 'slug'])
@@ -146,15 +155,13 @@ class StaffProfile(AuditStampedModel, AbstractBaseUser, PermissionsMixin):
         from django.core.exceptions import ValidationError
 
         super().clean()
-        if self.status == 'Probation':
-            if not self.probation_start_date or not self.probation_end_date:
-                raise ValidationError({
-                    'probation_start_date': 'Probation start date is required.',
-                    'probation_end_date': 'Probation end date is required.',
-                })
         if self.probation_start_date and self.probation_end_date:
             if self.probation_end_date < self.probation_start_date:
-                raise ValidationError({'probation_end_date': 'Probation end date must be on or after the start date.'})
+                # Keep this model-level validation form-agnostic.  Some HR
+                # forms edit the dates in a separate ModelForm; attaching the
+                # error to a field that is absent from another ModelForm makes
+                # Django raise ValueError while rendering validation errors.
+                raise ValidationError('Probation end date must be on or after the start date.')
 
     def get_full_name(self):
         return f'{self.first_name} {self.last_name}'.strip() or self.username
