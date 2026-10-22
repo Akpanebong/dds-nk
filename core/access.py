@@ -164,8 +164,8 @@ def signature_required(view):
     @login_required
     def wrapped(request, *args, **kwargs):
         if not has_staff_signature(request.user):
-            messages.error(request, 'Upload your staff signature before creating or submitting this document.')
-            return redirect('staff:profile')
+            messages.warning(request, 'Upload your staff signature before creating or submitting this document.')
+            return redirect('hr:profile')
         return view(request, *args, **kwargs)
     return wrapped
 
